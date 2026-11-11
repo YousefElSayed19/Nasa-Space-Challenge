@@ -1,0 +1,92 @@
+[
+  {
+    "id": "moon", "order": 1, "name": "Lunar Orbiter", "destination": "the Moon", "inspired": "Lunar Reconnaissance Orbiter (LRO)", "unlockAfter": null,
+    "goal": "Map the Moon in detail so future crews can pick safe landing sites and find water ice.",
+    "objectives": ["Map surface features at high resolution", "Measure surface temperature day and night", "Measure the radiation environment for future crews"],
+    "budget": 800, "opsCost": 100, "busCost": 180, "busMass": 62, "busPower": 40,
+    "tankCap": 100, "dvMOI": 555, "dvOther": 703, "isp": 223, "acs": 0.05,
+    "u": { "mass": 9.23, "power": 8.23, "data": 1, "dataUnit": "Mbps", "prop": 9.8, "budget": 1 },
+    "sciTarget": 12, "defaultRocket": "atlas", "stormChance": 0.5, "events": ["storm", "eclipse", "fault"],
+    "trip": "About 5 days", "sunlight": "The same as at Earth",
+    "texts": {
+      "cruise": "A short five-day trip to the Moon begins.",
+      "insertion": "A burn of about 555 m/s slows the craft into a low polar orbit around the Moon.",
+      "shadow": "On the first pass behind the Moon, the arrays went dark and there was no battery. The spacecraft lost power."
+    },
+    "brief": "The real orbiter carried about 92 kg of science instruments, out of about 1,846 kg at launch. (NASA GSFC mission design paper; NASA NSSDC)",
+    "fuelNote": "Propellant, not gasoline: the real orbiter used hydrazine for its orbit burns. (NTRS 20180000056)",
+    "dvNote": "Total Δv about 1,258 m/s, including 555 m/s for lunar orbit insertion (NTRS 20110007093).",
+    "real": { "launch": "about 1,846 kg", "power": "about 823 W average", "downlink": "100 Mbps (Ka band)", "cost": "not found (approximate)", "instruments": "7 instruments" },
+    "resReal": {
+      "mass": "1 unit ≈ 9.2 kg. The real orbiter weighed about 1,846 kg at launch (NASA GSFC mission design paper).",
+      "power": "1 unit ≈ 8.2 W. The real orbiter averaged about 823 W in orbit (NTRS 20180000056).",
+      "data": "1 unit ≈ 1 Mbps. The real orbiter sent up to 100 Mbps in Ka band (NTRS 20180000056; one source only).",
+      "prop": "1 unit ≈ 9.8 kg of hydrazine. The real orbiter carried about 894 kg of fuel (NTRS 20180000056).",
+      "budget": "1 unit = $1 million. LRO’s real cost was not found in a NASA source, so this budget is a game value."
+    },
+    "realDesign": { "installed": ["moon-lroc", "moon-lola", "moon-diviner", "moon-lamp", "moon-lend", "moon-crater", "moon-array-m", "moon-ant-ka", "moon-battery", "moon-shield"], "rocket": "atlas" },
+    "planet": { "color": "#9EA3B0", "dark": "#5C6070", "ring": false },
+    "screen": ["Budget 800", "Rocket limit 230 units", "Trip about 5 days"],
+    "board": "Earth to Moon transfer"
+  },
+  {
+    "id": "mars", "order": 2, "name": "Mars Orbiter", "destination": "Mars", "inspired": "Mars Reconnaissance Orbiter (MRO)", "unlockAfter": "moon",
+    "goal": "Find where water once shaped Mars, and scout safe sites for future landers.",
+    "objectives": ["Image candidate landing sites at high resolution", "Identify water-related minerals on the surface", "Map layers below the surface"],
+    "budget": 720, "opsCost": 180, "busCost": 200, "busMass": 58, "busPower": 25,
+    "tankCap": 100, "dvMOI": 1000, "dvOther": 400, "isp": 223, "acs": 0.05,
+    "u": { "mass": 10.9, "power": 20, "data": 0.06, "dataUnit": "Mbps", "prop": 12.2, "budget": 1 },
+    "sciTarget": 12, "defaultRocket": "atlas", "stormChance": 0.85, "events": ["storm", "eclipse", "fault"],
+    "trip": "About 5 to 7 months", "sunlight": "About 43% of Earth’s",
+    "texts": {
+      "cruise": "Cruise toward Mars begins: about seven months in space.",
+      "insertion": "Six thrusters fire for about 25 minutes. Captured into Mars orbit.",
+      "shadow": "On the first pass through Mars’ shadow, the arrays went dark and there was no battery. The spacecraft lost power."
+    },
+    "brief": "The real orbiter carried about 139 kg of science instruments out of 2,180 kg at launch. Every gram of camera needed propellant to carry it. (JPL MRO press kit)",
+    "fuelNote": "Propellant, not gasoline: the real orbiter carried hydrazine in a 1,220 kg tank and used about 70% of it to enter Mars orbit. (JPL MRO press kit)",
+    "dvNote": "About 1,000 m/s for Mars orbit insertion (JPL MRO press kit), plus 400 m/s for other burns (game assumption).",
+    "real": { "launch": "2,180 kg", "power": "about 2,000 W", "downlink": "up to 6 Mbps", "cost": "about $720M", "instruments": "6 main instruments" },
+    "resReal": {
+      "mass": "1 unit ≈ 10.9 kg. The real orbiter weighed 2,180 kg at launch (JPL MRO press kit).",
+      "power": "1 unit ≈ 20 W. The real arrays gave about 2,000 W at Mars (JPL MRO press kit).",
+      "data": "1 unit ≈ 0.06 Mbps. The real orbiter could send up to 6 Mbps (JPL MRO press kit).",
+      "prop": "1 unit ≈ 12.2 kg of hydrazine. The real tank held 1,220 kg (JPL MRO press kit).",
+      "budget": "1 unit = $1 million. The real mission cost about $720 million (JPL MRO press kit)."
+    },
+    "realDesign": { "installed": ["cam-hires", "spectro", "radar", "ctx", "sounder", "color", "array-m", "ant-3", "battery", "shield"], "rocket": "atlas" },
+    "planet": { "color": "#B5481C", "dark": "#5A1E08", "ring": false },
+    "screen": ["Budget 720", "Rocket limit 200 units", "Trip about 7 months"],
+    "board": "Earth to Mars transfer"
+  },
+  {
+    "id": "europa", "order": 3, "name": "Europa Flyby Explorer", "destination": "Jupiter", "inspired": "Europa Clipper", "unlockAfter": "mars",
+    "goal": "Find out whether places below Europa’s icy surface could support life. This is not a life-detection mission.",
+    "objectives": ["Measure the thickness of the ice shell", "Map the surface composition", "Detect the ocean through the induced magnetic field"],
+    "budget": 520, "opsCost": 100, "busCost": 180, "busMass": 76, "busPower": 25,
+    "tankCap": 100, "dvMOI": 900, "dvOther": 400, "isp": 223, "acs": 0.05,
+    "u": { "mass": 30, "power": 7, "data": null, "dataUnit": "units", "prop": 30, "budget": 10 },
+    "sciTarget": 16, "defaultRocket": "fh", "stormChance": 0, "events": ["radiation", "pointing", "eclipse", "fault"],
+    "trip": "About 5.5 years", "sunlight": "About 4% of Earth’s",
+    "texts": {
+      "cruise": "A 5.5-year cruise begins, with gravity assists from Mars and Earth.",
+      "insertion": "A long engine burn captures the spacecraft into orbit around Jupiter.",
+      "shadow": "In Jupiter’s shadow the arrays went dark and there was no battery. The spacecraft lost power."
+    },
+    "brief": "Europa Clipper weighed about 6,000 kg at launch, and about 2,750 kg of that was propellant. Its arrays span about 102 m² to catch weak sunlight at Jupiter. (europa.nasa.gov; JPL Europa Clipper quick facts)",
+    "fuelNote": "Almost half of the real spacecraft’s launch mass was propellant: about 2,750 kg of about 6,000 kg. (europa.nasa.gov)",
+    "dvNote": "Δv values for this mission are game assumptions; NASA pages opened did not give them. Isp 223 s is the hydrazine value from NTRS 19970010493.",
+    "real": { "launch": "about 6,000 kg", "power": "at least 700 W at Jupiter", "downlink": "not found", "cost": "about $5.2 billion (lifetime)", "instruments": "9 instruments" },
+    "resReal": {
+      "mass": "1 unit ≈ 30 kg. Europa Clipper weighed about 6,000 kg at launch (europa.nasa.gov).",
+      "power": "1 unit ≈ 7 W. Its arrays give at least 700 W at Jupiter (JPL Europa Clipper spacecraft page).",
+      "data": "Game units only: the NASA pages opened did not give Europa Clipper’s data rate.",
+      "prop": "1 unit ≈ 30 kg. About 2,750 kg of propellant at launch (europa.nasa.gov).",
+      "budget": "1 unit = $10 million. The full mission costs about $5.2 billion over its life (JPL Europa Clipper quick facts)."
+    },
+    "realDesign": { "installed": ["eu-eis", "eu-mise", "eu-reason", "eu-themis", "eu-ecm", "eu-maspex", "eu-array-m", "eu-ant-3", "eu-battery", "eu-vault"], "rocket": "fh" },
+    "planet": { "color": "#C9B9A0", "dark": "#7A5A3A", "ring": false },
+    "screen": ["Budget 520 ($10M units)", "Rocket limit 215 units", "Trip about 5.5 years"],
+    "board": "Earth to Jupiter, with gravity assists"
+  }
+]

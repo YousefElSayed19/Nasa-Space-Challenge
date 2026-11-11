@@ -1,38 +1,597 @@
 {
-  "items": [
-    { "id": "cam-hires", "slot": "instrument", "name": "High-Resolution Camera", "mass": 6, "power": 20, "data": 40, "cost": 45, "science": 5, "color": "#6EA8FF",
-      "note": "Best surface detail. Heavy, power-hungry and makes a lot of data.", "approximate": true },
-    { "id": "spectro", "slot": "instrument", "name": "Imaging Spectrometer", "mass": 3, "power": 12, "data": 25, "cost": 30, "science": 4, "color": "#B48CFF",
-      "note": "Finds water-related minerals. Moderate power and data.", "approximate": true },
-    { "id": "radar", "slot": "instrument", "name": "Shallow Subsurface Radar", "mass": 2, "power": 10, "data": 12, "cost": 25, "science": 3, "color": "#3EE0A0",
-      "note": "Sees layers under the surface. Draws steady power.", "approximate": true },
-    { "id": "ctx", "slot": "instrument", "name": "Context Camera", "mass": 1, "power": 4, "data": 10, "cost": 10, "science": 2, "color": "#8FD3FF",
-      "note": "Wide views at lower detail. Light and cheap.", "approximate": true },
-    { "id": "sounder", "slot": "instrument", "name": "Climate Sounder", "mass": 1, "power": 3, "data": 3, "cost": 10, "science": 2, "color": "#FFC24B",
-      "note": "Profiles the atmosphere. Very little data.", "approximate": true },
-    { "id": "color", "slot": "instrument", "name": "Color Imager", "mass": 1, "power": 3, "data": 6, "cost": 8, "science": 1, "color": "#FF9A6E",
-      "note": "Daily weather maps. Small science gain.", "approximate": true },
-
-    { "id": "array-s", "slot": "array", "name": "12 m² Solar Array", "mass": 6, "supply": 60, "cost": 25, "area": 12,
-      "note": "Light and cheap, but little power this far from the Sun.", "approximate": true },
-    { "id": "array-m", "slot": "array", "name": "20 m² Solar Array", "mass": 10, "supply": 100, "cost": 40, "area": 20,
-      "note": "Same area as the real orbiter. Balanced.", "approximate": false },
-    { "id": "array-l", "slot": "array", "name": "28 m² Solar Array", "mass": 14, "supply": 140, "cost": 55, "area": 28,
-      "note": "Most power and margin. Adds mass and cost.", "approximate": true },
-    { "id": "ant-2", "slot": "antenna", "name": "2 m High-Gain Antenna", "mass": 3, "downlink": 60, "cost": 15, "dish": 2,
-      "note": "Lighter, but sends less data home.", "approximate": true },
-    { "id": "ant-3", "slot": "antenna", "name": "3 m High-Gain Antenna", "mass": 5, "downlink": 100, "cost": 25, "dish": 3,
-      "note": "Same size as the real orbiter. Full downlink.", "approximate": false },
-    { "id": "battery", "slot": "battery", "name": "Nickel-Hydrogen Battery", "mass": 4, "cost": 10,
-      "note": "Keeps the craft alive when Mars blocks the Sun.", "approximate": true },
-    { "id": "shield", "slot": "shield", "name": "Electronics Shielding", "mass": 3, "cost": 8,
-      "note": "Protects the computer from solar-storm bit flips.", "approximate": true }
-  ],
-  "realBySlot": {
-    "instrument": "The real orbiter carried 139 kg of science instruments in total (JPL MRO press kit). Per-instrument values here are approximate game values.",
-    "array": "The real orbiter had two arrays, 20 m² in total, giving about 2,000 W at Mars (JPL MRO press kit). Other sizes are game options.",
-    "antenna": "The real high-gain antenna was a 3 m dish (JPL MRO press kit). The 2 m option is a game option.",
-    "battery": "The real orbiter used nickel-hydrogen batteries for periods without sunlight (JPL MRO press kit).",
-    "shield": "Solar storms can flip memory bits and force a safe mode (NASA Earthdata). Mass here is approximate."
+ "items": [
+  {
+   "id": "cam-hires",
+   "slot": "instrument",
+   "name": "High-Resolution Camera",
+   "mass": 6,
+   "power": 20,
+   "data": 40,
+   "cost": 45,
+   "science": 5,
+   "color": "#6EA8FF",
+   "note": "Best surface detail. Heavy, power-hungry and makes a lot of data.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "spectro",
+   "slot": "instrument",
+   "name": "Imaging Spectrometer",
+   "mass": 3,
+   "power": 12,
+   "data": 25,
+   "cost": 30,
+   "science": 4,
+   "color": "#B48CFF",
+   "note": "Finds water-related minerals. Moderate power and data.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "radar",
+   "slot": "instrument",
+   "name": "Shallow Subsurface Radar",
+   "mass": 2,
+   "power": 10,
+   "data": 12,
+   "cost": 25,
+   "science": 3,
+   "color": "#3EE0A0",
+   "note": "Sees layers under the surface. Draws steady power.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "ctx",
+   "slot": "instrument",
+   "name": "Context Camera",
+   "mass": 1,
+   "power": 4,
+   "data": 10,
+   "cost": 10,
+   "science": 2,
+   "color": "#8FD3FF",
+   "note": "Wide views at lower detail. Light and cheap.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "sounder",
+   "slot": "instrument",
+   "name": "Climate Sounder",
+   "mass": 1,
+   "power": 3,
+   "data": 3,
+   "cost": 10,
+   "science": 2,
+   "color": "#FFC24B",
+   "note": "Profiles the atmosphere. Very little data.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "color",
+   "slot": "instrument",
+   "name": "Color Imager",
+   "mass": 1,
+   "power": 3,
+   "data": 6,
+   "cost": 8,
+   "science": 1,
+   "color": "#FF9A6E",
+   "note": "Daily weather maps. Small science gain.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "array-s",
+   "slot": "array",
+   "name": "12 m² Solar Array",
+   "mass": 6,
+   "supply": 60,
+   "cost": 25,
+   "area": 12,
+   "note": "Light and cheap, but little power this far from the Sun.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "array-m",
+   "slot": "array",
+   "name": "20 m² Solar Array",
+   "mass": 10,
+   "supply": 100,
+   "cost": 40,
+   "area": 20,
+   "note": "Same area as the real orbiter. Balanced.",
+   "approximate": false,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "array-l",
+   "slot": "array",
+   "name": "28 m² Solar Array",
+   "mass": 14,
+   "supply": 140,
+   "cost": 55,
+   "area": 28,
+   "note": "Most power and margin. Adds mass and cost.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "ant-2",
+   "slot": "antenna",
+   "name": "2 m High-Gain Antenna",
+   "mass": 3,
+   "downlink": 60,
+   "cost": 15,
+   "dish": 2,
+   "note": "Lighter, but sends less data home.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "ant-3",
+   "slot": "antenna",
+   "name": "3 m High-Gain Antenna",
+   "mass": 5,
+   "downlink": 100,
+   "cost": 25,
+   "dish": 3,
+   "note": "Same size as the real orbiter. Full downlink.",
+   "approximate": false,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "battery",
+   "slot": "battery",
+   "name": "Nickel-Hydrogen Battery",
+   "mass": 4,
+   "cost": 10,
+   "note": "Keeps the craft alive when Mars blocks the Sun.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "shield",
+   "slot": "shield",
+   "name": "Electronics Shielding",
+   "mass": 3,
+   "cost": 8,
+   "note": "Protects the computer from solar-storm bit flips.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ]
+  },
+  {
+   "id": "moon-lroc",
+   "slot": "instrument",
+   "name": "Narrow-Angle Camera (LROC-style)",
+   "mass": 3,
+   "power": 14,
+   "data": 40,
+   "cost": 35,
+   "science": 5,
+   "color": "#6EA8FF",
+   "note": "Sharpest images of landing sites. Heavy on data.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-lola",
+   "slot": "instrument",
+   "name": "Laser Altimeter (LOLA-style)",
+   "mass": 2,
+   "power": 10,
+   "data": 15,
+   "cost": 30,
+   "science": 4,
+   "color": "#3EE0A0",
+   "note": "Maps heights and slopes for safe landings.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-diviner",
+   "slot": "instrument",
+   "name": "Thermal Radiometer (Diviner-style)",
+   "mass": 2,
+   "power": 5,
+   "data": 8,
+   "cost": 25,
+   "science": 3,
+   "color": "#FFC24B",
+   "note": "Measures surface temperature, day and night.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-lamp",
+   "slot": "instrument",
+   "name": "Ultraviolet Mapper (LAMP-style)",
+   "mass": 1,
+   "power": 4,
+   "data": 6,
+   "cost": 20,
+   "science": 2,
+   "color": "#B48CFF",
+   "note": "Looks for frost in shadowed craters using starlight.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-lend",
+   "slot": "instrument",
+   "name": "Neutron Detector (LEND-style)",
+   "mass": 3,
+   "power": 6,
+   "data": 2,
+   "cost": 20,
+   "science": 2,
+   "color": "#8FD3FF",
+   "note": "Senses hydrogen that may mean water ice. Heavy, little data.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-crater",
+   "slot": "instrument",
+   "name": "Radiation Telescope (CRaTER-style)",
+   "mass": 1,
+   "power": 3,
+   "data": 3,
+   "cost": 15,
+   "science": 2,
+   "color": "#FF9A6E",
+   "note": "Measures the radiation future astronauts would face.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-array-s",
+   "slot": "array",
+   "name": "8 m² Solar Array",
+   "mass": 4,
+   "supply": 80,
+   "cost": 20,
+   "area": 8,
+   "note": "Light and cheap. Full sunlight at the Moon helps.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-array-m",
+   "slot": "array",
+   "name": "11 m² Solar Array",
+   "mass": 6,
+   "supply": 110,
+   "cost": 30,
+   "area": 11,
+   "note": "Balanced power for a lunar orbiter.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-array-l",
+   "slot": "array",
+   "name": "15 m² Solar Array",
+   "mass": 8,
+   "supply": 150,
+   "cost": 40,
+   "area": 15,
+   "note": "Most power and margin. Adds mass and cost.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-ant-s",
+   "slot": "antenna",
+   "name": "S-band Antenna",
+   "mass": 2,
+   "downlink": 40,
+   "cost": 12,
+   "dish": 1.4,
+   "note": "Simple and light, but slow.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-ant-ka",
+   "slot": "antenna",
+   "name": "Ka-band High-Gain Antenna",
+   "mass": 3,
+   "downlink": 100,
+   "cost": 25,
+   "dish": 2.2,
+   "note": "Fast downlink, like the real orbiter’s Ka band.",
+   "approximate": false,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-battery",
+   "slot": "battery",
+   "name": "Battery",
+   "mass": 3,
+   "cost": 10,
+   "note": "Keeps the craft alive behind the Moon.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "moon-shield",
+   "slot": "shield",
+   "name": "Electronics Shielding",
+   "mass": 2,
+   "cost": 8,
+   "note": "Protects the computer from solar-storm bit flips.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ]
+  },
+  {
+   "id": "eu-eis",
+   "slot": "instrument",
+   "name": "Europa Imaging System (EIS)",
+   "mass": 2,
+   "power": 12,
+   "data": 40,
+   "cost": 30,
+   "science": 5,
+   "color": "#6EA8FF",
+   "note": "Wide and narrow cameras for color and stereo images.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-mise",
+   "slot": "instrument",
+   "name": "Mapping Imaging Spectrometer (MISE)",
+   "mass": 2,
+   "power": 8,
+   "data": 30,
+   "cost": 28,
+   "science": 4,
+   "color": "#B48CFF",
+   "note": "Maps ices, salts and organics on the surface.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-reason",
+   "slot": "instrument",
+   "name": "Ice-Penetrating Radar (REASON)",
+   "mass": 3,
+   "power": 12,
+   "data": 25,
+   "cost": 32,
+   "science": 5,
+   "color": "#3EE0A0",
+   "note": "Looks through the ice shell for the ocean below.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-themis",
+   "slot": "instrument",
+   "name": "Thermal Imager (E-THEMIS)",
+   "mass": 1,
+   "power": 4,
+   "data": 10,
+   "cost": 15,
+   "science": 3,
+   "color": "#FFC24B",
+   "note": "Finds warm spots where water may be near the surface.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-ecm",
+   "slot": "instrument",
+   "name": "Magnetometer (ECM)",
+   "mass": 1,
+   "power": 2,
+   "data": 2,
+   "cost": 10,
+   "science": 3,
+   "color": "#8FD3FF",
+   "note": "Confirms the ocean through Europa’s induced magnetic field.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-maspex",
+   "slot": "instrument",
+   "name": "Mass Spectrometer (MASPEX)",
+   "mass": 2,
+   "power": 8,
+   "data": 6,
+   "cost": 22,
+   "science": 3,
+   "color": "#FF9A6E",
+   "note": "Analyzes gases in the thin atmosphere and possible plumes.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-array-s",
+   "slot": "array",
+   "name": "80 m² Solar Array",
+   "mass": 8,
+   "supply": 78,
+   "cost": 24,
+   "area": 80,
+   "note": "Lighter, but sunlight at Jupiter is only about 4% of Earth’s.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-array-m",
+   "slot": "array",
+   "name": "102 m² Solar Array",
+   "mass": 10,
+   "supply": 100,
+   "cost": 30,
+   "area": 102,
+   "note": "Same area as the real arrays.",
+   "approximate": false,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-array-l",
+   "slot": "array",
+   "name": "120 m² Solar Array",
+   "mass": 12,
+   "supply": 118,
+   "cost": 36,
+   "area": 120,
+   "note": "More margin, more mass and cost.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-ant-2",
+   "slot": "antenna",
+   "name": "2 m High-Gain Antenna",
+   "mass": 2,
+   "downlink": 90,
+   "cost": 6,
+   "dish": 2,
+   "note": "Lighter, but sends less data home.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-ant-3",
+   "slot": "antenna",
+   "name": "3 m High-Gain Antenna",
+   "mass": 3,
+   "downlink": 140,
+   "cost": 8,
+   "dish": 3,
+   "note": "Same size as the real dish.",
+   "approximate": false,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-battery",
+   "slot": "battery",
+   "name": "Battery",
+   "mass": 2,
+   "cost": 3,
+   "note": "Keeps the craft alive in Jupiter’s shadow.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
+  },
+  {
+   "id": "eu-vault",
+   "slot": "shield",
+   "name": "Radiation Vault",
+   "mass": 6,
+   "cost": 20,
+   "note": "Shields the electronics from Jupiter’s radiation belts.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ]
   }
+ ],
+ "realBySlot": {
+  "mars": {
+   "instrument": "The real orbiter carried 139 kg of science instruments in total (JPL MRO press kit). Per-instrument values here are approximate game values.",
+   "array": "The real orbiter had two arrays, 20 m² in total, giving about 2,000 W at Mars (JPL MRO press kit). Other sizes are game options.",
+   "antenna": "The real high-gain antenna was a 3 m dish (JPL MRO press kit). The 2 m option is a game option.",
+   "battery": "The real orbiter used nickel-hydrogen batteries for periods without sunlight (JPL MRO press kit).",
+   "shield": "Solar storms can flip memory bits and force a safe mode (NASA Earthdata). Mass here is approximate."
+  },
+  "moon": {
+   "instrument": "The real orbiter carried about 92 kg of science payload (NASA NSSDC). Per-instrument values here are approximate game values; names say \"-style\" because the numbers are not the real instruments’.",
+   "array": "Array sizes here are game options; a NASA figure for the real array was not found.",
+   "antenna": "The real orbiter sent data in Ka band at up to 100 Mbps (NTRS 20180000056).",
+   "battery": "Every lunar orbiter passes behind the Moon and needs stored energy. Mass is approximate.",
+   "shield": "Solar storms can flip memory bits and force a safe mode (NASA Earthdata). Mass is approximate."
+  },
+  "europa": {
+   "instrument": "Europa Clipper carries nine instruments, including EIS, MISE, REASON, E-THEMIS, ECM and MASPEX (NASA Science, Europa Clipper instruments). Mass, power and data values are approximate game values.",
+   "array": "The real arrays total about 102 m² and give at least 700 W at Jupiter (JPL Europa Clipper spacecraft page).",
+   "antenna": "The real high-gain antenna is a 3 m dish, with seven smaller antennas as backup (JPL Europa Clipper pages).",
+   "battery": "Jupiter’s shadow cuts sunlight; mass is approximate.",
+   "shield": "The real vault has aluminum-zinc walls up to 9.2 mm thick to protect the electronics (JPL Europa Clipper quick facts). Mass is approximate."
+  }
+ }
 }

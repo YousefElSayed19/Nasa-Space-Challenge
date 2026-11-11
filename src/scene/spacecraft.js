@@ -30,7 +30,7 @@ export function partMesh(p, forHands) {
     const glass = new THREE.Mesh(new THREE.CircleGeometry(0.085, 20), std('#2a63ff', { metalness: 1, roughness: 0.05, emissive: '#2a63ff', emissiveIntensity: 0.4 }));
     glass.position.z = 0.335; g.add(glass);
   } else if (p.slot === 'array') {
-    const w = forHands ? 1.0 : 1.6 + p.area * 0.12;
+    const w = forHands ? 1.0 : 0.8 + Math.sqrt(p.area) * 0.6;
     const tex = cells().clone(); tex.needsUpdate = true; tex.repeat.set(Math.max(1, Math.round(w)), 1);
     const pm = new THREE.MeshStandardMaterial({ map: tex, metalness: 0.6, roughness: 0.25, emissive: lin('#0a1a55'), emissiveIntensity: 0.6 });
     if (forHands) g.add(new THREE.Mesh(new THREE.BoxGeometry(w, 0.7, 0.05), pm));
@@ -53,6 +53,11 @@ export function partMesh(p, forHands) {
   } else if (p.slot === 'battery') {
     g.add(new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.42), std('#1F6B55', { emissive: '#3EE0A0', emissiveIntensity: 0.2 })));
     const s = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.04, 0.02), std('#3EE0A0', { emissive: '#3EE0A0', emissiveIntensity: 1.5 })); s.position.set(0, 0.06, 0.22); g.add(s);
+  } else if (p.id === 'eu-vault') {
+    const v = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.34, 0.8), std('#8A93B8', { metalness: 0.9, roughness: 0.35 }));
+    g.add(v);
+    const lid = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.05, 0.84), std('#B48CFF', { emissive: '#5A3AA0', emissiveIntensity: 0.6, metalness: 0.7 }));
+    lid.position.y = 0.19; g.add(lid);
   } else {
     const m = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.65, metalness: 0.6, roughness: 0.2, emissiveIntensity: 0.4 });
     m.color = lin('#B48CFF'); m.emissive = lin('#5A3AA0');

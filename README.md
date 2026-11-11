@@ -1,10 +1,21 @@
 # MissionForge
 
 A browser-based 3D game for **NASA Space Apps Cairo 2026** (challenge: *Space Mission Design Game*).
-You walk around a spacecraft hangar, carry parts with your hands, bolt them onto a Mars orbiter, fuel it, launch it,
+You walk around a spacecraft hangar, carry parts with your hands, bolt them onto a spacecraft, fuel it, launch it,
 and then the game explains which of your own decisions made the mission succeed or fail.
 
 > MissionForge is a placeholder name. Not reviewed or endorsed by NASA.
+
+## What is in the game
+
+- **Three missions** that unlock in order: Lunar Orbiter (inspired by LRO), Mars Orbiter (MRO) and Europa Flyby Explorer (Europa Clipper).
+- **Three modes:** Campaign, Sandbox (no locks, no budget limit) and Replay a real mission (start from the real NASA design).
+- **1 to 4 players on one screen.** The four roles (Systems Engineer, Science Lead, Launch and Orbit Lead, Budget and Risk Manager)
+  are shared between players, and every stage needs all four roles to approve before it locks. Solo players get an advisor instead.
+- **Hands-on build:** carry parts, hold to install, pump propellant, and run four pre-launch checks. Skipped checks can cause faults.
+- **Events:** solar storms, eclipses, Jupiter radiation, antenna pointing during flybys, random instrument faults.
+- **Debrief:** score, cause trace back to your decisions, comparison with the real mission, and saved designs you can compare.
+- **First-time tutorial** and a **glossary** of the twelve engineering ideas the game teaches.
 
 ## Run it
 
@@ -39,16 +50,16 @@ src/
   ui/        React glass interface: HUD, station panels, character creator, mission timeline, debrief
 ```
 
-**Adding content needs no new code.** A new instrument is a new record in `src/data/parts.json`;
+**Adding content needs no new code.** A new mission is a record in `src/data/missions.json`, a new instrument is a record in `src/data/parts.json`;
 a new character option is a new entry in `src/data/character.json`.
 
 ### Engine at a glance
 
 | Module | What it does |
 |---|---|
-| `model.js` | Sums installed parts into mass, power, data, propellant and budget; headroom per resource |
-| `review.js` | The four roles' Go/No-Go calls |
-| `simulate.js` | Mission timeline, solar storm, orbit insertion, eclipse, data downlink, score |
+| `model.js` | Current mission, parts and rockets; sums installed parts into mass, power, data, propellant and budget |
+| `review.js` | The four roles' Go/No-Go calls and team sign-off checks |
+| `simulate.js` | Mission timeline, events, skipped checks, orbit insertion, data downlink, score |
 | `trace.js` | Links a failure to the logged decisions that caused it, in the order they were made |
 
 ### Character

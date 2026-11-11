@@ -56,31 +56,43 @@ Type key: **NASA** = NASA or JPL official page. **NTRS** = NASA Technical Report
 
 NTRS papers can be opened at `https://ntrs.nasa.gov/citations/<number>`.
 
-## 5. Pages that could not be opened
+
+## 5. Sources added on 11 November 2026
+
+| id | Source | Type | Supports | Caveat |
+|---|---|---|---|---|
+| grc-rocket-eq | NASA Glenn, Ideal Rocket Equation (www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/) | NASA | The rocket equation used for propellant | Educational page; the game adds a 5% attitude-control allowance from NTRS 20120013284 |
+| grc-isp | NASA Glenn, Specific Impulse (grc.nasa.gov/www/BGH/specimp.html) | NASA | Definition of specific impulse, Isp = Veq / g0 | Definition only, no propellant values |
+| ntrs-hydrazine-isp | NTRS 19970010493, small spacecraft propulsion comparison | NTRS | Hydrazine monopropellant Isp of 223 s | Small-spacecraft study; used for all three missions |
+| clipper-instruments | NASA Science, Europa Clipper spacecraft instruments (science.nasa.gov/mission/europa-clipper/spacecraft-instruments/) | NASA | Names and roles of the nine instruments | No mass, power or data rate per instrument |
+| clipper-europa-site | europa.nasa.gov/spacecraft | NASA | About 6,000 kg at launch, about 2,750 kg propellant | Rounded figures |
+| lro-gsfc-paper | Houghton and Tooley, Mission design and operations considerations for LRO (NASA GSFC, IAC-07-C1.7.06) | NASA | LRO total mass about 1,845 kg | Pre-launch design value |
+| lro-nssdc | NASA NSSDC Master Catalog, LRO (archived) | NASA | 92 kg of scientific payload | Archived page |
+
+## 6. Pages that could not be opened
 
 - The official challenge page on spaceappschallenge.org (blocked for automated reading). Open it by hand and compare with the repository text.
 - NASA Systems Engineering Handbook, section 6.4 (technical risk management). The S3001 guideline was used instead.
 
-## 6. Values that are game assumptions (shown as approximate in the game)
+## 7. Values that are game assumptions (shown as approximate in the game)
 
 - Per-instrument mass, power and data (only the 139 kg MRO total is from NASA).
 - Solar array sizes other than 20 m², the 2 m antenna, battery and shielding masses.
 - Rocket capacity to Mars and prices for Vulcan Centaur and Falcon Heavy.
-- Specific impulse 220 s for hydrazine and the extra 400 m/s for other burns.
+- The extra Δv for other burns on Mars (400 m/s) and all Δv values for Europa.
+- LRO cost, Europa Clipper data rate, and per-instrument values on every mission (names on the Moon say "-style" for this reason).
 - Scoring weights, event chances and change-request fees.
 
-## 7. Sources still needed (GDD 15.1)
+## 8. Sources still needed (GDD 15.1)
 
 | Gap | Why it matters |
 |---|---|
-| A NASA page explaining the rocket equation | Drives propellant, mass and cost |
-| A NASA value for hydrazine specific impulse | Sets how much propellant each kilogram needs |
 | A NASA value for the solar power flux at Earth | Needed for the solar power formula |
 | Rocket capacity toward the Moon, Mars and Jupiter | The fact sheet gives only capacity to Earth orbit |
 | Launch prices | Rocket cost is a core trade-off |
 | Mass, power and data rate per instrument | The catalog needs per-part values |
-| LRO launch mass, cost and verified power and data figures | Mission 1 data is incomplete and conflicting |
-| Radioisotope power data; Europa Clipper instrument names and data rates | The catalog and Mission 3 need them |
+| LRO cost; reconcile LRO launch mass (1,845 kg design value vs other published figures) | Mission 1 budget is a game value |
+| Radioisotope power data; Europa Clipper data rate | The catalog and Mission 3 need them |
 | Propellants used by launch vehicles | Needed before labelling any rocket propellant |
 
 **Rule (GDD 13.1):** a search snippet is not a source. Open the NASA or JPL page first, then record the URL, what it supports and the date read.

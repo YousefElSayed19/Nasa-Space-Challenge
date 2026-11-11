@@ -1,0 +1,62 @@
+[
+ {
+  "term": "Trade-off",
+  "def": "A better instrument costs mass, power, data and money. You cannot improve one thing for free.",
+  "source": "Space Mission Design Game challenge text"
+ },
+ {
+  "term": "Margin and contingency",
+  "def": "Spare capacity kept on purpose, because estimates grow and space is unpredictable. NASA concept designs keep about 25 to 30% on power and mass.",
+  "source": "NTRS 20120013284; NTRS 20150008247"
+ },
+ {
+  "term": "Snowball effect",
+  "def": "More power needs bigger arrays, which add mass, which needs more propellant, which adds more mass.",
+  "source": "Derived from the rocket equation and power sizing"
+ },
+ {
+  "term": "Rocket equation",
+  "def": "The change in speed a rocket gets depends on exhaust speed and the ratio of full to empty mass. Carrying fuel to move fuel makes mass expensive.",
+  "source": "NASA Glenn, Ideal Rocket Equation"
+ },
+ {
+  "term": "Specific impulse (Isp)",
+  "def": "How efficiently an engine uses propellant, in seconds. Hydrazine thrusters are about 223 s.",
+  "source": "NASA Glenn, Specific Impulse; NTRS 19970010493"
+ },
+ {
+  "term": "Sunlight falls with distance",
+  "def": "Solar power drops with the square of the distance from the Sun. At Jupiter it is about 4% of what it is at Earth.",
+  "source": "NASA Small Spacecraft SOA, Power"
+ },
+ {
+  "term": "Propellant is not gasoline",
+  "def": "Spacecraft use special propellants such as hydrazine, which burn without air.",
+  "source": "JPL MRO press kit"
+ },
+ {
+  "term": "Data must be sent home",
+  "def": "Instruments can make more data than the antenna can send. Data that never reaches Earth is not science.",
+  "source": "NTRS 20120013284; JPL press kits"
+ },
+ {
+  "term": "Radiation and space weather",
+  "def": "Solar storms flip memory bits and add drag. Jupiter’s radiation belts damage electronics, so Europa Clipper hides them in a vault.",
+  "source": "NASA Earthdata; JPL Europa Clipper pages"
+ },
+ {
+  "term": "Change control",
+  "def": "Once a design is approved it becomes a baseline. Changes go through a board and cost more the later they happen.",
+  "source": "NASA Systems Engineering Handbook; NTRS 20150008247"
+ },
+ {
+  "term": "Risk management",
+  "def": "Risks are rated by likelihood and consequence, then accepted, mitigated or watched.",
+  "source": "NASA S3001 risk guideline"
+ },
+ {
+  "term": "Concurrent engineering",
+  "def": "Specialists for each subsystem work together so a change in one area shows its effect on the others at once. This is why the game has four roles.",
+  "source": "NTRS 20150022911"
+ }
+]

@@ -1,26 +1,50 @@
 // Resource model. Plain JavaScript: no React, no Three.js (GDD 12.1).
-import MISSION from '../data/mission-mars.json';
+import MISSIONS from '../data/missions.json';
 import PARTS_DATA from '../data/parts.json';
-import ROCKETS from '../data/rockets.json';
+import ROCKETS_DATA from '../data/rockets.json';
 import STATIONS from '../data/stations.json';
-import RES_INFO from '../data/resources.json';
+import RES_BASE from '../data/resources.json';
 
-export { MISSION, ROCKETS, STATIONS, RES_INFO };
-export const PARTS = PARTS_DATA.items;
-export const PART_REAL = PARTS_DATA.realBySlot;
+export { MISSIONS, STATIONS };
+export const ALL_PARTS = PARTS_DATA.items;
+export const ALL_ROCKETS = ROCKETS_DATA;
 export const STAGE_NAMES = ['Briefing', 'Payload', 'Systems', 'Launch vehicle', 'Fueling', 'Go/No-Go', 'Mission', 'Debrief'];
+export const ROLES = ['Systems Engineer', 'Science Lead', 'Launch and Orbit Lead', 'Budget and Risk Manager'];
 
 export const MARGIN = 0.25;       // [Design] from NASA 25–30% guidance (NTRS 20120013284, 20150008247)
 export const STORM_LOAD = 0.15;   // [Design] extra power headroom needed to recover from a storm safe mode
-export const STORM_CHANCE = 0.85; // [Design]
+export const POINTING_NEED = 0.15;// [Design] data headroom needed to store flyby data while the antenna points away
+export const SKIP_RISK = 0.35;    // [Design] chance that a skipped check causes its fault
+export const FAULT_CHANCE = 0.12; // [Design] chance of a random instrument fault
 export const CHANGE_BASE = 8;     // [Design] change-request fee per stage of distance
+export const SANDBOX_BUDGET = 99999;
 export const G0 = 9.80665;
 
-export const partById = id => PARTS.find(p => p.id === id);
+// The current mission. These are live bindings: importers always see the latest values.
+export let MISSION = null;
+export let PARTS = [];
+export let ROCKETS = [];
+export let PART_REAL = {};
+export let RES_INFO = {};
+
+export function setMission(id) {
+  MISSION = MISSIONS.find(m => m.id === id) || MISSIONS[1];
+  PARTS = ALL_PARTS.filter(p => p.missions.includes(MISSION.id));
+  ROCKETS = ALL_ROCKETS.map(r => ({ ...r, cap: r.cap[MISSION.id], cost: r.cost[MISSION.id], approx: r.approx[MISSION.id] }));
+  PART_REAL = PARTS_DATA.realBySlot[MISSION.id];
+  RES_INFO = Object.fromEntries(Object.entries(RES_BASE).map(([k, v]) => [k, { ...v, real: MISSION.resReal[k] }]));
+  return MISSION;
+}
+setMission('mars');
+
+export const missionById = id => MISSIONS.find(m => m.id === id);
+export const partById = id => ALL_PARTS.find(p => p.id === id);
 export const rocketById = id => ROCKETS.find(r => r.id === id);
 export const stationById = id => STATIONS.find(s => s.id === id);
 export const homeOf = p => (p.slot === 'instrument' ? 'payload' : 'systems');
 export const partStage = p => (p.slot === 'instrument' ? 2 : 3);
+/** Sandbox and replay have no stage locks, fees or order. */
+export const isFree = s => s.mode === 'sandbox' || s.mode === 'replay';
 
 /** Tsiolkovsky: m_prop = m_f (e^(dv / (Isp g0)) - 1), plus the attitude-control allowance. Returns tank units. */
 export function propNeededUnits(dryUnits) {
@@ -49,9 +73,10 @@ export function totals(s) {
   const need = propNeededUnits(dry);
   const prop = s.propLoaded > 0 ? s.propLoaded : need;
   const wet = dry + prop * MISSION.u.prop / MISSION.u.mass;
-  const cap = rocket ? rocket.cap : ROCKETS[0].cap;
+  const cap = rocket ? rocket.cap : rocketById(MISSION.defaultRocket).cap;
   const has = slot => s.installed.some(id => partById(id).slot === slot);
-  return { dry, wet, cap, demand, supply, prod, downlink, cost, budget: MISSION.budget, need, loaded: s.propLoaded, sci, rocket, has };
+  const budget = s.mode === 'sandbox' ? SANDBOX_BUDGET : MISSION.budget;
+  return { dry, wet, cap, demand, supply, prod, downlink, cost, budget, need, loaded: s.propLoaded, sci, rocket, has };
 }
 
 export const headroom = (limit, used) => (limit <= 0 ? -1 : (limit - used) / limit);
@@ -69,9 +94,16 @@ export const status = h => (h >= MARGIN ? 'ok' : h >= 0 ? 'warn' : 'crit');
 export const pct = h => Math.round(h * 100) + '%';
 export const fmt = n => Math.round(n).toLocaleString('en-US');
 export function lastIndex(arr, fn) { for (let i = arr.length - 1; i >= 0; i--) if (fn(arr[i])) return i; return -1; }
+export const money = units => {
+  const m = units * MISSION.u.budget;
+  return m >= 1000 ? `$${(m / 1000).toFixed(2)}B` : `$${fmt(m)}M`;
+};
 
 /** [Design] Reversing a locked decision costs more the further back it is (GDD 4.4). */
-export function changeFee(s, p) { const ps = partStage(p); return s.locked[ps] ? CHANGE_BASE * (s.stage - ps) : 0; }
+export function changeFee(s, p) {
+  if (isFree(s)) return 0;
+  const ps = partStage(p); return s.locked[ps] ? CHANGE_BASE * (s.stage - ps) : 0;
+}
 
 export function effectsOf(p, rep, sign = 1) {
   const e = {};
@@ -84,3 +116,12 @@ export function effectsOf(p, rep, sign = 1) {
   d('cost', sign * (p.cost - (rep ? rep.cost : 0)));
   return e;
 }
+
+// Pre-launch maintenance checks (GDD 5.6).
+export const CHECKS = [
+  { id: 'connector', name: 'Connector check', what: 'Inspect and secure the wire connectors between parts.', teaches: 'Interfaces between parts must be verified before launch.', needs: s => s.installed.length > 0 },
+  { id: 'panel', name: 'Panel deployment test', what: 'Unfold the solar arrays once on the ground.', teaches: 'Mechanisms are tested before flight.', needs: s => s.installed.some(id => partById(id).slot === 'array') },
+  { id: 'calibration', name: 'Instrument calibration', what: 'Align each instrument against a known target.', teaches: 'Instruments need calibration to give valid science.', needs: s => s.installed.some(id => partById(id).slot === 'instrument') },
+  { id: 'leak', name: 'Leak check', what: 'Watch the tank pressure after fueling.', teaches: 'Propellant systems are checked for leaks.', needs: s => s.propLoaded > 0 },
+];
+export const skippedChecks = s => CHECKS.filter(c => c.needs(s) && !(s.checks && s.checks[c.id]));

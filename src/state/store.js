@@ -27,8 +27,10 @@ export function loadProfile() {
 export function freshState(profile, prefs = {}) {
   return {
     screen: 'start', startStep: 'name', profile, stage: 1, locked: {}, installed: [], carrying: null, rocket: null,
-    propLoaded: 0, changeFees: 0, changeCount: 0, overruled: 0, verdicts: null,
+    mode: prefs.mode || 'campaign', missionId: prefs.missionId || 'moon', teamNames: prefs.teamNames || [], team: [],
+    propLoaded: 0, changeFees: 0, changeCount: 0, overruled: 0, objections: 0, verdicts: null, checks: {},
     log: [], panel: null, firstPerson: false, showLog: true, toasts: [], result: null,
+    signoff: null, tutorial: null, showGlossary: false, savedTick: 0,
     graphics: prefs.graphics || 'high', muted: !!prefs.muted,
   };
 }

@@ -1,7 +1,27 @@
 {
-  "mass":   { "label": "Mass", "what": "Launch mass: the dry spacecraft plus its propellant.", "why": "Heavier craft need more propellant and a bigger rocket.", "real": "1 unit ≈ 10.9 kg. The real orbiter weighed 2,180 kg at launch (JPL MRO press kit)." },
-  "power":  { "label": "Power", "what": "Power the instruments and systems use, against what the solar array makes at Mars.", "why": "Sunlight at Mars is weaker, so every watt costs array area and mass.", "real": "1 unit ≈ 20 W. The real arrays gave about 2,000 W at Mars (JPL MRO press kit)." },
-  "data":   { "label": "Data", "what": "Data the instruments make, against what the antenna can send home.", "why": "Data that never reaches Earth never becomes science.", "real": "1 unit ≈ 0.06 Mbps. The real orbiter could send up to 6 Mbps (JPL MRO press kit)." },
-  "prop":   { "label": "Propellant", "what": "Propellant needed to slow into Mars orbit, against tank size.", "why": "Propellant is mass too, so extra mass needs extra propellant.", "real": "1 unit ≈ 12.2 kg of hydrazine. The real tank held 1,220 kg (JPL MRO press kit)." },
-  "budget": { "label": "Budget", "what": "Money spent, against the mission budget.", "why": "Parts, the rocket and operations all come from one budget.", "real": "1 unit = $1 million. The real mission cost about $720 million (JPL MRO press kit)." }
+ "mass": {
+  "label": "Mass",
+  "what": "Launch mass: the dry spacecraft plus its propellant.",
+  "why": "Heavier craft need more propellant and a bigger rocket."
+ },
+ "power": {
+  "label": "Power",
+  "what": "Power the instruments and systems use, against what the solar array makes at the destination.",
+  "why": "Sunlight at Mars is weaker, so every watt costs array area and mass."
+ },
+ "data": {
+  "label": "Data",
+  "what": "Data the instruments make, against what the antenna can send home.",
+  "why": "Data that never reaches Earth never becomes science."
+ },
+ "prop": {
+  "label": "Propellant",
+  "what": "Propellant needed to slow into orbit at the destination, against tank size.",
+  "why": "Propellant is mass too, so extra mass needs extra propellant."
+ },
+ "budget": {
+  "label": "Budget",
+  "what": "Money spent, against the mission budget.",
+  "why": "Parts, the rocket and operations all come from one budget."
+ }
 }

@@ -1,11 +1,74 @@
 [
-  { "id": "atlas", "name": "Atlas V 401", "cap": 200, "cost": 90, "approx": false, "h": 4.2, "cores": 1, "body": "#D9823B",
-    "note": "Launched the real orbiter. A tight fit for a heavy design.",
-    "real": "Launched MRO at 2,180 kg; launch cost about $90M (JPL MRO press kit)." },
-  { "id": "vulcan", "name": "Vulcan Centaur", "cap": 280, "cost": 120, "approx": true, "h": 5.0, "cores": 1, "body": "#E8ECFF",
-    "note": "More lift and margin, at a higher price.",
-    "real": "27,200 kg to low Earth orbit (NASA LSP fact sheet). Mars capacity and price here are simplified game values." },
-  { "id": "fh", "name": "Falcon Heavy", "cap": 520, "cost": 150, "approx": true, "h": 5.6, "cores": 3, "body": "#E8ECFF",
-    "note": "Huge margin, but the price can break the budget.",
-    "real": "Nearly 64 t to orbit (NASA LSP fact sheet); launched Europa Clipper. Mars capacity and price here are simplified game values." }
+ {
+  "id": "atlas",
+  "name": "Atlas V 401",
+  "cap": {
+   "moon": 230,
+   "mars": 200,
+   "europa": 110
+  },
+  "cost": {
+   "moon": 90,
+   "mars": 90,
+   "europa": 9
+  },
+  "approx": {
+   "moon": true,
+   "mars": false,
+   "europa": true
+  },
+  "h": 4.2,
+  "cores": 1,
+  "body": "#D9823B",
+  "note": "Launched the real orbiter. A tight fit for a heavy design.",
+  "real": "Launched both LRO and MRO (JPL MRO press kit: about $90M launch cost for MRO). Capacities and prices for other destinations are simplified game values."
+ },
+ {
+  "id": "vulcan",
+  "name": "Vulcan Centaur",
+  "cap": {
+   "moon": 300,
+   "mars": 280,
+   "europa": 160
+  },
+  "cost": {
+   "moon": 120,
+   "mars": 120,
+   "europa": 12
+  },
+  "approx": {
+   "moon": true,
+   "mars": true,
+   "europa": true
+  },
+  "h": 5.0,
+  "cores": 1,
+  "body": "#E8ECFF",
+  "note": "More lift and margin, at a higher price.",
+  "real": "27,200 kg to low Earth orbit (NASA LSP fact sheet). Mars capacity and price here are simplified game values."
+ },
+ {
+  "id": "fh",
+  "name": "Falcon Heavy",
+  "cap": {
+   "moon": 600,
+   "mars": 520,
+   "europa": 215
+  },
+  "cost": {
+   "moon": 150,
+   "mars": 150,
+   "europa": 15
+  },
+  "approx": {
+   "moon": true,
+   "mars": true,
+   "europa": true
+  },
+  "h": 5.6,
+  "cores": 3,
+  "body": "#E8ECFF",
+  "note": "Huge margin, but the price can break the budget.",
+  "real": "Nearly 64 t to orbit (NASA LSP fact sheet); launched Europa Clipper. Capacities to each destination and prices are simplified game values."
+ }
 ]

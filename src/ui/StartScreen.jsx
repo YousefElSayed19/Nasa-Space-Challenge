@@ -1,5 +1,6 @@
 import React from 'react';
-import { A } from '../state/actions.js';
+import { A, unlockedMissions } from '../state/actions.js';
+import { MISSIONS } from '../engine/index.js';
 import { loadJSON } from '../state/store.js';
 import OPTIONS from '../data/character.json';
 
@@ -36,28 +37,61 @@ function randomLook() {
   };
 }
 
+const MODES = [
+  { id: 'campaign', name: 'Campaign', note: 'Three missions that unlock in order. Stages lock as you go.' },
+  { id: 'sandbox', name: 'Sandbox', note: 'Any mission, no budget limit, no locks. Experiment freely.' },
+  { id: 'replay', name: 'Replay a real mission', note: 'Start from the real NASA design, change it, and compare.' },
+];
+
 function NameStep({ s }) {
   const p = s.profile;
   const ok = p.nick.trim().length >= 2;
   const best = +loadJSON('mf-best', 0) || 0;
+  const unlocked = unlockedMissions();
+  const players = 1 + s.teamNames.length;
+  const isLocked = m => s.mode === 'campaign' && !unlocked.includes(m.id);
+  const missionOk = !isLocked(MISSIONS.find(m => m.id === s.missionId));
+  const setPlayers = n => A.setTeamNames(Array.from({ length: n - 1 }, (_, i) => s.teamNames[i] || ''));
+  const setName = (i, v) => { const t = [...s.teamNames]; t[i] = v; A.setTeamNames(t); };
   return (
     <div className="start">
       <div className="start-card glass">
         <h1 className="title">MissionForge</h1>
         <p className="tagline">Build a spacecraft with your hands. Fuel it, launch it, and find out exactly which of your decisions made it fly or fail.</p>
-        <label className="field"><span className="label">Nickname</span>
+        <label className="field"><span className="label">Your nickname</span>
           <input value={p.nick} maxLength={18} placeholder="A nickname, not your real name" autoFocus
             onChange={e => A.setProfile({ nick: e.target.value })}
-            onKeyDown={e => { if (e.key === 'Enter' && ok) A.setStartStep('look'); }} />
+            onKeyDown={e => { if (e.key === 'Enter' && ok && missionOk) A.setStartStep('look'); }} />
         </label>
-        <div className="label" style={{ marginBottom: 6 }}>Campaign</div>
-        <div className="modes">
-          <button className="mode" disabled><span>Lunar Orbiter<small>Mission 1, next build</small></span></button>
-          <button className="mode sel"><span>Mars Orbiter<small>Mission 2, playable in this build</small></span><span className="tag">Solo, 4 roles</span></button>
-          <button className="mode" disabled><span>Europa Flyby Explorer<small>Mission 3, next build</small></span></button>
+        <div className="opt">
+          <span className="label">Players on this screen</span>
+          <div className="seg">{[1, 2, 3, 4].map(n => <button key={n} className={players === n ? 'on' : ''} onClick={() => setPlayers(n)}>{n === 1 ? 'Solo' : n}</button>)}</div>
+          {players > 1 && (
+            <div className="teamnames">
+              {s.teamNames.map((t, i) => <input key={i} value={t} maxLength={18} placeholder={`Player ${i + 2} nickname`} onChange={e => setName(i, e.target.value)} />)}
+              <span className="tag">The four roles are shared between players. Every stage needs all four roles to approve before it locks.</span>
+            </div>
+          )}
         </div>
-        <button className="btn primary wide" disabled={!ok} onClick={() => A.setStartStep('look')}>Design your engineer</button>
-        <p className="fine">{best ? `Your best score: ${best}. ` : ''}Your profile is stored only in this browser. Built for NASA Space Apps Cairo 2026; not reviewed or endorsed by NASA. Numbers are simplified game units; each “?” shows the real value and its source.</p>
+        <div className="opt">
+          <span className="label">Mode</span>
+          <div className="seg">{MODES.map(m => <button key={m.id} className={s.mode === m.id ? 'on' : ''} onClick={() => A.setMode(m.id)}>{m.name}</button>)}</div>
+          <span className="tag">{MODES.find(m => m.id === s.mode).note}</span>
+        </div>
+        <div className="label" style={{ marginBottom: 6 }}>Mission</div>
+        <div className="modes">
+          {MISSIONS.map(m => {
+            const locked = isLocked(m);
+            return (
+              <button key={m.id} className={'mode' + (s.missionId === m.id ? ' sel' : '')} disabled={locked} onClick={() => A.setMissionId(m.id)}>
+                <span>{m.order}. {m.name}<small>{locked ? `Finish the ${MISSIONS.find(x => x.id === m.unlockAfter).name} to unlock` : `Inspired by ${m.inspired}. ${m.trip}.`}</small></span>
+                <span className="tag">{['Easier', 'Medium', 'Hard'][m.order - 1]}</span>
+              </button>
+            );
+          })}
+        </div>
+        <button className="btn primary wide" disabled={!ok || !missionOk} onClick={() => A.setStartStep('look')}>Design your engineer</button>
+        <p className="fine">{best ? `Your best score: ${best}. ` : ''}Profiles and saved designs stay in this browser. Built for NASA Space Apps Cairo 2026; not reviewed or endorsed by NASA. Numbers are simplified game units; each “?” shows the real value and its source.</p>
       </div>
     </div>
   );

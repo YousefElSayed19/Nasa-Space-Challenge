@@ -2,24 +2,26 @@ import React from 'react';
 import { TopBar } from './TopBar.jsx';
 import { Resources } from './Resources.jsx';
 import { Prompt } from './Prompt.jsx';
-import { StationPanel } from './Panels.jsx';
+import { StationPanel, SignoffModal } from './Panels.jsx';
+import { TutorialCard } from './Tutorial.jsx';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
-import { partById } from '../engine/index.js';
+import { partById, isFree } from '../engine/index.js';
 
 function objectiveText(s) {
   if (s.carrying) return 'Carry the part to the Assembly Cradle, then hold E to install it.';
+  if (isFree(s)) return 'Every station is open. Launch from the Go/No-Go console when you are ready.';
   return ({
     1: 'Walk to Mission Control and read the briefing.',
     2: 'Pick instruments at the Payload Bay and install them. Confirm the payload when ready.',
     3: 'Fit a solar array, antenna, battery and shielding from the Systems Rack.',
     4: 'Choose a rocket at the Launch Vehicle Board.',
     5: 'Fill the tank at the Fueling Station. Aim for the target line.',
-    6: 'Hold the Go/No-Go review at the console.',
+    6: 'Run the pre-launch checks at the cradle, then hold the Go/No-Go review at the console.',
   })[s.stage] || '';
 }
 
-const GOOD_UP = new Set(['power supply', 'downlink', 'capacity to Mars']);
+const GOOD_UP = k => k === 'power supply' || k === 'downlink' || k.startsWith('capacity');
 
 function LogPanel({ s }) {
   if (!s.showLog) return null;
@@ -34,7 +36,7 @@ function LogPanel({ s }) {
             {(e.effects || e.fee) ? (
               <div className="fx">
                 {Object.entries(e.effects || {}).map(([k, v]) => (
-                  <span key={k} className={GOOD_UP.has(k) ? (v > 0 ? 'neg' : 'pos') : (v > 0 ? 'pos' : 'neg')}>{v > 0 ? '+' : ''}{v} {k}</span>
+                  <span key={k} className={GOOD_UP(k) ? (v > 0 ? 'neg' : 'pos') : (v > 0 ? 'pos' : 'neg')}>{v > 0 ? '+' : ''}{v} {k}</span>
                 ))}
                 {e.fee ? <span className="pos">change request {e.fee}</span> : null}
               </div>
@@ -55,6 +57,8 @@ export function Settings({ s }) {
     <div className="settings">
       <button className="btn" aria-pressed={s.muted} onClick={() => { Sound.hum(false); A.setPrefs({ muted: !s.muted }); }}>{s.muted ? 'Sound off' : 'Sound on'}</button>
       <button className="btn" onClick={() => A.setPrefs({ graphics: s.graphics === 'low' ? 'high' : 'low' })}>{s.graphics === 'low' ? 'Low graphics' : 'High graphics'}</button>
+      <button className="btn" onClick={A.toggleGlossary}>Glossary</button>
+      {s.screen === 'game' && <button className="btn" onClick={A.backToMenu}>Menu</button>}
     </div>
   );
 }
@@ -64,7 +68,9 @@ export function HUD({ s }) {
     <>
       <TopBar s={s} />
       <Resources s={s} />
-      {s.screen === 'game' && <div className="objective glass passthru" key={s.stage + (s.carrying || '')}>{objectiveText(s)}</div>}
+      {s.screen === 'game' && s.tutorial == null && <div className="objective glass passthru" key={s.stage + (s.carrying || '')}>{objectiveText(s)}</div>}
+      {s.screen === 'game' && <TutorialCard s={s} />}
+      <SignoffModal s={s} />
       <Toasts s={s} />
       {s.screen === 'game' && <Prompt />}
       {s.carrying && <div className="carry glass passthru">Carrying {partById(s.carrying).name}. Press X to put it back.</div>}

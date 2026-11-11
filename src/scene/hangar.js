@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { std, basic, glow, lin } from './materials.js';
 import { canvasTex, label } from './textures.js';
 import { partMesh, BUS_Y } from './spacecraft.js';
-import { PARTS, ROCKETS, stationById } from '../engine/index.js';
+import { ALL_PARTS, ALL_ROCKETS, MISSIONS, stationById } from '../engine/index.js';
 
 export function buildWorld(scene) {
   const V3 = THREE.Vector3;
@@ -99,26 +99,40 @@ export function buildWorld(scene) {
     const st = stationById('control'); const [x, z] = st.obj;
     box(4.2, 1.0, 1.6, std('#2C3670', { metalness: 0.55, roughness: 0.3 }), x, 0.5, z);
     box(4.4, 0.08, 1.8, std('#6EA8FF', { emissive: '#6EA8FF', emissiveIntensity: 0.7 }), x, 1.04, z);
-    const scr = canvasTex(512, 256, (g, w, h) => {
-      g.fillStyle = '#0B1230'; g.fillRect(0, 0, w, h);
-      g.strokeStyle = 'rgba(110,168,255,.3)'; for (let i = 0; i < w; i += 32) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.stroke(); }
-      g.fillStyle = '#E8ECFF'; g.font = '700 40px system-ui, Arial'; g.fillText('Mars Orbiter', 26, 62);
-      g.fillStyle = '#8F9BC7'; g.font = '24px system-ui, Arial'; g.fillText('Budget 720', 26, 110); g.fillText('Rocket limit 200 units', 26, 146); g.fillText('Trip about 7 months', 26, 182);
-      g.strokeStyle = '#FFC24B'; g.lineWidth = 3; g.beginPath(); g.ellipse(390, 140, 90, 50, -0.2, 0, 7); g.stroke();
-      g.fillStyle = '#C1440E'; g.beginPath(); g.arc(390, 140, 26, 0, 7); g.fill();
-    });
+    const scrCanvas = document.createElement('canvas'); scrCanvas.width = 512; scrCanvas.height = 256;
+    const scr = new THREE.CanvasTexture(scrCanvas); scr.encoding = THREE.sRGBEncoding;
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), new THREE.MeshBasicMaterial({ map: scr }));
     screen.position.set(x, 2.3, z - 0.75); screen.userData.noCast = true; scene.add(screen);
     box(3.8, 2.0, 0.08, std('#1B2250'), x, 2.3, z - 0.82);
-    const marsTex = canvasTex(512, 256, (g, w, h) => {
-      g.fillStyle = '#B5481C'; g.fillRect(0, 0, w, h);
-      for (let i = 0; i < 320; i++) { g.fillStyle = `rgba(${90 + Math.random() * 60},${30 + Math.random() * 20},15,${0.2 + Math.random() * 0.35})`; g.beginPath(); g.ellipse(Math.random() * w, Math.random() * h, 6 + Math.random() * 30, 3 + Math.random() * 12, Math.random() * 3, 0, 7); g.fill(); }
-      g.fillStyle = 'rgba(255,240,230,.85)'; g.fillRect(0, 0, w, 10); g.fillRect(0, h - 10, w, 10);
-    });
-    refs.mars = new THREE.Mesh(new THREE.SphereGeometry(0.55, 40, 24), std('#FFFFFF', { map: marsTex, emissive: '#401505', emissiveIntensity: 0.5, roughness: 0.9, metalness: 0 }));
+    const planetCanvas = document.createElement('canvas'); planetCanvas.width = 512; planetCanvas.height = 256;
+    const planetTex = new THREE.CanvasTexture(planetCanvas); planetTex.encoding = THREE.sRGBEncoding;
+    refs.mars = new THREE.Mesh(new THREE.SphereGeometry(0.55, 40, 24), std('#FFFFFF', { map: planetTex, emissive: '#202020', emissiveIntensity: 0.5, roughness: 0.9, metalness: 0 }));
     refs.mars.position.set(x + 1.4, 1.75, z + 0.1); scene.add(refs.mars);
     const holo = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.75, 0.6, 32, 1, true), glow('#6EA8FF', 0.12));
     holo.position.set(x + 1.4, 1.35, z + 0.1); holo.userData.noCast = true; scene.add(holo);
+    refs.drawControl = (m) => {
+      const g = scrCanvas.getContext('2d'), w = 512, h = 256;
+      g.fillStyle = '#0B1230'; g.fillRect(0, 0, w, h);
+      g.strokeStyle = 'rgba(110,168,255,.3)'; g.lineWidth = 1; for (let i = 0; i < w; i += 32) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.stroke(); }
+      g.fillStyle = '#E8ECFF'; g.font = '700 38px system-ui, Arial'; g.fillText(m.name, 26, 60);
+      g.fillStyle = '#8F9BC7'; g.font = '22px system-ui, Arial'; m.screen.forEach((t, i) => g.fillText(t, 26, 106 + i * 36));
+      g.strokeStyle = '#FFC24B'; g.lineWidth = 3; g.beginPath(); g.ellipse(400, 150, 80, 46, -0.2, 0, 7); g.stroke();
+      g.fillStyle = m.planet.color; g.beginPath(); g.arc(400, 150, 26, 0, 7); g.fill();
+      scr.needsUpdate = true;
+      const p = planetCanvas.getContext('2d');
+      p.fillStyle = m.planet.color; p.fillRect(0, 0, w, h);
+      if (m.id === 'europa') {
+        for (let i = 0; i < 14; i++) { p.fillStyle = i % 2 ? '#B89A78' : '#D8C8B0'; p.fillRect(0, i * 18 + Math.random() * 4, w, 12 + Math.random() * 8); }
+        p.fillStyle = 'rgba(190,90,60,.8)'; p.beginPath(); p.ellipse(340, 170, 34, 18, 0, 0, 7); p.fill();
+      } else {
+        for (let i = 0; i < 300; i++) { p.globalAlpha = 0.18 + Math.random() * 0.3; p.fillStyle = m.planet.dark; p.beginPath(); p.ellipse(Math.random() * w, Math.random() * h, 5 + Math.random() * 28, 3 + Math.random() * 12, Math.random() * 3, 0, 7); p.fill(); }
+        p.globalAlpha = 1;
+        if (m.id === 'mars') { p.fillStyle = 'rgba(255,240,230,.85)'; p.fillRect(0, 0, w, 10); p.fillRect(0, h - 10, w, 10); }
+      }
+      p.globalAlpha = 1;
+      planetTex.needsUpdate = true;
+      refs.mars.scale.setScalar(m.id === 'europa' ? 1.25 : m.id === 'moon' ? 0.8 : 1);
+    };
     collider(x, z, 2.2, 0.95); sign(st);
   }
 
@@ -128,7 +142,9 @@ export function buildWorld(scene) {
     for (const dz of [-2.6, 2.6]) for (const dx of [-0.7, 0.7]) box(0.08, 3.4, 0.08, metal, x + dx, 1.7, z + dz);
     for (const y of [0.7, 1.9, 3.1]) box(1.6, 0.08, 5.4, metal, x, y, z);
     box(0.06, 0.06, 5.4, std('#B48CFF', { emissive: '#B48CFF', emissiveIntensity: 1.5 }), x + 0.8, 3.16, z);
-    PARTS.filter(p => p.slot === 'instrument').forEach((p, i) => {
+    const instIndex = {};
+    ALL_PARTS.filter(p => p.slot === 'instrument').forEach(p => {
+      const i = instIndex[p.missions[0]] = (instIndex[p.missions[0]] ?? -1) + 1;
       const row = i < 3 ? 0 : 1, col = i % 3;
       const g = new THREE.Group();
       g.add(new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.75, 0.9), std('#2E3878', { metalness: 0.45, roughness: 0.4 })));
@@ -172,10 +188,12 @@ export function buildWorld(scene) {
     box(5.4, 0.1, 1.2, metal, x, 0.9, z); box(5.4, 0.1, 1.2, metal, x, 0.05, z);
     box(5.6, 3.6, 0.1, std('#20295A'), x, 1.8, z + 0.6);
     box(5.6, 0.06, 0.06, std('#3EE0A0', { emissive: '#3EE0A0', emissiveIntensity: 1.5 }), x, 3.62, z + 0.55);
-    PARTS.filter(p => p.slot !== 'instrument').forEach((p, i) => {
+    const sysIndex = {};
+    ALL_PARTS.filter(p => p.slot !== 'instrument').forEach(p => {
+      const i = sysIndex[p.missions[0]] = (sysIndex[p.missions[0]] ?? -1) + 1;
       const m = partMesh(p, true); const px = x - 2.3 + i * 0.66;
-      if (p.slot === 'array') { m.rotation.y = Math.PI / 2; m.rotation.z = 0.15; m.position.set(px, 1.6, z + 0.1); m.scale.setScalar(0.85 + (p.area - 12) * 0.02); }
-      else if (p.slot === 'antenna') { m.position.set(px, 1.0, z); m.scale.setScalar(p.dish === 3 ? 0.8 : 0.6); }
+      if (p.slot === 'array') { m.rotation.y = Math.PI / 2; m.rotation.z = 0.15; m.position.set(px, 1.6, z + 0.1); m.scale.setScalar(0.8 + Math.min(0.5, Math.sqrt(p.area) * 0.06)); }
+      else if (p.slot === 'antenna') { m.position.set(px, 1.0, z); m.scale.setScalar(Math.min(0.85, 0.35 + p.dish * 0.15)); }
       else m.position.set(px, 1.15, z);
       scene.add(m); refs.shelf[p.id] = m;
     });
@@ -185,18 +203,25 @@ export function buildWorld(scene) {
   // ---------- Launch Vehicle Board ----------
   {
     const st = stationById('board'); const [x, z] = st.obj;
-    const tex = canvasTex(1024, 384, (g, w, h) => {
+    const boardCanvas = document.createElement('canvas'); boardCanvas.width = 1024; boardCanvas.height = 384;
+    const tex = new THREE.CanvasTexture(boardCanvas); tex.encoding = THREE.sRGBEncoding;
+    refs.drawBoard = (m) => {
+      const g = boardCanvas.getContext('2d'), w = 1024, h = 384;
       g.fillStyle = '#0D1436'; g.fillRect(0, 0, w, h);
-      g.strokeStyle = 'rgba(110,168,255,.22)'; for (let i = 0; i < w; i += 40) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.stroke(); }
-      g.strokeStyle = '#6EA8FF'; g.lineWidth = 4; g.setLineDash([14, 10]); g.beginPath(); g.moveTo(120, 300); g.bezierCurveTo(360, 40, 700, 40, 900, 220); g.stroke(); g.setLineDash([]);
+      g.strokeStyle = 'rgba(110,168,255,.22)'; g.lineWidth = 1; for (let i = 0; i < w; i += 40) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.stroke(); }
+      g.strokeStyle = '#6EA8FF'; g.lineWidth = 4; g.setLineDash([14, 10]); g.beginPath(); g.moveTo(120, 300);
+      if (m.id === 'europa') g.bezierCurveTo(260, 60, 520, 360, 620, 200), g.bezierCurveTo(700, 80, 820, 60, 900, 200);
+      else g.bezierCurveTo(360, m.id === 'moon' ? 150 : 40, 700, m.id === 'moon' ? 150 : 40, 900, 220);
+      g.stroke(); g.setLineDash([]);
       g.fillStyle = '#6EA8FF'; g.beginPath(); g.arc(120, 300, 22, 0, 7); g.fill();
-      g.fillStyle = '#C1440E'; g.beginPath(); g.arc(900, 220, 18, 0, 7); g.fill();
-      g.fillStyle = '#E8ECFF'; g.font = '600 34px system-ui, Arial'; g.fillText('Earth to Mars transfer', 60, 60);
-    });
+      g.fillStyle = m.planet.color; g.beginPath(); g.arc(900, 210, m.id === 'europa' ? 30 : 18, 0, 7); g.fill();
+      g.fillStyle = '#E8ECFF'; g.font = '600 34px system-ui, Arial'; g.fillText(m.board, 60, 60);
+      tex.needsUpdate = true;
+    };
     const board = new THREE.Mesh(new THREE.PlaneGeometry(7, 2.6), new THREE.MeshBasicMaterial({ map: tex }));
     board.position.set(x, 4.2, z - 0.3); board.userData.noCast = true; scene.add(board);
     box(6.6, 0.3, 2.2, std('#2C3670', { metalness: 0.5 }), x, 0.15, z + 0.9);
-    ROCKETS.forEach((r, i) => {
+    ALL_ROCKETS.forEach((r, i) => {
       const g = new THREE.Group();
       const white = std('#E8ECFF', { roughness: 0.35 }), dark = std('#30395F'), body = std(r.body, { roughness: 0.4 });
       const core = (cx, h) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, h, 24), body); c.position.set(cx, h / 2, 0); g.add(c); };
@@ -260,6 +285,9 @@ export function buildWorld(scene) {
   // beacon that floats over the next station
   refs.beacon = new THREE.Mesh(new THREE.OctahedronGeometry(0.32), std('#6EA8FF', { emissive: '#6EA8FF', emissiveIntensity: 2.2 }));
   refs.beacon.userData.noCast = true; scene.add(refs.beacon);
+
+  refs.setMissionVisuals = (id) => { const m = MISSIONS.find(x => x.id === id) || MISSIONS[1]; refs.drawControl(m); refs.drawBoard(m); };
+  refs.setMissionVisuals('mars');
 
   // shadows: solid meshes cast and receive, glass and glow do not
   scene.traverse(o => {

@@ -4,7 +4,7 @@ import { store, hud } from '../state/store.js';
 import { bus } from '../state/bus.js';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
-import { MISSION, STATIONS, partById, homeOf, stationById, reviewVerdicts } from '../engine/index.js';
+import { MISSION, PARTS, STATIONS, partById, homeOf, stationById, reviewVerdicts, isFree } from '../engine/index.js';
 import { buildWorld, buildEnvironment } from './hangar.js';
 import { partMesh, slotPos, rebuildCraft } from './spacecraft.js';
 import { createCharacter } from './character.js';
@@ -55,6 +55,7 @@ export function initScene(container) {
   bus.on('reset', reset);
   bus.on('enter', () => { player.pos.copy(START_POS); player.facing = Math.PI; cam.yaw = 0; cam.pitch = 0.38; });
   bus.on('installed', () => { refs.craftLight.intensity = 6; });
+  bus.on('mission', id => { refs.setMissionVisuals(id); last.installed = null; onStore(); });
   store.sub(onStore); onStore();
   window.addEventListener('resize', onResize);
   tick();
@@ -101,7 +102,8 @@ function onStore() {
     if (!lp || Object.keys(p).some(k => k !== 'nick' && p[k] !== lp[k])) hero.setProfile(p);
     else { clearTimeout(onStore.nickT); onStore.nickT = setTimeout(() => hero.setProfile(store.get().profile), 400); }
   }
-  for (const id in refs.shelf) refs.shelf[id].visible = !s.installed.includes(id) && s.carrying !== id;
+  const here = new Set(PARTS.map(p => p.id));
+  for (const id in refs.shelf) refs.shelf[id].visible = here.has(id) && !s.installed.includes(id) && s.carrying !== id;
   if (s.rocket) { const m = refs.rockets[s.rocket]; refs.rocketRing.position.set(m.position.x, 0.32, m.position.z); refs.rocketRing.visible = true; }
   else refs.rocketRing.visible = false;
   if (s.stage !== last.stage || s.installed !== last.installed || s.propLoaded !== last.propLoaded || s.verdicts !== last.verdicts) {
@@ -131,7 +133,7 @@ function bindInput() {
     if (!drag) return;
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (store.get().screen === 'start') player.spin += dx * 0.012;
-    else { cam.yaw -= dx * 0.0055; cam.pitch = Math.max(0.05, Math.min(1.2, cam.pitch + dy * 0.004)); }
+    else { cam.yaw -= dx * 0.0055; cam.pitch = Math.max(0.05, Math.min(1.2, cam.pitch + dy * 0.004)); if (Math.abs(dx) + Math.abs(dy) > 2) bus.emit('looked'); }
     drag = { x: e.clientX, y: e.clientY };
   });
   const end = () => { drag = null; };
@@ -193,6 +195,8 @@ function updatePlayer(dt, s) {
   player.vel.x = damp(player.vel.x, target.x, k, dt);
   player.vel.z = damp(player.vel.z, target.z, k, dt);
   player.pos.addScaledVector(player.vel, dt);
+  player.walked = (player.walked || 0) + player.vel.length() * dt;
+  if (player.walked > 3 && !player.movedSent) { player.movedSent = true; bus.emit('moved'); }
   collide(player.pos);
   player.speed = Math.hypot(player.vel.x, player.vel.z);
   player.running = running;
@@ -238,7 +242,7 @@ function updateWorld(dt, s, acts) {
   refs.mars.rotation.y += dt * 0.25;
   refs.dust.rotation.y += dt * 0.01;
   refs.craftLight.intensity = damp(refs.craftLight.intensity, 2.6, 3, dt);
-  const nextId = s.carrying ? 'cradle' : ({ 1: 'control', 2: 'payload', 3: 'systems', 4: 'board', 5: 'fuel', 6: 'review' })[s.stage];
+  const nextId = s.carrying ? 'cradle' : isFree(s) ? null : ({ 1: 'control', 2: 'payload', 3: 'systems', 4: 'board', 5: 'fuel', 6: 'review' })[s.stage];
   const bst = nextId && stationById(nextId);
   refs.beacon.visible = !!bst && s.screen === 'game';
   if (bst) { refs.beacon.position.set(bst.pos[0], 3.3 + Math.sin(time * 2.2) * 0.18, bst.pos[1]); refs.beacon.rotation.y += dt * 1.6; }

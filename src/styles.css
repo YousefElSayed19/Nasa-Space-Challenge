@@ -245,3 +245,34 @@ th{color:var(--muted);font-weight:600}
 /* let drags reach the 3D canvas through empty overlay areas */
 #ui .side,#ui .creator{pointer-events:none}
 #ui .side > *,#ui .creator > .creator-panel{pointer-events:auto}
+/* v0.3: sign-off, checks, tutorial, glossary, team */
+.signoff{width:min(720px,100%);padding:22px;max-height:calc(100vh - 40px);overflow:auto}
+.role .owner{color:var(--blue);font-weight:500;margin-left:6px}
+.role .role-act{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end}
+.role.approved{border-color:rgba(62,224,160,.5);background:rgba(62,224,160,.05)}
+.checks{display:grid;gap:8px}
+.check{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--edge);border-radius:12px}
+.check.done{border-color:rgba(62,224,160,.45)}
+.holdbtn{position:relative;overflow:hidden;min-width:70px}
+.holdbtn i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(62,224,160,.35),rgba(110,168,255,.35))}
+.holdbtn span{position:relative}
+.tutorial{position:absolute;top:78px;left:50%;transform:translateX(-50%);width:min(480px,calc(100vw - 640px));min-width:300px;padding:14px 16px;animation:fadein .35s ease;border-color:rgba(110,168,255,.55);box-shadow:0 0 30px rgba(110,168,255,.25),inset 0 1px 0 rgba(255,255,255,.06)}
+.tutorial h3{margin:4px 0 4px;font-size:17px}
+.tutorial p{margin:0;color:#cdd4f5}
+.tut-top{display:flex;justify-content:space-between;align-items:center}
+.tut-dots{display:flex;gap:5px;margin-top:10px}
+.tut-dots i{width:18px;height:4px;border-radius:3px;background:rgba(255,255,255,.12)}
+.tut-dots i.on{background:var(--grad)}
+.glossary{width:min(760px,100%);max-height:calc(100vh - 40px);overflow:auto;padding:22px}
+.glossary dl{margin:8px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gterm{border:1px solid var(--edge);border-radius:12px;padding:10px 12px}
+.gterm dt{font-weight:650;margin-bottom:3px}
+.gterm dd{margin:0;color:#cdd4f5;font-size:13px}
+.teamnames{display:grid;gap:6px;margin-top:4px}
+.teamnames input{background:rgba(255,255,255,.05);border:1px solid var(--edge);border-radius:10px;padding:8px 10px;color:var(--text);font:inherit}
+.compare-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 10px}
+.compare-bar select{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--edge);border-radius:9px;padding:5px 8px;font:inherit;font-size:12.5px;max-width:100%}
+.compare-bar select option{background:#121a3d}
+.wide-sec{grid-column:1/-1}
+.settings{flex-wrap:wrap;justify-content:flex-end;max-width:420px}
+@media (max-width:900px){.glossary dl{grid-template-columns:1fr}.tutorial{width:calc(100vw - 24px)}}

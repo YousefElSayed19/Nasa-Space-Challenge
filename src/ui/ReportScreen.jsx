@@ -1,33 +1,82 @@
-import React from 'react';
-import { A } from '../state/actions.js';
+import React, { useState } from 'react';
+import { A, unlockedMissions } from '../state/actions.js';
+import { loadJSON } from '../state/store.js';
 import { useAnimatedNumber } from './hooks.js';
-import { MISSION, STAGE_NAMES, partById, causeTrace, pct, fmt } from '../engine/index.js';
+import { MISSION, MISSIONS, STAGE_NAMES, partById, causeTrace, pct, fmt, money, isFree } from '../engine/index.js';
+
+const END = {
+  power: 'Science was lost to a power shortfall.', data: 'Science was lost because data could not be sent home.',
+  shield: 'Science was lost to a solar-storm safe mode.', pointing: 'Flyby data overflowed while the antenna pointed away.',
+  fault: 'An instrument failed partway through.', 'check-connector': 'A loose connector caused data dropouts.',
+  'check-calibration': 'An uncalibrated instrument returned unusable data.', 'check-panel': 'A solar panel did not fully unfold.',
+};
+
+function Compare({ s, r }) {
+  const [sel, setSel] = useState('');
+  const saved = loadJSON('mf-designs', []).filter(d => d.mission === s.missionId);
+  const other = saved.find(d => String(d.id) === sel);
+  const me = { wetKg: Math.round(r.T.wet * MISSION.u.mass), powerH: r.R.power.h, dataH: r.R.data.h, massH: r.R.mass.h, cost: r.T.cost, science: Math.round(r.sciFactor * 100) };
+  const rows = [
+    ['Score', r.score, other && other.score],
+    ['Result', r.outcome, other && other.outcome],
+    ['Launch mass', `${fmt(me.wetKg)} kg`, other && `${fmt(other.metrics.wetKg)} kg`],
+    ['Mass headroom', pct(me.massH), other && pct(other.metrics.massH)],
+    ['Power headroom', pct(me.powerH), other && pct(other.metrics.powerH)],
+    ['Data headroom', pct(me.dataH), other && pct(other.metrics.dataH)],
+    ['Cost', money(me.cost), other && money(other.metrics.cost)],
+    ['Science returned', `${me.science}%`, other && `${other.metrics.science}%`],
+  ];
+  return (
+    <div className="sec"><h3>Save and compare designs</h3>
+      <div className="compare-bar">
+        <button className="btn small" onClick={A.saveDesign}>Save this design</button>
+        <select value={sel} onChange={e => setSel(e.target.value)} aria-label="Compare with a saved design">
+          <option value="">Compare with a saved design…</option>
+          {saved.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+      </div>
+      {other ? (
+        <>
+          <table><thead><tr><th></th><th>This flight</th><th>{other.name}</th></tr></thead>
+            <tbody>{rows.map(x => <tr key={x[0]}><td>{x[0]}</td><td>{x[1]}</td><td>{x[2]}</td></tr>)}</tbody></table>
+          <div className="compare-bar">
+            <button className="btn small" onClick={() => A.openInSandbox(other)}>Open it in sandbox</button>
+            <button className="btn small danger" onClick={() => A.deleteDesign(other.id)}>Delete</button>
+          </div>
+        </>
+      ) : <p className="tag">{saved.length ? 'Pick a saved design to see the two side by side.' : 'No saved designs for this mission yet. Saved designs stay in this browser.'}</p>}
+    </div>
+  );
+}
 
 export function ReportScreen({ s }) {
   const r = s.result, T = r.T;
   const score = useAnimatedNumber(r.score, 1100);
   const title = { ok: 'Mission success', warn: 'Mission degraded', fail: 'Mission lost' }[r.outcome];
-  const trace = r.primary ? causeTrace(s, r.primary, T) : null;
-  const endText = r.fail ? r.fail.text : r.primary ? ({
-    power: 'Science was lost to a power shortfall.', data: 'Science was lost because data could not be sent home.', shield: 'Science was lost to a solar-storm safe mode.',
-  })[r.primary] : '';
+  const trace = r.primary ? causeTrace(s, r.primary, T, r) : null;
+  const endText = r.fail ? r.fail.text : END[r.primary] || '';
   const successWhy = !r.fail && r.outcome === 'ok'
-    ? (r.storm ? `The mission succeeded because you kept ${pct(r.R.power.h)} power headroom, which absorbed the solar storm${T.has('shield') ? ', and shielding protected the computer' : ''}.` : 'The mission succeeded: every resource stayed within its limit.')
+    ? (r.storm ? `The mission succeeded because you kept ${pct(r.powerH)} power headroom, which absorbed the solar storm${T.has('shield') ? ', and shielding protected the computer' : ''}.`
+      : MISSION.events.includes('radiation') ? 'The mission succeeded: the vault survived Jupiter’s radiation and every resource stayed within its limit.'
+        : 'The mission succeeded: every resource stayed within its limit.')
     : null;
   const comp = [
-    ['Launch mass', `${fmt(T.wet * MISSION.u.mass)} kg`, '2,180 kg'],
-    ['Power at Mars', `${fmt(T.supply * MISSION.u.power)} W`, 'about 2,000 W'],
-    ['Downlink', `${(T.downlink * MISSION.u.data).toFixed(1)} Mbps`, 'up to 6 Mbps'],
-    ['Total cost', `$${fmt(T.cost)}M`, 'about $720M'],
-    ['Instruments', `${s.installed.filter(id => partById(id).slot === 'instrument').length}`, '6 main instruments'],
+    ['Launch mass', `${fmt(T.wet * MISSION.u.mass)} kg`, MISSION.real.launch],
+    ['Power at destination', `${fmt(T.supply * MISSION.u.power)} W`, MISSION.real.power],
+    ['Downlink', MISSION.u.data ? `${(T.downlink * MISSION.u.data).toFixed(MISSION.u.data < 1 ? 1 : 0)} ${MISSION.u.dataUnit}` : `${fmt(T.downlink)} game units`, MISSION.real.downlink],
+    ['Total cost', s.mode === 'sandbox' ? `${money(T.cost)} (sandbox)` : money(T.cost), MISSION.real.cost],
+    ['Instruments', `${s.installed.filter(id => partById(id).slot === 'instrument').length}`, MISSION.real.instruments],
   ];
   const sc = [['Science value', r.parts.science, 40], ['Efficiency', r.parts.efficiency, 20], ['Decision quality', r.parts.decisions, 25], ['Risk handling', r.parts.risk, 15]];
+  const next = MISSIONS.find(m => m.unlockAfter === s.missionId);
+  const canNext = s.mode === 'campaign' && next && unlockedMissions().includes(next.id);
+  const teamNotes = s.team.length > 1 ? `${s.objections} objection${s.objections === 1 ? '' : 's'} raised and resolved at sign-off.` : null;
   return (
     <div className="overlay">
       <section className="report glass">
         <div className="rep-head">
           <div>
-            <div className="label">Debrief</div>
+            <div className="label">Debrief: {MISSION.name}{isFree(s) ? ` (${s.mode}, not ranked)` : ''}</div>
             <h2 className={'verdict-big ' + r.outcome}>{title}</h2>
             <p style={{ margin: '6px 0 0', color: '#c3cbef', maxWidth: 560 }}>{r.fail ? r.fail.text : successWhy || `${pct(r.sciFactor)} of planned science reached Earth.`}</p>
           </div>
@@ -41,6 +90,8 @@ export function ReportScreen({ s }) {
                 <div className="bar"><div className="fill grow" style={{ width: (v / m) * 100 + '%', background: 'var(--grad)' }}></div></div>
               </div>
             ))}
+            {r.skipped.length > 0 && <p className="tag">Skipped checks: {r.skipped.join(', ')}.</p>}
+            {teamNotes && <p className="tag">Team: {teamNotes}</p>}
             <p className="approx">Weights are placeholders to tune in playtesting (GDD 4.7).</p>
           </div>
           <div className="sec"><h3>{trace ? 'What caused it' : 'Why it worked'}</h3>
@@ -56,21 +107,28 @@ export function ReportScreen({ s }) {
             ) : (
               <>
                 <p style={{ marginTop: 0 }}>{successWhy}</p>
-                <p className="tag">Try a lighter design or a different rocket: several designs can score well if they stay balanced.</p>
+                <p className="tag">Several designs can score well if they stay balanced. Try a lighter one, or a different rocket.</p>
               </>
             )}
           </div>
-          <div className="sec"><h3>Your design and the real orbiter</h3>
-            <table><thead><tr><th></th><th>Yours</th><th>Real MRO</th></tr></thead>
+          <div className="sec"><h3>Your design and the real {MISSION.inspired}</h3>
+            <table><thead><tr><th></th><th>Yours</th><th>Real</th></tr></thead>
               <tbody>{comp.map(c => <tr key={c[0]}><td>{c[0]}</td><td>{c[1]}</td><td>{c[2]}</td></tr>)}</tbody></table>
-            <p className="approx">Real values from the JPL MRO launch press kit.</p>
+            <p className="approx">Real values from NASA and JPL sources; see the info markers and the source register.</p>
           </div>
-          <div className="sec"><h3>Every decision</h3>
+          <Compare s={s} r={r} key={s.savedTick} />
+          <div className="sec wide-sec"><h3>Every decision</h3>
             <table><thead><tr><th>#</th><th>Stage</th><th>Decision</th></tr></thead>
               <tbody>{s.log.map((e, i) => <tr key={i}><td>{i + 1}</td><td>{STAGE_NAMES[e.stage - 1]}</td><td>{e.text}{e.fee ? ` (change request ${e.fee})` : ''}</td></tr>)}</tbody></table>
           </div>
         </div>
-        <div className="foot"><span className="tag">Next build: Lunar and Europa missions unlock in order.</span><button className="btn primary" onClick={A.reset}>Fly again</button></div>
+        <div className="foot">
+          <button className="btn" onClick={A.backToMenu}>Main menu</button>
+          <span style={{ display: 'flex', gap: 8 }}>
+            {canNext && <button className="btn" onClick={() => A.reset({ missionId: next.id })}>Next: {next.name}</button>}
+            <button className="btn primary" onClick={() => A.reset()}>Fly again</button>
+          </span>
+        </div>
       </section>
     </div>
   );
