@@ -1,0 +1,38 @@
+{
+  "items": [
+    { "id": "cam-hires", "slot": "instrument", "name": "High-Resolution Camera", "mass": 6, "power": 20, "data": 40, "cost": 45, "science": 5, "color": "#6EA8FF",
+      "note": "Best surface detail. Heavy, power-hungry and makes a lot of data.", "approximate": true },
+    { "id": "spectro", "slot": "instrument", "name": "Imaging Spectrometer", "mass": 3, "power": 12, "data": 25, "cost": 30, "science": 4, "color": "#B48CFF",
+      "note": "Finds water-related minerals. Moderate power and data.", "approximate": true },
+    { "id": "radar", "slot": "instrument", "name": "Shallow Subsurface Radar", "mass": 2, "power": 10, "data": 12, "cost": 25, "science": 3, "color": "#3EE0A0",
+      "note": "Sees layers under the surface. Draws steady power.", "approximate": true },
+    { "id": "ctx", "slot": "instrument", "name": "Context Camera", "mass": 1, "power": 4, "data": 10, "cost": 10, "science": 2, "color": "#8FD3FF",
+      "note": "Wide views at lower detail. Light and cheap.", "approximate": true },
+    { "id": "sounder", "slot": "instrument", "name": "Climate Sounder", "mass": 1, "power": 3, "data": 3, "cost": 10, "science": 2, "color": "#FFC24B",
+      "note": "Profiles the atmosphere. Very little data.", "approximate": true },
+    { "id": "color", "slot": "instrument", "name": "Color Imager", "mass": 1, "power": 3, "data": 6, "cost": 8, "science": 1, "color": "#FF9A6E",
+      "note": "Daily weather maps. Small science gain.", "approximate": true },
+
+    { "id": "array-s", "slot": "array", "name": "12 m² Solar Array", "mass": 6, "supply": 60, "cost": 25, "area": 12,
+      "note": "Light and cheap, but little power this far from the Sun.", "approximate": true },
+    { "id": "array-m", "slot": "array", "name": "20 m² Solar Array", "mass": 10, "supply": 100, "cost": 40, "area": 20,
+      "note": "Same area as the real orbiter. Balanced.", "approximate": false },
+    { "id": "array-l", "slot": "array", "name": "28 m² Solar Array", "mass": 14, "supply": 140, "cost": 55, "area": 28,
+      "note": "Most power and margin. Adds mass and cost.", "approximate": true },
+    { "id": "ant-2", "slot": "antenna", "name": "2 m High-Gain Antenna", "mass": 3, "downlink": 60, "cost": 15, "dish": 2,
+      "note": "Lighter, but sends less data home.", "approximate": true },
+    { "id": "ant-3", "slot": "antenna", "name": "3 m High-Gain Antenna", "mass": 5, "downlink": 100, "cost": 25, "dish": 3,
+      "note": "Same size as the real orbiter. Full downlink.", "approximate": false },
+    { "id": "battery", "slot": "battery", "name": "Nickel-Hydrogen Battery", "mass": 4, "cost": 10,
+      "note": "Keeps the craft alive when Mars blocks the Sun.", "approximate": true },
+    { "id": "shield", "slot": "shield", "name": "Electronics Shielding", "mass": 3, "cost": 8,
+      "note": "Protects the computer from solar-storm bit flips.", "approximate": true }
+  ],
+  "realBySlot": {
+    "instrument": "The real orbiter carried 139 kg of science instruments in total (JPL MRO press kit). Per-instrument values here are approximate game values.",
+    "array": "The real orbiter had two arrays, 20 m² in total, giving about 2,000 W at Mars (JPL MRO press kit). Other sizes are game options.",
+    "antenna": "The real high-gain antenna was a 3 m dish (JPL MRO press kit). The 2 m option is a game option.",
+    "battery": "The real orbiter used nickel-hydrogen batteries for periods without sunlight (JPL MRO press kit).",
+    "shield": "Solar storms can flip memory bits and force a safe mode (NASA Earthdata). Mass here is approximate."
+  }
+}

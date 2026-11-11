@@ -1,0 +1,9 @@
+[
+  { "id": "mro-kit", "title": "JPL MRO launch press kit", "type": "NASA", "supports": "Mass breakdown, hydrazine, power, data rate, cost, orbit insertion" },
+  { "id": "ntrs-margins", "title": "NTRS 20120013284, margin guidelines", "type": "NTRS", "supports": "Contingency and margin definitions; 30% power and data; 5% attitude-control propellant" },
+  { "id": "ntrs-earlylate", "title": "NTRS 20150008247, early versus late design decisions", "type": "NTRS", "supports": "25/20/15% margins by phase; changes cost more later" },
+  { "id": "lsp-sheet", "title": "NASA Launch Services Program fact sheet", "type": "NASA", "supports": "Rocket list and capacities to low Earth orbit" },
+  { "id": "earthdata-sun", "title": "NASA Earthdata, Sun–satellite interactions", "type": "NASA", "supports": "Solar storm effects: bit flips, drag, link disruption" },
+  { "id": "seh-cm", "title": "NASA Systems Engineering Handbook, Configuration Management", "type": "NASA", "supports": "Baselines and change control boards" },
+  { "id": "artemis-frr", "title": "NASA, Artemis II flight readiness review", "type": "NASA", "supports": "NASA holds readiness reviews and polls Go" }
+]

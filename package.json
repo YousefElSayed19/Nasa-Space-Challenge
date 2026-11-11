@@ -1,0 +1,23 @@
+{
+  "name": "missionforge",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "A 3D space mission design game for NASA Space Apps Cairo 2026.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "three": "0.128.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.3.4",
+    "vite": "5.4.11",
+    "vitest": "2.1.8"
+  }
+}

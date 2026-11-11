@@ -1,0 +1,17 @@
+{
+  "suit":   ["#6EA8FF", "#B48CFF", "#3EE0A0", "#FFC24B", "#FF5D6C", "#E8ECFF", "#FF9A3D", "#2E3A6E"],
+  "accent": ["#FFC24B", "#6EA8FF", "#3EE0A0", "#FF5D6C", "#B48CFF", "#E8ECFF"],
+  "visor":  [
+    { "id": "gold", "label": "Gold", "color": "#D4A64A" },
+    { "id": "blue", "label": "Blue", "color": "#2A63FF" },
+    { "id": "violet", "label": "Violet", "color": "#8A5BFF" },
+    { "id": "silver", "label": "Silver", "color": "#B8C2D8" },
+    { "id": "green", "label": "Green", "color": "#2FD39A" }
+  ],
+  "helmet": [ { "id": "dome", "label": "Dome" }, { "id": "angular", "label": "Angular" }, { "id": "halo", "label": "Halo" } ],
+  "body":   [ { "id": "slim", "label": "Slim" }, { "id": "standard", "label": "Standard" }, { "id": "sturdy", "label": "Sturdy" } ],
+  "height": [ { "id": "short", "label": "Short" }, { "id": "medium", "label": "Medium" }, { "id": "tall", "label": "Tall" } ],
+  "pack":   [ { "id": "life", "label": "Life support" }, { "id": "tool", "label": "Tool rig" }, { "id": "jet", "label": "Jet pack" } ],
+  "patch":  [ { "id": "star", "label": "Star" }, { "id": "planet", "label": "Planet" }, { "id": "rocket", "label": "Rocket" }, { "id": "none", "label": "None" } ],
+  "gloves": [ { "id": "dark", "label": "Dark" }, { "id": "white", "label": "White" }, { "id": "accent", "label": "Accent" } ]
+}

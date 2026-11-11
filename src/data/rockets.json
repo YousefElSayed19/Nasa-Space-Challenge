@@ -1,0 +1,11 @@
+[
+  { "id": "atlas", "name": "Atlas V 401", "cap": 200, "cost": 90, "approx": false, "h": 4.2, "cores": 1, "body": "#D9823B",
+    "note": "Launched the real orbiter. A tight fit for a heavy design.",
+    "real": "Launched MRO at 2,180 kg; launch cost about $90M (JPL MRO press kit)." },
+  { "id": "vulcan", "name": "Vulcan Centaur", "cap": 280, "cost": 120, "approx": true, "h": 5.0, "cores": 1, "body": "#E8ECFF",
+    "note": "More lift and margin, at a higher price.",
+    "real": "27,200 kg to low Earth orbit (NASA LSP fact sheet). Mars capacity and price here are simplified game values." },
+  { "id": "fh", "name": "Falcon Heavy", "cap": 520, "cost": 150, "approx": true, "h": 5.6, "cores": 3, "body": "#E8ECFF",
+    "note": "Huge margin, but the price can break the budget.",
+    "real": "Nearly 64 t to orbit (NASA LSP fact sheet); launched Europa Clipper. Mars capacity and price here are simplified game values." }
+]
