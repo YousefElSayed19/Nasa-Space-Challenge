@@ -79,12 +79,12 @@ Friday 13 November 2026; work done during the hackathon starts after that commit
 
 ## Credits and AI-use disclosure
 
-- Game design, research and team decisions: the MissionForge team.
-- Code in this repository was drafted with Claude (an AI assistant made by Anthropic) and reviewed by the team.
-  Log further AI use here as it happens (code, images, audio, text), as the submission guide requires.
+- Game design, research, code and team decisions: the MissionForge team.
+- AI tools were used to assist with research, code and documentation. The team reviewed and tested all of it.
+  The full AI-use disclosure is in the project submission, as the Space Apps submission guide requires.
 - Libraries: [React](https://react.dev) (MIT), [Three.js](https://threejs.org) (MIT), [Vite](https://vitejs.dev) (MIT), [Vitest](https://vitest.dev) (MIT).
 - All 3D models, textures and sounds are generated in code; no third-party assets are used yet.
-- NASA data is credited to its source pages. NASA logos are not used.
+- NASA data is credited to its source pages in [`docs/SOURCES.md`](docs/SOURCES.md). NASA logos are not used.
 
 ## Licence
 
