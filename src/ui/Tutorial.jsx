@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { TUTORIAL, isStepDone, nextStep, prevStep, finishTutorial } from '../state/tutorial.js';
 import { useHud } from './hooks.js';
+import { isTouch } from './TouchControls.jsx';
 
 export function TutorialCard({ s }) {
   const i = s.tutorial;
@@ -26,7 +27,8 @@ export function TutorialCard({ s }) {
         <div>
           <h3>{step.title}</h3>
           <p>{step.text}</p>
-          {step.keys && <div className="tut-keys">{step.keys.map(k => <span key={k} className="key">{k}</span>)}</div>}
+          {step.keys && !isTouch && <div className="tut-keys">{step.keys.map(k => <span key={k} className="key">{k}</span>)}</div>}
+          {step.keys && isTouch && <p className="tag">On a touch screen: joystick to walk, drag the scene to look, and the Use, Jump and Run buttons on the right.</p>}
         </div>
       </div>
       {action && (

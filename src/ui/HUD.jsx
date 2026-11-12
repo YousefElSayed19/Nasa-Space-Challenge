@@ -8,6 +8,7 @@ import { TasksCard, Pointer, LaunchOverlay } from './Guide.jsx';
 import { stepOf } from '../state/tutorial.js';
 import { Picker } from './Picker.jsx';
 import { LockedStation } from './Locked.jsx';
+import { isTouch, goFullscreen } from './TouchControls.jsx';
 import { stationById, STAGE_NAMES } from '../engine/index.js';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
@@ -73,6 +74,7 @@ export function Settings({ s }) {
     <div className="settings">
       <button className="btn" aria-pressed={s.muted} onClick={() => { Sound.hum(false); A.setPrefs({ muted: !s.muted }); }}>{s.muted ? 'Sound off' : 'Sound on'}</button>
       <button className="btn" onClick={() => A.setPrefs({ graphics: s.graphics === 'low' ? 'high' : 'low' })}>{s.graphics === 'low' ? 'Low graphics' : 'High graphics'}</button>
+      {isTouch && <button className="btn" onClick={goFullscreen}>Fullscreen</button>}
       <button className="btn" onClick={A.toggleGlossary}>Help</button>
       {s.screen === 'game' && <button className="btn" onClick={A.backToMenu}>Menu</button>}
     </div>
@@ -107,7 +109,7 @@ export function HUD({ s }) {
         <LogPanel s={s} />
       </div>
       {s.screen === 'game' && <PickerHost s={s} />}
-      {s.tutorial == null && <div className="controls glass passthru">
+      {s.tutorial == null && !isTouch && <div className="controls glass passthru">
         <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump</span><span><b>E</b> interact</span><span><b>V</b> camera</span><span><b>L</b> log</span>
       </div>}
     </div>

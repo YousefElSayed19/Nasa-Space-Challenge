@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { InfoDot } from './InfoDot.jsx';
 import { useAnimatedNumber } from './hooks.js';
 import { MISSION, RES_INFO, MARGIN, totals, resources, status, pct, fmt, money, rocketById } from '../engine/index.js';
@@ -41,9 +41,10 @@ function Row({ r, T, s }) {
 
 export function Resources({ s, focus }) {
   const T = totals(s);
+  const [open, setOpen] = useState(() => !(window.matchMedia && window.matchMedia('(max-height: 560px)').matches));
   return (
-    <section className={'res glass' + (focus ? ' tut-focus' : '')} aria-label="Live resource budget">
-      <h3>Live budget <InfoDot title="Margins" info={{
+    <section className={'res glass' + (focus ? ' tut-focus' : '') + (open ? '' : ' collapsed')} aria-label="Live resource budget">
+      <h3><button className="res-toggle" onClick={() => setOpen(o => !o)} aria-expanded={open}>{open ? '▾' : '▸'} Live budget</button> <InfoDot title="Margins" info={{
         what: 'Each white tick marks 75% of the limit: the recommended 25% headroom.',
         why: 'Estimates grow as a design matures, and space throws surprises at you. Margin absorbs both.',
         real: 'NASA guidance: at least 30% power contingency in concept design (NTRS 20120013284); 25% at end of Phase A (NTRS 20150008247).',

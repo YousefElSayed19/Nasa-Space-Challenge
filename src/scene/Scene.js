@@ -181,6 +181,12 @@ function bindInput() {
     if (e.code === 'Space' && tag !== 'INPUT' && store.get().screen === 'game') e.preventDefault();
   });
   window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+  bus.on('vkey', (code, down) => {
+    Sound.init();
+    if (!down) { keys[code] = false; return; }
+    if (code === 'ShiftLeft') { keys[code] = true; return; }
+    onKeyDown({ code, target: document.body, repeat: false, preventDefault() {} });
+  });
 }
 function onKeyDown(e) {
   const tag = (e.target && e.target.tagName) || '';
@@ -245,14 +251,16 @@ function collide(p) {
 function updatePlayer(dt, s) {
   // while the full-screen picker is open, arrow keys browse cards instead of walking
   const picking = ['payload', 'systems', 'board'].includes(s.panel);
-  const f = picking ? 0 : (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
-  const r = picking ? 0 : (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+  const tj = hud.get().touch;
+  const f = picking ? 0 : (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) - (tj ? tj.y : 0);
+  const r = picking ? 0 : (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + (tj ? tj.x : 0);
+  const stick = tj ? Math.min(1, Math.hypot(tj.x, tj.y)) : 1;
   const fwd = new V3(-Math.sin(cam.yaw), 0, -Math.cos(cam.yaw)), right = new V3(Math.cos(cam.yaw), 0, -Math.sin(cam.yaw));
   const dir = fwd.multiplyScalar(f).add(right.multiplyScalar(r));
   const running = keys.ShiftLeft || keys.ShiftRight;
   let sp = running ? 8.2 : 4.6;
   if (s.carrying) sp *= 1 - Math.min(0.35, partById(s.carrying).mass * 0.035); // heavy parts slow you (teaches mass)
-  const target = dir.lengthSq() > 0 ? dir.normalize().multiplyScalar(sp) : new V3();
+  const target = dir.lengthSq() > 0.0004 ? dir.normalize().multiplyScalar(sp * (tj ? Math.max(0.35, stick) : 1)) : new V3();
   // smooth acceleration and braking
   const k = target.lengthSq() > 0 ? 9 : 12;
   player.vel.x = damp(player.vel.x, target.x, k, dt);

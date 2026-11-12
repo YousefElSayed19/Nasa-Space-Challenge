@@ -8,7 +8,7 @@ and then the game explains which of your own decisions made the mission succeed 
 
 **https://yousefelsayed19.github.io/Nasa-Space-Challenge/**
 
-Opens in Chrome or Edge on a laptop. No installation, no login.
+Opens in any modern browser on a laptop, tablet or phone (landscape). No installation, no login. On touch screens: joystick to walk, drag to look, on-screen buttons to use, jump and run.
 
 > MissionForge is a placeholder name. Not reviewed or endorsed by NASA.
 

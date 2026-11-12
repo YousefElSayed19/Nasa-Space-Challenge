@@ -31,10 +31,10 @@ export function freshState(profile, prefs = {}) {
     propLoaded: 0, changeFees: 0, changeCount: 0, overruled: 0, objections: 0, verdicts: null, checks: {},
     log: [], panel: null, firstPerson: false, showLog: true, toasts: [], result: null,
     signoff: null, tutorial: null, tutTick: 0, introBeat: 0, replayNotice: false, thumbsTick: 0, loan: 0, scoreId: null, showGlossary: false, savedTick: 0,
-    graphics: prefs.graphics || 'high', muted: !!prefs.muted,
+    graphics: prefs.graphics || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 'low' : 'high'), muted: !!prefs.muted,
   };
 }
 
 export const store = makeStore(freshState(loadProfile(), loadJSON('mf-prefs', {})));
 // Fast-changing values (prompt, hold progress) live apart so the panels don't re-render every frame.
-export const hud = makeStore({ prompt: null, hold: 0, near: null, pumping: false, uiPump: 0, ptr: null, missionPhase: 'Launch', missionKind: 'ok' });
+export const hud = makeStore({ prompt: null, hold: 0, near: null, pumping: false, uiPump: 0, ptr: null, missionPhase: 'Launch', missionKind: 'ok', touch: null });
