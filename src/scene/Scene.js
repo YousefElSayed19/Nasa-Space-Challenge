@@ -16,6 +16,7 @@ import { tasksFor } from '../state/tasks.js';
 import { stepOf } from '../state/tutorial.js';
 import { lin } from './materials.js';
 import { renderThumbs } from './thumbs.js';
+import { warmPreview } from './preview.js';
 
 const V3 = THREE.Vector3;
 const damp = (cur, target, k, dt) => cur + (target - cur) * (1 - Math.exp(-k * dt));
@@ -52,7 +53,7 @@ export function initScene(container) {
   scene.add(hero.root);
   space = createSpaceView();
   space.setMission(store.get().missionId);
-  setTimeout(() => renderThumbs(renderer, scene.environment, () => store.set(s => ({ thumbsTick: (s.thumbsTick || 0) + 1 }))), 300);
+  setTimeout(() => renderThumbs(renderer, scene.environment, () => { store.set(s => ({ thumbsTick: (s.thumbsTick || 0) + 1 })); setTimeout(warmPreview, 400); }), 300);
 
   applyGraphics(store.get().graphics);
   bindInput();
@@ -467,8 +468,11 @@ function adapt(dt, s) {
   if (pr !== perf.pr) { perf.pr = pr; renderer.setPixelRatio(pr); if (fx) { fx.setPixelRatio(pr); fx.setSize(window.innerWidth, window.innerHeight); } }
 }
 
+let skip = 0;
 function tick() {
   requestAnimationFrame(tick);
+  const s0 = store.get();
+  if (s0.screen === 'game' && ['payload', 'systems', 'board'].includes(s0.panel) && !flying && (skip++ % 15) !== 0) { clock.getDelta(); return; }
   const dt = Math.min(clock.getDelta(), 0.05); time += dt;
   const s = store.get();
   if (s.screen === 'game') updatePlayer(dt, s);
