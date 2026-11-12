@@ -1,5 +1,5 @@
-import React from 'react';
-import { STAGE_NAMES, MISSION, isFree, totals, headroom, money } from '../engine/index.js';
+import React, { useState } from 'react';
+import { STAGE_NAMES, MISSION, isFree, totals, headroom, money, partById } from '../engine/index.js';
 import { useAnimatedNumber } from './hooks.js';
 
 export function TopBar({ s }) {
@@ -23,14 +23,36 @@ export function TopBar({ s }) {
 }
 
 function BudgetChip({ s }) {
+  const [open, setOpen] = useState(false);
   const T = totals(s);
   const left = useAnimatedNumber(T.budget - T.cost);
   if (s.mode === 'sandbox') return <div className="budget-chip ok"><span className="bl">Budget</span><b>Unlimited</b><span className="bs">sandbox</span></div>;
   const h = headroom(T.budget, T.cost);
   const st = h < 0 ? 'crit' : h < 0.25 ? 'warn' : 'ok';
+  const parts = s.installed.reduce((a, id) => a + partById(id).cost, 0);
+  const rows = [
+    ['Operations (team, contact, data)', MISSION.opsCost],
+    ['Spacecraft body (structure, computer, propulsion)', MISSION.busCost],
+    ['Your parts', parts],
+    ['Rocket', T.rocket ? T.rocket.cost : 0],
+    ['Change requests', s.changeFees || 0],
+    ['Interest on extra funding', T.loanInterest || 0],
+  ].filter(([, v], i) => i < 4 || v);
   return (
-    <div className={'budget-chip ' + st} title="Money left to spend on this mission. Every part and the rocket cost money.">
-      <span className="bl">$ Budget left</span><b>{money(left)}</b><span className="bs">of {money(T.budget)}{T.loan ? ' (incl. extra funding)' : ''}</span>
+    <div className="budget-wrap">
+      <button className={'budget-chip ' + st} onClick={() => setOpen(o => !o)} aria-expanded={open} title="Click to see where the money goes">
+        <span className="bl">$ Budget left ▾</span><b>{money(left)}</b><span className="bs">of {money(T.budget)}{T.loan ? ' (incl. extra funding)' : ''}</span>
+      </button>
+      {open && (
+        <div className="budget-pop glass" onClick={() => setOpen(false)}>
+          <div className="pop-t">Where the money goes</div>
+          {rows.map(([k, v]) => <div key={k} className="bp-row"><span>{k}</span><b>{money(v)}</b></div>)}
+          <div className="bp-row total"><span>Spent</span><b>{money(T.cost)}</b></div>
+          <div className="bp-row total"><span>Budget{T.loan ? ' incl. extra funding' : ''}</span><b>{money(T.budget)}</b></div>
+          <div className={'bp-row total ' + st}><span>Left to spend</span><b>{money(T.budget - T.cost)}</b></div>
+          <p className="tag">Operations and the spacecraft body are fixed costs every mission pays before any choice.</p>
+        </div>
+      )}
     </div>
   );
 }

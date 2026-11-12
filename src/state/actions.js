@@ -22,9 +22,17 @@ function preloadReal(s) {
 
 export const A = {
   toast(text, kind = 'info') {
+    const st = store.get();
+    if (st.toasts.some(t => t.text === text && !t.leaving)) return; // no duplicates
     const id = Date.now() + Math.random();
-    store.set(s => ({ toasts: [...s.toasts, { id, text, kind }].slice(-3) }));
-    setTimeout(() => store.set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), 4600);
+    const life = Math.min(7000, 3200 + text.length * 35); // longer messages stay longer
+    store.set(s => ({ toasts: [...s.toasts, { id, text, kind, life }].slice(-3) }));
+    setTimeout(() => store.set(s => ({ toasts: s.toasts.map(t => (t.id === id ? { ...t, leaving: true } : t)) })), life - 320);
+    setTimeout(() => store.set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), life);
+  },
+  dismissToast(id) {
+    store.set(s => ({ toasts: s.toasts.map(t => (t.id === id ? { ...t, leaving: true } : t)) }));
+    setTimeout(() => store.set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), 320);
   },
   log(entry) { store.set(s => ({ log: [...s.log, { ...entry, stage: s.stage }] })); },
   open(id) { Sound.click(); store.set({ panel: id }); },

@@ -53,8 +53,19 @@ function LogPanel({ s }) {
   );
 }
 
+const TOAST_ICON = { info: '✦', good: '✓', warn: '!' };
 export function Toasts({ s }) {
-  return <div className="toasts passthru" aria-live="polite">{s.toasts.map(t => <div key={t.id} className={'toast glass ' + t.kind}>{t.text}</div>)}</div>;
+  return (
+    <div className="toasts" aria-live="polite">
+      {s.toasts.map(t => (
+        <div key={t.id} className={'toast ' + t.kind + (t.leaving ? ' leaving' : '')} role="status" onClick={() => A.dismissToast(t.id)}>
+          <span className="toast-icon" aria-hidden="true">{TOAST_ICON[t.kind] || '✦'}</span>
+          <span className="toast-text">{t.text}</span>
+          <i className="toast-timer" style={{ animationDuration: t.life + 'ms' }}></i>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function Settings({ s }) {
