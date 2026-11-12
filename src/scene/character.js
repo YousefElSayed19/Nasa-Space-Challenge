@@ -36,7 +36,8 @@ function stripTexture(color) {
 export function createCharacter(profile) {
   const root = new THREE.Group();
   const carryHolder = new THREE.Group(); root.add(carryHolder);
-  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0 }, look: 0 };
+  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0, hands: 0 }, look: 0 };
+  let viewMode = 'full';
   let rig = build(profile);
   root.add(rig.body);
 
@@ -188,6 +189,14 @@ export function createCharacter(profile) {
     return { body, hips, spine, head, legL, legR, armL, armR, lights, jets, thrusters, strips, stripTex, stripM, hs, b };
   }
 
+  function applyView() {
+    const r = rig;
+    r.body.visible = viewMode !== 'none';
+    const armSet = new Set();
+    for (const a of [r.armL.sh, r.armR.sh]) a.traverse(o => armSet.add(o));
+    r.body.traverse(o => { if (o.isMesh) o.visible = viewMode === 'full' || (viewMode === 'hands' && armSet.has(o)); });
+  }
+
   function disposeRig(r) {
     r.body.traverse(o => { if (!o.isMesh) return; o.geometry.dispose(); const m = o.material; if (m.map) m.map.dispose(); m.dispose(); });
   }
@@ -204,6 +213,7 @@ export function createCharacter(profile) {
     W.wave = damp(W.wave, inp.wave ? 1 : 0, 5, dt);
     W.air = damp(W.air, inp.air ? 1 : 0, 14, dt);
     W.fly = damp(W.fly, inp.fly ? 1 : 0, 4, dt);
+    W.hands = damp(W.hands, viewMode === 'hands' ? 1 : 0, 10, dt);
     W.thrust = damp(W.thrust, inp.thrust || 0, 10, dt);
     st.phase += dt * (inp.speed * (1.55 + W.run * 0.25));
     const ph = st.phase, t = st.t, idle = 1 - W.walk, ground = 1 - W.air;
@@ -270,6 +280,14 @@ export function createCharacter(profile) {
         le = lerp(le, -0.3, F); re = lerp(re, -0.3, F);
       }
     }
+    // hands view: both arms forward in front of the camera, with a gentle sway as you walk
+    if (W.hands > 0.01) {
+      const sw = Math.sin(ph) * 0.06 * W.walk, br = Math.sin(t * 1.6) * 0.015;
+      const fx = inp.carrying ? -1.2 : -0.95;
+      lx = lerp(lx, fx + sw + br, W.hands); rx = lerp(rx, fx - sw + br, W.hands);
+      lz = lerp(lz, -0.32, W.hands); rz = lerp(rz, 0.32, W.hands);
+      le = lerp(le, -0.75, W.hands); re = lerp(re, -0.75, W.hands);
+    }
     r.armL.sh.rotation.set(lx, 0, lz); r.armR.sh.rotation.set(rx, 0, rz);
     r.armL.el.rotation.set(le, 0, 0);
     r.armR.el.rotation.set(lerp(re, -0.35, W.wave), 0, Math.sin(t * 9) * 0.5 * W.wave);
@@ -293,7 +311,9 @@ export function createCharacter(profile) {
 
   return {
     root, carryHolder, update,
-    setProfile(p) { root.remove(rig.body); disposeRig(rig); rig = build(p); root.add(rig.body); },
-    setVisible(v) { rig.body.visible = v; },
+    setProfile(p) { root.remove(rig.body); disposeRig(rig); rig = build(p); root.add(rig.body); applyView(); },
+    setVisible(v) { viewMode = v ? 'full' : 'none'; applyView(); },
+    /** 'full' shows the whole engineer, 'none' hides it, 'hands' shows only the arms and gloves. */
+    setView(mode) { if (mode !== viewMode) { viewMode = mode; applyView(); } },
   };
 }

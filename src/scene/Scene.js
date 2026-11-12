@@ -28,6 +28,7 @@ let time = 0, holdT = 0, ratchetT = 0, pumpAcc = 0, launchT = -1, launched = fal
 const keys = {};
 const player = { pos: START_POS.clone(), vel: new V3(), facing: Math.PI, speed: 0, spin: 0, y: 0, vy: 0, air: false, land: 0, airT: 0, boosted: false, thrust: 0, flyMode: false, cruise: 2.2 };
 let trail = [];
+const FLY_MAX = 2.4; // metres above the floor: a low hover, never up into the roof
 let inputYaw = null, lastDrag = -1e9;
 const cam = { yaw: 0, pitch: 0.38, pos: new V3(0, 7, 22), look: new V3(0, 2, 0), fov: 60 };
 const perf = { ema: 1 / 60, timer: 0, pr: 1, maxPr: 1 };
@@ -203,7 +204,7 @@ function onKeyDown(e) {
   keys[e.code] = true;
   if (e.repeat) return;
   if (e.code === 'KeyE') interact();
-  else if (e.code === 'KeyV') store.set(st => ({ firstPerson: !st.firstPerson }));
+  else if (e.code === 'KeyV') A.cycleView();
   else if (e.code === 'KeyC') A.toggleCamera();
   else if (e.code === 'KeyF') toggleFlight();
   else if (e.code === 'KeyL') store.set(st => ({ showLog: !st.showLog }));
@@ -215,7 +216,7 @@ function toggleFlight() {
   const s = store.get();
   if (['payload', 'systems', 'board'].includes(s.panel)) return;
   player.flyMode = !player.flyMode;
-  if (player.flyMode) { player.cruise = Math.max(2.2, player.y); if (!player.air) { player.air = true; player.vy = 3.5; player.airT = 0; } }
+  if (player.flyMode) { player.cruise = Math.min(FLY_MAX, Math.max(1.5, player.y)); if (!player.air) { player.air = true; player.vy = 3.5; player.airT = 0; } }
   else player.boosted = true; // glide down gently
   hud.set({ flying: player.flyMode });
   Sound.tone(player.flyMode ? 300 : 500, 0.25, 'sine', 0.05, player.flyMode ? 700 : 220);
@@ -291,7 +292,7 @@ function updatePlayer(dt, s) {
   const flyingHigh = player.y > 1.2;
   player.walked = (player.walked || 0) + player.vel.length() * dt;
   if (player.walked > 3 && !player.movedSent) { player.movedSent = true; bus.emit('moved'); }
-  if (!flyingHigh) collide(player.pos); else { player.pos.x = Math.max(-22.3, Math.min(22.3, player.pos.x)); player.pos.z = Math.max(-16.3, Math.min(16.3, player.pos.z)); }
+  collide(player.pos); // at hover height the engineer still goes around desks, racks and tanks
   player.speed = Math.hypot(player.vel.x, player.vel.z);
   player.running = running;
   if (player.speed > 0.3) {
@@ -310,15 +311,15 @@ function updatePlayer(dt, s) {
     player.airT += dt;
     let thrust = 0;
     if (player.flyMode) {
-      if (holdUp) player.cruise = Math.min(7.2, player.cruise + dt * 3.2);
-      if (holdDown) player.cruise = Math.max(0.6, player.cruise - dt * 3.2);
+      if (holdUp) player.cruise = Math.min(FLY_MAX, player.cruise + dt * 2);
+      if (holdDown) player.cruise = Math.max(0.8, player.cruise - dt * 2);
       const want = (player.cruise + Math.sin(time * 2.2) * 0.12 - player.y) * 3.2;
       player.vy += (want - player.vy) * (1 - Math.exp(-4 * dt));
       thrust = 0.55 + (holdUp ? 0.45 : 0) - (holdDown ? 0.3 : 0);
     } else if (holdUp && player.airT > 0.16) {
       player.boosted = true;
-      player.vy = Math.min(4.8, player.vy + 23 * dt - 15 * dt);
-      if (player.y > 7.2) player.vy = Math.min(player.vy, 0);
+      player.vy = Math.min(3.2, player.vy + 22 * dt - 15 * dt);
+      if (player.y > FLY_MAX) player.vy = Math.min(player.vy, (FLY_MAX - player.y) * 4); // soft ceiling, well below the roof
       thrust = 1;
     } else {
       // after boosting, fall slowly like a glide; a plain jump uses normal gravity
@@ -473,8 +474,10 @@ function updateCamera(dt, s) {
     look = new V3(0, 4.6 + Math.max(0, ry - 0.42) * 0.9, 0); desired = new V3(-7.5, 1.9, 9.5); fov = 58;
     if (launchT < 0.45) { cam.pos.copy(desired); cam.look.copy(look); }
   } else if (s.firstPerson) {
-    desired = new V3(player.pos.x, 1.72 + player.y, player.pos.z);
-    const a = cam.pitch - 0.38;
+    // first person sits at the eyes; the hands view sits a little back and higher so both arms fit in the frame
+    const hv = s.view === 'hands';
+    desired = new V3(player.pos.x + (hv ? Math.sin(cam.yaw) * 0.12 : 0), (hv ? 1.86 : 1.72) + player.y, player.pos.z + (hv ? Math.cos(cam.yaw) * 0.12 : 0));
+    const a = cam.pitch - 0.38 + (hv ? 0.12 : 0);
     look = desired.clone().add(new V3(-Math.sin(cam.yaw) * Math.cos(a), -Math.sin(a), -Math.cos(cam.yaw) * Math.cos(a)));
     fov = 70;
   } else {
@@ -541,7 +544,7 @@ function tick() {
   }
   hero.root.position.set(player.pos.x, player.y, player.pos.z);
   hero.root.rotation.y = s.firstPerson && s.screen === 'game' ? cam.yaw + Math.PI : player.facing;
-  hero.setVisible(!(s.firstPerson && s.screen === 'game'));
+  hero.setView(s.screen === 'game' && s.view === 'first' ? 'none' : s.screen === 'game' && s.view === 'hands' ? 'hands' : 'full');
   const ev = hero.update(dt, {
     speed: player.speed, run: player.running, carrying: !!s.carrying,
     fly: player.air && (player.boosted || player.flyMode), thrust: player.air ? player.thrust : 0,

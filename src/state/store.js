@@ -29,7 +29,7 @@ export function freshState(profile, prefs = {}) {
     screen: 'start', startStep: 'name', profile, stage: 1, locked: {}, installed: [], carrying: null, rocket: null,
     mode: prefs.mode || 'campaign', missionId: prefs.missionId || 'moon', teamNames: prefs.teamNames || [], team: [],
     propLoaded: 0, changeFees: 0, changeCount: 0, overruled: 0, objections: 0, verdicts: null, checks: {},
-    log: [], panel: null, firstPerson: false, showLog: true, toasts: [], result: null,
+    log: [], panel: null, firstPerson: false, view: 'third', showLog: true, toasts: [], result: null,
     signoff: null, tutorial: null, tutTick: 0, introBeat: 0, replayNotice: false, thumbsTick: 0, loan: 0, scoreId: null, showGlossary: false, savedTick: 0,
     camMode: prefs.camMode || 'auto', graphics: prefs.graphics || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 'low' : 'high'), muted: !!prefs.muted,
   };

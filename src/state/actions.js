@@ -85,6 +85,12 @@ export const A = {
     saveJSON('mf-prefs', { graphics: s.graphics, muted: s.muted, camMode: s.camMode });
     if ('graphics' in patch) bus.emit('graphics', s.graphics);
   },
+  cycleView() {
+    const order = ['third', 'first', 'hands'];
+    const v = order[(order.indexOf(store.get().view || 'third') + 1) % order.length];
+    store.set({ view: v, firstPerson: v !== 'third' });
+    A.toast({ third: '👁 Third person: you see your whole engineer.', first: '👁 First person: through the visor.', hands: '👁 Hands view: through the visor, with your hands in front of you.' }[v]);
+  },
   toggleCamera() {
     const m = store.get().camMode === 'auto' ? 'free' : 'auto';
     A.setPrefs({ camMode: m });

@@ -74,7 +74,8 @@ export function Settings({ s }) {
   return (
     <div className="settings">
       <button className="btn" aria-pressed={s.muted} onClick={() => { Sound.hum(false); A.setPrefs({ muted: !s.muted }); }}>{s.muted ? 'Sound off' : 'Sound on'}</button>
-      {s.screen === 'game' && <button key={s.camMode} className={'btn cam-btn flash ' + s.camMode} onClick={A.toggleCamera} title="C: switch between a camera that follows behind you and a free camera">🎥 {s.camMode === 'auto' ? 'Auto camera' : 'Free camera'}</button>}
+      {s.screen === 'game' && <button className="btn" onClick={A.cycleView} title="V: third person, first person, hands view">👁 {{ third: '3rd person', first: '1st person', hands: 'Hands view' }[s.view || 'third']}</button>}
+      {s.screen === 'game' && s.view === 'third' && <button key={s.camMode} className={'btn cam-btn flash ' + s.camMode} onClick={A.toggleCamera} title="C: switch between a camera that follows behind you and a free camera">🎥 {s.camMode === 'auto' ? 'Auto camera' : 'Free camera'}</button>}
       <button className="btn" onClick={() => A.setPrefs({ graphics: s.graphics === 'low' ? 'high' : 'low' })}>{s.graphics === 'low' ? 'Low graphics' : 'High graphics'}</button>
       {isTouch && <button className="btn" onClick={goFullscreen}>Fullscreen</button>}
       <button className="btn" onClick={A.toggleGlossary}>Help</button>
@@ -124,7 +125,7 @@ export function HUD({ s }) {
       <div className="hud-bottom">
         <div className="hb-left">
           {s.tutorial == null && !isTouch && <div className="controls glass">
-            <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump · hold to fly</span><span><b>F</b> flight mode</span><span><b>E</b> interact</span><span><b>V</b> 1st person</span><span><b>C</b> auto/free camera</span><span><b>L</b> log</span>
+            <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump · hold to fly</span><span><b>F</b> flight mode</span><span><b>E</b> interact</span><span><b>V</b> view (3rd · 1st · hands)</span><span><b>C</b> auto/free camera</span><span><b>L</b> log</span>
           </div>}
         </div>
         <div className="hb-center">{game && <FlightBadge />}{game && <Prompt />}</div>
