@@ -25,7 +25,8 @@ Opens in any modern browser on a laptop, tablet or phone (landscape). No install
 - **Task list and guide arrow:** the current stage's tasks with an arrow on the one to do now, a floating arrow over the station, and an edge arrow when it is off screen.
 - **Opening story** with short quizzes, then an interactive tour.
 - **Full-screen part and rocket picker:** one big card at a time with a live 3D model you can turn, price, real-world values, strengths and weaknesses, how to use it, and the budget after choosing. Carry it yourself or install it directly.
-- **Jump, launch countdown, and a 3D flight** for each mission: liftoff from Earth, cruise with a chase camera, orbit insertion and science orbits.
+- **Jump and fly:** hold Space to fire the suit thrusters, or press F for flight mode (Space up, Q down).
+- **Launch countdown, and a 3D flight** for each mission: liftoff from Earth, cruise with a chase camera, orbit insertion and science orbits.
 - **Budget in dollars everywhere:** money left in the top bar, cost and budget-after on every card.
 - **Optional extra funding** (a loan with interest: if the mission fails while you hold it, the program is cancelled).
 - **Cause tracing** that also names a decision that fixed one thing and broke another.

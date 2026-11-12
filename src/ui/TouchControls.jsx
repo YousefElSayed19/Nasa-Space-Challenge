@@ -34,7 +34,9 @@ export function TouchControls({ s }) {
       </div>
       <div className="tbtns">
         <button className={'tbtn big' + (h.prompt ? ' ready' : '')} {...key('KeyE')} aria-label="Use">{holdE ? 'Hold' : 'Use'}<small>E</small></button>
-        <button className="tbtn" {...key('Space')} aria-label="Jump">⤒<small>Jump</small></button>
+        <button className="tbtn" {...key('Space')} aria-label="Jump, hold to fly">⤒<small>Jump/Fly</small></button>
+        <button className={'tbtn small' + (h.flying ? ' on' : '')} {...key('KeyF')} aria-label="Flight mode">✈<small>Fly</small></button>
+        {h.flying && <button className="tbtn small" {...key('KeyQ')} aria-label="Descend">⤓<small>Down</small></button>}
         <button className={'tbtn' + (run ? ' on' : '')} onPointerDown={e => { e.preventDefault(); const v = !run; setRun(v); bus.emit('vkey', 'ShiftLeft', v); }} aria-label="Run">»<small>Run</small></button>
         <button className="tbtn small" {...key('KeyV')} aria-label="First person">◎<small>View</small></button>
         <button className="tbtn small" {...key('KeyC')} aria-label="Auto or free camera">🎥<small>{s.camMode === 'auto' ? 'Auto' : 'Free'}</small></button>

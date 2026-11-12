@@ -88,7 +88,7 @@ export const A = {
   toggleCamera() {
     const m = store.get().camMode === 'auto' ? 'free' : 'auto';
     A.setPrefs({ camMode: m });
-    A.toast(m === 'auto' ? 'Camera: Auto. It swings behind your engineer as you walk; drag any time to look around.' : 'Camera: Free. The camera moves only when you drag with the mouse.');
+    A.toast(m === 'auto' ? '🎥 Auto camera: follows behind you. Drag to look around.' : '🎥 Free camera: moves only when you drag.');
   },
   toggleGlossary() { Sound.click(); store.set(s => ({ showGlossary: !s.showGlossary })); },
 

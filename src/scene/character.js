@@ -36,7 +36,7 @@ function stripTexture(color) {
 export function createCharacter(profile) {
   const root = new THREE.Group();
   const carryHolder = new THREE.Group(); root.add(carryHolder);
-  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0 }, look: 0 };
+  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0 }, look: 0 };
   let rig = build(profile);
   root.add(rig.body);
 
@@ -56,7 +56,7 @@ export function createCharacter(profile) {
     const stripTex = stripTexture(p.accent);
     const stripM = new THREE.MeshBasicMaterial({ map: stripTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
     stripM.color = lin(p.accent);
-    const strips = [], lights = [], jets = [];
+    const strips = [], lights = [], jets = [], thrusters = [];
 
     const body = new THREE.Group(); body.scale.setScalar(hs);
     const hips = new THREE.Group(); hips.position.y = 0.93; body.add(hips);
@@ -78,6 +78,10 @@ export function createCharacter(profile) {
       mesh(lathe([[0.075 * b.l, 0.1], [0.098 * b.l, 0.06], [0.1 * b.l, -0.02], [0, -0.03]], 24), hand, ankle);
       const upper = mesh(new THREE.SphereGeometry(0.1, 20, 14), hand, ankle, 0, -0.05, 0.07); upper.scale.set(0.95 * b.l, 0.62, 1.55);
       const sole = mesh(new THREE.BoxGeometry(0.19 * b.l, 0.045, 0.34), dark, ankle, 0, -0.1, 0.07);
+      // boot thruster: hidden until the engineer flies
+      const bf = mesh(new THREE.ConeGeometry(0.07, 0.42, 16, 1, true), glow('#8FD3FF', 0), ankle, 0, -0.33, 0.04); bf.rotation.x = Math.PI;
+      const bc = mesh(new THREE.ConeGeometry(0.035, 0.24, 12, 1, true), glow('#FFFFFF', 0), ankle, 0, -0.24, 0.04); bc.rotation.x = Math.PI;
+      thrusters.push(bf, bc);
       sole.geometry.translate(0, 0, 0);
       return { hip, knee, ankle };
     }
@@ -173,8 +177,15 @@ export function createCharacter(profile) {
       hose(1); hose(-1);
     }
 
+    if (p.pack !== 'jet') {
+      // every pack gets two small nozzles underneath for flight
+      for (const side of [1, -1]) {
+        mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.07, 14), metal, pack, side * 0.12, -0.31, -0.06);
+        const f = mesh(new THREE.ConeGeometry(0.05, 0.36, 14, 1, true), glow('#8FD3FF', 0), pack, side * 0.12, -0.52, -0.06); f.rotation.x = Math.PI; thrusters.push(f);
+      }
+    }
     body.traverse(o => { if (o.isMesh) { o.castShadow = !o.material.transparent; o.receiveShadow = false; } });
-    return { body, hips, spine, head, legL, legR, armL, armR, lights, jets, strips, stripTex, stripM, hs, b };
+    return { body, hips, spine, head, legL, legR, armL, armR, lights, jets, thrusters, strips, stripTex, stripM, hs, b };
   }
 
   function disposeRig(r) {
@@ -192,6 +203,8 @@ export function createCharacter(profile) {
     W.pump = damp(W.pump, inp.pump ? 1 : 0, 8, dt);
     W.wave = damp(W.wave, inp.wave ? 1 : 0, 5, dt);
     W.air = damp(W.air, inp.air ? 1 : 0, 14, dt);
+    W.fly = damp(W.fly, inp.fly ? 1 : 0, 4, dt);
+    W.thrust = damp(W.thrust, inp.thrust || 0, 10, dt);
     st.phase += dt * (inp.speed * (1.55 + W.run * 0.25));
     const ph = st.phase, t = st.t, idle = 1 - W.walk, ground = 1 - W.air;
     const a = W.walk * (0.48 + 0.3 * W.run) * ground;
@@ -239,15 +252,36 @@ export function createCharacter(profile) {
     rx = lerp(rx, -0.8 + Math.sin(t * 6) * 0.28, W.pump); re = lerp(re, -0.95, W.pump);
     if (!inp.carrying) { lx = lerp(lx, -0.45, W.air); rx = lerp(rx, -0.45, W.air); lz = lerp(lz, 0.8, W.air); rz = lerp(rz, -0.8, W.air); }
     rz = lerp(rz, -2.7, W.wave); rx = lerp(rx, -0.15, W.wave);
+    // flying: legs together and trailing, body leaning into the direction of travel, arms back and slightly out
+    const F = W.fly, sp = Math.min(1, inp.speed / 7);
+    if (F > 0.01) {
+      const flutter = Math.sin(t * 7) * 0.05;
+      for (const [L, k] of [[r.legL, 1], [r.legR, -1]]) {
+        L.hip.rotation.x = lerp(L.hip.rotation.x, 0.15 + sp * 0.35 + flutter * k, F);
+        L.knee.rotation.x = lerp(L.knee.rotation.x, 0.25 + sp * 0.25, F);
+        L.ankle.rotation.x = lerp(L.ankle.rotation.x, 0.55, F);
+      }
+      r.spine.rotation.x = lerp(r.spine.rotation.x, 0.1 + sp * 0.55, F);
+      r.head.rotation.x = lerp(r.head.rotation.x, -0.15 - sp * 0.45, F);
+      r.body.position.y = lerp(r.body.position.y, Math.sin(t * 2.4) * 0.04, F);
+      if (!inp.carrying) {
+        lx = lerp(lx, 0.35 + sp * 0.5, F); rx = lerp(rx, 0.35 + sp * 0.5, F);
+        lz = lerp(lz, 0.35, F); rz = lerp(rz, -0.35, F);
+        le = lerp(le, -0.3, F); re = lerp(re, -0.3, F);
+      }
+    }
     r.armL.sh.rotation.set(lx, 0, lz); r.armR.sh.rotation.set(rx, 0, rz);
     r.armL.el.rotation.set(le, 0, 0);
     r.armR.el.rotation.set(lerp(re, -0.35, W.wave), 0, Math.sin(t * 9) * 0.5 * W.wave);
 
     // light: suit lines brighten and flow with each step, LEDs blink, jets flare when running or airborne
     r.stripTex.offset.x -= dt * (0.4 + inp.speed * 0.45);
-    r.stripM.opacity = 0.35 + 0.65 * Math.min(1, W.walk * (0.7 + 0.5 * Math.abs(Math.sin(ph))) + W.air + 0.15);
+    r.stripM.opacity = 0.35 + 0.65 * Math.min(1, W.walk * (0.7 + 0.5 * Math.abs(Math.sin(ph))) + W.air + W.fly + 0.15);
+    if (W.fly > 0.1) r.stripTex.offset.x -= dt * 2.5 * W.fly;
     r.lights.forEach((l, i) => { if (l.material.emissiveIntensity !== undefined) l.material.emissiveIntensity = 1 + Math.sin(t * 3 + i * 2.1) * 0.6; });
-    r.jets.forEach(j => { const f = Math.max(W.walk * W.run, W.air); j.scale.y = 0.5 + f * 1.5 + Math.random() * 0.25; j.material.opacity = 0.12 + 0.75 * f; });
+    r.jets.forEach(j => { const f = Math.max(W.walk * W.run, W.air, W.thrust); j.scale.y = 0.5 + f * 1.8 + Math.random() * 0.25; j.material.opacity = 0.12 + 0.8 * f; });
+    const th = Math.max(W.thrust, W.fly * 0.45);
+    r.thrusters.forEach((j, i) => { const fl = 0.85 + Math.random() * 0.3; j.scale.set(1, (0.4 + th * 1.4) * fl, 1); j.material.opacity = th * (i % 2 ? 0.95 : 0.7); });
 
     carryHolder.position.set(0, (1.2 - 0.26 * W.crouch) * r.hs + bob, (0.55 + 0.12 * W.crouch) * r.hs);
 

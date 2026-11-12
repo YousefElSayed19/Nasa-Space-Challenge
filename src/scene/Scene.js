@@ -26,7 +26,8 @@ let renderer, scene, camera, clock, fx = null, world, refs, colliders, hero, spa
 let launchRocket = null, smoke = [], dust = [], guideTarget = null, lastPtr = '';
 let time = 0, holdT = 0, ratchetT = 0, pumpAcc = 0, launchT = -1, launched = false;
 const keys = {};
-const player = { pos: START_POS.clone(), vel: new V3(), facing: Math.PI, speed: 0, spin: 0, y: 0, vy: 0, air: false, land: 0 };
+const player = { pos: START_POS.clone(), vel: new V3(), facing: Math.PI, speed: 0, spin: 0, y: 0, vy: 0, air: false, land: 0, airT: 0, boosted: false, thrust: 0, flyMode: false, cruise: 2.2 };
+let trail = [];
 let inputYaw = null, lastDrag = -1e9;
 const cam = { yaw: 0, pitch: 0.38, pos: new V3(0, 7, 22), look: new V3(0, 2, 0), fov: 60 };
 const perf = { ema: 1 / 60, timer: 0, pr: 1, maxPr: 1 };
@@ -118,6 +119,7 @@ function reset() {
   refs.trusses.forEach(tr => { tr.visible = true; });
   smoke.forEach(p => { p.sp.visible = false; p.life = 0; });
   player.pos.copy(START_POS); player.vel.set(0, 0, 0); player.facing = Math.PI; cam.yaw = 0; cam.pitch = 0.38;
+  player.y = 0; player.vy = 0; player.air = false; player.flyMode = false; player.boosted = false; player.thrust = 0; hud.set({ flying: false });
 }
 
 // ---------- store sync ----------
@@ -203,16 +205,27 @@ function onKeyDown(e) {
   if (e.code === 'KeyE') interact();
   else if (e.code === 'KeyV') store.set(st => ({ firstPerson: !st.firstPerson }));
   else if (e.code === 'KeyC') A.toggleCamera();
+  else if (e.code === 'KeyF') toggleFlight();
   else if (e.code === 'KeyL') store.set(st => ({ showLog: !st.showLog }));
   else if (e.code === 'KeyX') A.putBack();
   else if (e.code === 'Escape') A.close();
   else if (e.code === 'Space') jump(s);
 }
+function toggleFlight() {
+  const s = store.get();
+  if (['payload', 'systems', 'board'].includes(s.panel)) return;
+  player.flyMode = !player.flyMode;
+  if (player.flyMode) { player.cruise = Math.max(2.2, player.y); if (!player.air) { player.air = true; player.vy = 3.5; player.airT = 0; } }
+  else player.boosted = true; // glide down gently
+  hud.set({ flying: player.flyMode });
+  Sound.tone(player.flyMode ? 300 : 500, 0.25, 'sine', 0.05, player.flyMode ? 700 : 220);
+  bus.emit('jumped');
+}
 function jump(s) {
   if (player.air || ['payload', 'systems', 'board'].includes(s.panel)) return;
   const heavy = s.carrying ? Math.min(0.4, partById(s.carrying).mass * 0.04) : 0;
   player.vy = 5.6 * (1 - heavy) * (s.profile.pack === 'jet' ? 1.15 : 1);
-  player.air = true;
+  player.air = true; player.airT = 0; player.boosted = false;
   bus.emit('jumped');
   Sound.tone(260, 0.16, 'sine', 0.05, 520);
 }
@@ -267,6 +280,7 @@ function updatePlayer(dt, s) {
   const dir = fwd.multiplyScalar(f).add(right.multiplyScalar(r));
   const running = keys.ShiftLeft || keys.ShiftRight;
   let sp = running ? 8.2 : 4.6;
+  if (player.air && (player.boosted || player.flyMode)) sp *= 1.45; // flying is faster
   if (s.carrying) sp *= 1 - Math.min(0.35, partById(s.carrying).mass * 0.035); // heavy parts slow you (teaches mass)
   const target = dir.lengthSq() > 0.0004 ? dir.normalize().multiplyScalar(sp * (tj ? Math.max(0.35, stick) : 1)) : new V3();
   // smooth acceleration and braking
@@ -274,9 +288,10 @@ function updatePlayer(dt, s) {
   player.vel.x = damp(player.vel.x, target.x, k, dt);
   player.vel.z = damp(player.vel.z, target.z, k, dt);
   player.pos.addScaledVector(player.vel, dt);
+  const flyingHigh = player.y > 1.2;
   player.walked = (player.walked || 0) + player.vel.length() * dt;
   if (player.walked > 3 && !player.movedSent) { player.movedSent = true; bus.emit('moved'); }
-  collide(player.pos);
+  if (!flyingHigh) collide(player.pos); else { player.pos.x = Math.max(-22.3, Math.min(22.3, player.pos.x)); player.pos.z = Math.max(-16.3, Math.min(16.3, player.pos.z)); }
   player.speed = Math.hypot(player.vel.x, player.vel.z);
   player.running = running;
   if (player.speed > 0.3) {
@@ -289,16 +304,37 @@ function updatePlayer(dt, s) {
     let dy = (player.facing + Math.PI) - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
     cam.yaw += dy * (1 - Math.exp(-(1.6 + player.speed * 0.25) * dt));
   }
+  // flight: hold Space in the air to fire the thrusters; F keeps you airborne; Q descends
+  const holdUp = !!keys.Space && !picking, holdDown = !!keys.KeyQ && !picking;
   if (player.air) {
-    player.vy -= 15 * dt;
+    player.airT += dt;
+    let thrust = 0;
+    if (player.flyMode) {
+      if (holdUp) player.cruise = Math.min(7.2, player.cruise + dt * 3.2);
+      if (holdDown) player.cruise = Math.max(0.6, player.cruise - dt * 3.2);
+      const want = (player.cruise + Math.sin(time * 2.2) * 0.12 - player.y) * 3.2;
+      player.vy += (want - player.vy) * (1 - Math.exp(-4 * dt));
+      thrust = 0.55 + (holdUp ? 0.45 : 0) - (holdDown ? 0.3 : 0);
+    } else if (holdUp && player.airT > 0.16) {
+      player.boosted = true;
+      player.vy = Math.min(4.8, player.vy + 23 * dt - 15 * dt);
+      if (player.y > 7.2) player.vy = Math.min(player.vy, 0);
+      thrust = 1;
+    } else {
+      // after boosting, fall slowly like a glide; a plain jump uses normal gravity
+      player.vy -= (player.boosted ? 7 : 15) * dt;
+      if (player.boosted) { player.vy = Math.max(player.vy, holdDown ? -6 : -2.6); thrust = 0.35; }
+    }
+    player.thrust = thrust;
     player.y += player.vy * dt;
-    if (player.y <= 0) {
-      player.y = 0; player.air = false;
+    if (player.y <= 0 && !player.flyMode) {
+      player.y = 0; player.air = false; player.boosted = false; player.thrust = 0;
       player.land = Math.min(1, Math.abs(player.vy) / 7);
       player.vy = 0;
       Sound.noise(0.09, 300, 0.07 * player.land + 0.02, 1);
-    }
-  }
+    } else if (player.y < 0.4 && player.flyMode) { player.y = 0.4; player.vy = Math.max(0, player.vy); }
+  } else player.thrust = 0;
+  Sound.jet(player.air ? player.thrust : 0);
   player.land = Math.max(0, player.land - dt * 5);
 }
 
@@ -416,7 +452,7 @@ function updateWorld(dt, s, acts) {
 // ---------- camera ----------
 function updateCamera(dt, s) {
   let desired, look, fov = 60;
-  const target = new V3(player.pos.x, 1.6 + player.y * 0.6, player.pos.z);
+  const target = new V3(player.pos.x, 1.6 + player.y * 0.85, player.pos.z);
   if (s.screen === 'intro') {
     const K = [
       [[Math.sin(time * 0.06) * 18, 11, Math.cos(time * 0.06) * 16], [0, 1.5, 0]],
@@ -497,7 +533,7 @@ function tick() {
   const dt = Math.min(clock.getDelta(), 0.05); time += dt;
   const s = store.get();
   if (s.screen === 'game') updatePlayer(dt, s);
-  else { player.vel.set(0, 0, 0); player.speed = 0; player.y = 0; player.vy = 0; player.air = false; }
+  else { player.vel.set(0, 0, 0); player.speed = 0; player.y = 0; player.vy = 0; player.air = false; player.flyMode = false; player.boosted = false; player.thrust = 0; Sound.jet(0); if (hud.get().flying) hud.set({ flying: false }); }
   const acts = updateInteract(dt, s);
   if (s.screen === 'start' || s.screen === 'intro') {
     player.pos.copy(START_POS);
@@ -508,7 +544,24 @@ function tick() {
   hero.setVisible(!(s.firstPerson && s.screen === 'game'));
   const ev = hero.update(dt, {
     speed: player.speed, run: player.running, carrying: !!s.carrying,
+    fly: player.air && (player.boosted || player.flyMode), thrust: player.air ? player.thrust : 0,
     crouch: acts.installing || player.land > 0.15, pump: acts.pumping, wave: s.screen === 'launching' || (s.screen === 'intro' && (s.introBeat === 0 || s.introBeat === 5)), air: player.air, vy: player.vy,
+  });
+  if (player.air && player.thrust > 0.2 && s.screen === 'game') {
+    if (!trail.length) for (let i = 0; i < 60; i++) { const m = new THREE.Sprite(smokeMaterial()); m.material.blending = THREE.AdditiveBlending; m.visible = false; scene.add(m); trail.push({ sp: m, life: 0, c: 0 }); }
+    for (let n = 0; n < 2; n++) {
+      const q = trail.find(x => x.life <= 0); if (!q) break;
+      q.life = 1; q.sp.visible = true; q.c = (time * 0.6 + n * 0.5) % 1;
+      q.sp.position.set(player.pos.x + (Math.random() - 0.5) * 0.25, player.y + 0.05 + Math.random() * 0.1, player.pos.z + (Math.random() - 0.5) * 0.25);
+      q.sp.material.color = lin(q.c < 0.5 ? (s.profile.accent || '#FFC24B') : '#6EA8FF');
+    }
+  }
+  trail.forEach(q => {
+    if (q.life <= 0) return;
+    q.life -= dt * 1.6; q.sp.position.y -= dt * 0.9;
+    const k = 1 - Math.max(0, q.life), sc = 0.18 + k * 0.5;
+    q.sp.scale.set(sc, sc, 1); q.sp.material.opacity = Math.max(0, q.life) * 0.55 * Math.min(1, 0.3 + player.thrust);
+    if (q.life <= 0) q.sp.visible = false;
   });
   if (ev && ev.startsWith('step')) {
     Sound.step();

@@ -37,4 +37,4 @@ export function freshState(profile, prefs = {}) {
 
 export const store = makeStore(freshState(loadProfile(), loadJSON('mf-prefs', {})));
 // Fast-changing values (prompt, hold progress) live apart so the panels don't re-render every frame.
-export const hud = makeStore({ prompt: null, hold: 0, near: null, pumping: false, uiPump: 0, ptr: null, missionPhase: 'Launch', missionKind: 'ok', touch: null });
+export const hud = makeStore({ prompt: null, hold: 0, near: null, pumping: false, uiPump: 0, ptr: null, missionPhase: 'Launch', missionKind: 'ok', touch: null, flying: false });

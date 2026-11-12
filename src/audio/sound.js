@@ -38,6 +38,22 @@ export const Sound = {
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 1.2); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.8);
     src.connect(lp).connect(g).connect(c.destination); src.start(t);
   },
+  jet(level) {
+    if (!this.ok()) { if (this.jetNodes) { this.jetNodes.g.gain.value = 0; } return; }
+    const c = this.ctx;
+    if (!this.jetNodes) {
+      if (level <= 0.01) return;
+      const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      const n = c.createBufferSource(), lp = c.createBiquadFilter(), g = c.createGain();
+      n.buffer = buf; n.loop = true; lp.type = 'lowpass'; lp.frequency.value = 400; g.gain.value = 0;
+      n.connect(lp).connect(g).connect(c.destination); n.start();
+      this.jetNodes = { n, lp, g };
+    }
+    const { lp, g } = this.jetNodes, t = c.currentTime;
+    g.gain.setTargetAtTime(level * 0.09, t, 0.08);
+    lp.frequency.setTargetAtTime(300 + level * 900, t, 0.1);
+  },
   hum(on) {
     if (on && !this.humNodes && this.ok()) {
       const c = this.ctx, o = c.createOscillator(), g = c.createGain();
