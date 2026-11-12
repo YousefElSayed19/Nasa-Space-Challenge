@@ -3,19 +3,22 @@
   "id": "mro-kit",
   "title": "JPL MRO launch press kit",
   "type": "NASA",
-  "supports": "Mass breakdown, hydrazine, power, data rate, cost, orbit insertion"
+  "supports": "Mass breakdown, hydrazine, power, data rate, cost, orbit insertion",
+  "url": "https://www.jpl.nasa.gov/news/press_kits/mro-launch-Aug05.pdf"
  },
  {
   "id": "ntrs-margins",
   "title": "NTRS 20120013284, margin guidelines",
   "type": "NTRS",
-  "supports": "Contingency and margin definitions; 30% power and data; 5% attitude-control propellant"
+  "supports": "Contingency and margin definitions; 30% power and data; 5% attitude-control propellant",
+  "url": "https://ntrs.nasa.gov/citations/20120013284"
  },
  {
   "id": "ntrs-earlylate",
   "title": "NTRS 20150008247, early versus late design decisions",
   "type": "NTRS",
-  "supports": "25/20/15% margins by phase; changes cost more later"
+  "supports": "25/20/15% margins by phase; changes cost more later",
+  "url": "https://ntrs.nasa.gov/citations/20150008247"
  },
  {
   "id": "lsp-sheet",
@@ -27,7 +30,8 @@
   "id": "earthdata-sun",
   "title": "NASA Earthdata, Sun–satellite interactions",
   "type": "NASA",
-  "supports": "Solar storm effects: bit flips, drag, link disruption"
+  "supports": "Solar storm effects: bit flips, drag, link disruption",
+  "url": "https://www.earthdata.nasa.gov/learn/articles/sun-satellite-interactions"
  },
  {
   "id": "seh-cm",
@@ -74,7 +78,7 @@
   "title": "europa.nasa.gov, spacecraft",
   "type": "NASA",
   "url": "https://europa.nasa.gov/spacecraft",
-  "supports": "About 6,000 kg at launch, about 2,750 kg propellant"
+  "supports": "Aluminum-zinc radiation vault"
  },
  {
   "id": "lro-gsfc-paper",
@@ -87,7 +91,7 @@
   "id": "lro-nssdc",
   "title": "NASA NSSDC Master Catalog, LRO (archived)",
   "type": "NASA",
-  "url": "",
+  "url": "https://webarchive.library.unt.edu/web/20130222001006/http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=LUNARRO",
   "supports": "92 kg of scientific payload"
  },
  {
@@ -96,5 +100,26 @@
   "type": "NASA",
   "url": "https://www.jpl.nasa.gov/news/press_kits/insight/launch/facts",
   "supports": "694 kg at launch, 2.64 m aeroshell, 600–700 W clear and 200–300 W dusty, lithium-ion batteries, thicker heat shield than Phoenix"
+ },
+ {
+  "id": "clipper-quickfacts",
+  "title": "JPL Europa Clipper press kit, Quick Facts",
+  "type": "NASA",
+  "url": "https://www.jpl.nasa.gov/press-kits/europa-clipper/quick-facts/",
+  "supports": "About 5,800 kg at launch, about 2,750 kg propellant, vault walls up to 9.2 mm"
+ },
+ {
+  "id": "lro-ntrs-1",
+  "title": "NTRS 20110007093, LRO mission paper",
+  "type": "NTRS",
+  "url": "https://ntrs.nasa.gov/citations/20110007093",
+  "supports": "Δv 1,258 m/s, insertion 555 m/s"
+ },
+ {
+  "id": "lro-ntrs-2",
+  "title": "NTRS 20180000056, LRO paper",
+  "type": "NTRS",
+  "url": "https://ntrs.nasa.gov/citations/20180000056",
+  "supports": "823 W, 100 Mbps, 894 kg fuel"
  }
 ]

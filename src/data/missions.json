@@ -323,21 +323,21 @@
    "insertion": "A long engine burn captures the spacecraft into orbit around Jupiter.",
    "shadow": "In Jupiter’s shadow the arrays went dark and there was no battery. The spacecraft lost power."
   },
-  "brief": "Europa Clipper weighed about 6,000 kg at launch, and about 2,750 kg of that was propellant. Its arrays span about 102 m² to catch weak sunlight at Jupiter. (europa.nasa.gov; JPL Europa Clipper quick facts)",
-  "fuelNote": "Almost half of the real spacecraft’s launch mass was propellant: about 2,750 kg of about 6,000 kg. (europa.nasa.gov)",
+  "brief": "Europa Clipper weighed about 5,800 kg at launch, including about 2,750 kg of propellant. Its arrays span about 102 m² to catch weak sunlight at Jupiter. (JPL Europa Clipper press kit, Quick Facts)",
+  "fuelNote": "Almost half of the real spacecraft’s launch mass was propellant: about 2,750 kg of about 5,800 kg. (JPL Europa Clipper Quick Facts)",
   "dvNote": "Δv values for this mission are game assumptions; NASA pages opened did not give them. Isp 223 s is the hydrazine value from NTRS 19970010493.",
   "real": {
-   "launch": "about 6,000 kg",
+   "launch": "about 5,800 kg",
    "power": "at least 700 W at Jupiter",
    "downlink": "not found",
    "cost": "about $5.2 billion (lifetime)",
    "instruments": "9 instruments"
   },
   "resReal": {
-   "mass": "1 unit ≈ 30 kg. Europa Clipper weighed about 6,000 kg at launch (europa.nasa.gov).",
+   "mass": "1 unit ≈ 30 kg. Europa Clipper weighed about 5,800 kg at launch (JPL Europa Clipper Quick Facts).",
    "power": "1 unit ≈ 7 W. Its arrays give at least 700 W at Jupiter (JPL Europa Clipper spacecraft page).",
    "data": "Game units only: the NASA pages opened did not give Europa Clipper’s data rate.",
-   "prop": "1 unit ≈ 30 kg. About 2,750 kg of propellant at launch (europa.nasa.gov).",
+   "prop": "1 unit ≈ 30 kg. About 2,750 kg of propellant at launch (JPL Europa Clipper Quick Facts).",
    "budget": "1 unit = $10 million. The full mission costs about $5.2 billion over its life (JPL Europa Clipper quick facts)."
   },
   "realDesign": {
