@@ -26,7 +26,7 @@ function BudgetChip({ s }) {
   const [open, setOpen] = useState(false);
   const T = totals(s);
   const left = useAnimatedNumber(T.budget - T.cost);
-  if (s.mode === 'sandbox') return <div className="budget-chip ok"><span className="bl">Budget</span><b>Unlimited</b><span className="bs">sandbox</span></div>;
+  if (s.mode === 'sandbox') return <div className="budget-wrap"><div className="budget-chip ok"><span className="bl">$ Budget</span><b>Unlimited</b></div></div>;
   const h = headroom(T.budget, T.cost);
   const st = h < 0 ? 'crit' : h < 0.25 ? 'warn' : 'ok';
   const parts = s.installed.reduce((a, id) => a + partById(id).cost, 0);
@@ -41,7 +41,7 @@ function BudgetChip({ s }) {
   return (
     <div className="budget-wrap">
       <button className={'budget-chip ' + st} onClick={() => setOpen(o => !o)} aria-expanded={open} title="Click to see where the money goes">
-        <span className="bl">$ Budget left ▾</span><b>{money(left)}</b><span className="bs">of {money(T.budget)}{T.loan ? ' (incl. extra funding)' : ''}</span>
+        <span className="bl">$ Budget left</span><b>{money(left)}</b><span className="bs">/ {money(T.budget)}</span><span className="bcaret">▾</span>
       </button>
       {open && (
         <div className="budget-pop glass" onClick={() => setOpen(false)}>

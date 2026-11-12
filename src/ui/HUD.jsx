@@ -94,24 +94,37 @@ export function HUD({ s }) {
   const step = stepOf(s);
   const focus = step && step.focus;
   if (s.screen === 'launching') return <LaunchOverlay />; // nothing else on screen during the launch
+  const game = s.screen === 'game';
+  // Layout regions never overlap: top bar, three columns, bottom bar. Each column scrolls inside itself.
   return (
-    <div className={focus === 'info' ? 'tut-info' : ''}>
+    <div className={'hud' + (focus === 'info' ? ' tut-info' : '') + (isTouch ? ' is-touch' : '')}>
       <TopBar s={s} />
-      <Resources s={s} focus={focus === 'res'} />
-      {s.screen === 'game' && <TasksCard s={s} focus={focus === 'tasks'} />}
-      {s.screen === 'game' && <Pointer />}
-      <Toasts s={s} />
-      {s.screen === 'game' && <Prompt />}
-      {s.screen === 'game' && <TutorialCard s={s} />}
-      <SignoffModal s={s} />
-      <div className="side">
-        {s.screen === 'game' && <StationPanel s={s} />}
-        <LogPanel s={s} />
+      <div className="hud-grid">
+        <div className="hud-left">
+          <Resources s={s} focus={focus === 'res'} />
+          {game && <TutorialCard s={s} />}
+        </div>
+        <div className="hud-center">
+          {game && <TasksCard s={s} focus={focus === 'tasks'} />}
+          <Toasts s={s} />
+        </div>
+        <div className="hud-right">
+          {game && <StationPanel s={s} />}
+          <LogPanel s={s} />
+        </div>
       </div>
-      {s.screen === 'game' && <PickerHost s={s} />}
-      {s.tutorial == null && !isTouch && <div className="controls glass passthru">
-        <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump</span><span><b>E</b> interact</span><span><b>V</b> camera</span><span><b>L</b> log</span>
-      </div>}
+      <div className="hud-bottom">
+        <div className="hb-left">
+          {s.tutorial == null && !isTouch && <div className="controls glass">
+            <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump</span><span><b>E</b> interact</span><span><b>V</b> camera</span><span><b>L</b> log</span>
+          </div>}
+        </div>
+        <div className="hb-center">{game && <Prompt />}</div>
+        <div className="hb-right"><Settings s={s} /></div>
+      </div>
+      {game && <Pointer />}
+      <SignoffModal s={s} />
+      {game && <PickerHost s={s} />}
     </div>
   );
 }

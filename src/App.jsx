@@ -18,7 +18,7 @@ export function App() {
       {(s.screen === 'game' || s.screen === 'launching') && <HUD s={s} />}
       {s.screen === 'mission' && <MissionScreen s={s} />}
       {s.screen === 'report' && <ReportScreen s={s} />}
-      {s.screen !== 'launching' && <Settings s={s} />}
+      {s.screen !== 'launching' && s.screen !== 'game' && <div className="settings-float"><Settings s={s} /></div>}
       {isTouch && s.screen === 'game' && !['payload', 'systems', 'board'].includes(s.panel) && <TouchControls s={s} />}
       <RotateNotice />
       {s.showGlossary && <Glossary />}

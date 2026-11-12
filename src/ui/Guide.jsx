@@ -35,16 +35,28 @@ export function TasksCard({ s, focus }) {
 export function Pointer() {
   const { ptr } = useHud();
   if (!ptr) return null;
-  if (ptr.on) {
+  const c = document.querySelector('.hud-center'), t = document.querySelector('.tasks'), toast = document.querySelector('.toasts');
+  const cr = c ? c.getBoundingClientRect() : { left: 0, right: window.innerWidth, top: 0, bottom: window.innerHeight };
+  const below = Math.max(t ? t.getBoundingClientRect().bottom : cr.top, toast && toast.childElementCount ? toast.getBoundingClientRect().bottom : 0);
+  const minX = cr.left + 70, maxX = cr.right - 70, minY = below + 60, maxY = cr.bottom - 30;
+  const inside = ptr.on && ptr.x >= minX && ptr.x <= maxX && ptr.y >= minY && ptr.y <= maxY;
+  if (inside) {
     return (
       <div className="ptr-label passthru" style={{ left: ptr.x, top: ptr.y }}>
         <b>{ptr.label}</b><span>{ptr.dist} m</span>
       </div>
     );
   }
+  // edge arrow, clamped to the free area so it never sits on a panel
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  let dx = ptr.x - cx, dy = ptr.y - cy;
+  if (ptr.on && !dx && !dy) dy = -1;
+  const k = Math.min((maxX - cx) / Math.max(1e-3, Math.abs(dx)), (maxY - cy) / Math.max(1e-3, Math.abs(dy)));
+  const x = cx + dx * Math.min(1, k), y = cy + dy * Math.min(1, k);
+  const a = Math.atan2(dy, dx) * 180 / Math.PI;
   return (
-    <div className="ptr-edge passthru" style={{ left: ptr.x, top: ptr.y }}>
-      <div className="ptr-arrow" style={{ transform: `translate(-50%,-50%) rotate(${ptr.a}deg)` }}>➜</div>
+    <div className="ptr-edge passthru" style={{ left: x, top: y }}>
+      <div className="ptr-arrow" style={{ transform: `translate(-50%,-50%) rotate(${a}deg)` }}>➜</div>
       <div className="ptr-text">{ptr.label} · {ptr.dist} m</div>
     </div>
   );
