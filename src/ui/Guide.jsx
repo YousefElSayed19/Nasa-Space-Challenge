@@ -54,10 +54,12 @@ export function Pointer() {
 export function LaunchOverlay() {
   const [t, setT] = useState(0);
   useEffect(() => { const t0 = performance.now(); let raf; const f = n => { setT((n - t0) / 1000); raf = requestAnimationFrame(f); }; raf = requestAnimationFrame(f); return () => cancelAnimationFrame(raf); }, []);
-  const label = t < 1.2 ? 'Rolling out' : t < 2.0 ? 'T-3' : t < 2.8 ? 'T-2' : t < 3.6 ? 'T-1' : 'Liftoff!';
+  const label = t < 1.2 ? 'Rolling out to the pad' : t < 2.0 ? 'T-3' : t < 2.8 ? 'T-2' : t < 3.6 ? 'T-1' : 'Liftoff!';
+  const fade = t < 0.45 ? t / 0.45 : t < 0.9 ? 1 - (t - 0.45) / 0.45 : 0; // fade to black while the rocket is rolled out
   return (
     <div className="launch-ov passthru">
-      <div className={'count' + (label === 'Liftoff!' ? ' lift' : '')} key={label}>{label}</div>
+      <div className="launch-fade" style={{ opacity: fade }}></div>
+      {t > 0.9 && <div className={'count' + (label === 'Liftoff!' ? ' lift' : '') + (label.length > 9 ? ' small' : '')} key={label}>{label}</div>}
       <button className="btn small skipbtn" onClick={A.startMission}>Skip</button>
     </div>
   );

@@ -7,6 +7,7 @@ import { Sound } from '../audio/sound.js';
 import { MISSION, PARTS, STATIONS, partById, rocketById, homeOf, stationById, reviewVerdicts, isFree } from '../engine/index.js';
 import { buildWorld, buildEnvironment } from './hangar.js';
 import { partMesh, slotPos, rebuildCraft } from './spacecraft.js';
+let flying = null;
 import { createCharacter } from './character.js';
 import { createPostFX } from './postfx.js';
 import { createSpaceView } from './space.js';
@@ -62,7 +63,7 @@ export function initScene(container) {
     space.setMission(s.missionId, s.installed, s.rocket);
     if (launchRocket) scene.remove(launchRocket.group);
     launchRocket = buildRocket(rocketById(s.rocket) || rocketById('atlas'), 10);
-    launchRocket.group.position.set(0, -10, 0); scene.add(launchRocket.group);
+    launchRocket.group.position.set(0, 0.42, 0); launchRocket.group.visible = false; scene.add(launchRocket.group);
     if (!smoke.length) for (let i = 0; i < 90; i++) { const sp = new THREE.Sprite(smokeMaterial()); sp.visible = false; scene.add(sp); smoke.push({ sp, life: 0, v: new V3() }); }
     launchT = 0; launched = false;
     // step back to a safe viewing spot and wave the spacecraft off
@@ -71,6 +72,17 @@ export function initScene(container) {
   bus.on('reset', reset);
   bus.on('enter', () => { player.pos.copy(START_POS); player.facing = Math.PI; cam.yaw = 0; cam.pitch = 0.38; });
   bus.on('installed', () => { refs.craftLight.intensity = 6; });
+  bus.on('fly', id => {
+    const p = partById(id), from = refs.shelf[id] ? refs.shelf[id].getWorldPosition(new V3()) : new V3(0, 3, 6);
+    const kids = refs.craftParts.children, target = kids[kids.length - 1];
+    if (!target) return;
+    const to = target.position.clone();
+    target.visible = false;
+    const m = partMesh(p, p.slot === 'array' && !p.round); m.position.copy(from); scene.add(m);
+    if (flying) { scene.remove(flying.m); flying.target.visible = true; }
+    flying = { m, from, to, target, t: 0 };
+    Sound.tone(500, 0.35, 'sine', 0.04, 1100);
+  });
   bus.on('mission', id => { refs.setMissionVisuals(id); last.installed = null; onStore(); });
   store.sub(onStore); onStore();
   window.addEventListener('resize', onResize);
@@ -101,6 +113,7 @@ function reset() {
   launchT = -1; launched = false;
   refs.craft.position.set(0, 0, 0); refs.flame.visible = refs.flameCore.visible = false; refs.craft.visible = true;
   if (launchRocket) { scene.remove(launchRocket.group); launchRocket = null; }
+  refs.trusses.forEach(tr => { tr.visible = true; });
   smoke.forEach(p => { p.sp.visible = false; p.life = 0; });
   player.pos.copy(START_POS); player.vel.set(0, 0, 0); player.facing = Math.PI; cam.yaw = 0; cam.pitch = 0.38;
 }
@@ -187,7 +200,7 @@ function onKeyDown(e) {
   else if (e.code === 'Space') jump(s);
 }
 function jump(s) {
-  if (player.air) return;
+  if (player.air || ['payload', 'systems', 'board'].includes(s.panel)) return;
   const heavy = s.carrying ? Math.min(0.4, partById(s.carrying).mass * 0.04) : 0;
   player.vy = 5.6 * (1 - heavy) * (s.profile.pack === 'jet' ? 1.15 : 1);
   player.air = true;
@@ -229,8 +242,10 @@ function collide(p) {
   p.x = Math.max(-22.3, Math.min(22.3, p.x)); p.z = Math.max(-16.3, Math.min(16.3, p.z));
 }
 function updatePlayer(dt, s) {
-  const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
-  const r = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+  // while the full-screen picker is open, arrow keys browse cards instead of walking
+  const picking = ['payload', 'systems', 'board'].includes(s.panel);
+  const f = picking ? 0 : (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
+  const r = picking ? 0 : (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
   const fwd = new V3(-Math.sin(cam.yaw), 0, -Math.cos(cam.yaw)), right = new V3(Math.cos(cam.yaw), 0, -Math.sin(cam.yaw));
   const dir = fwd.multiplyScalar(f).add(right.multiplyScalar(r));
   const running = keys.ShiftLeft || keys.ShiftRight;
@@ -298,6 +313,14 @@ function updateInteract(dt, s) {
 // ---------- world animation ----------
 function updateWorld(dt, s, acts) {
   refs.mars.rotation.y += dt * 0.25;
+  if (flying) {
+    flying.t += dt / 0.9;
+    const k = Math.min(1, flying.t), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    flying.m.position.lerpVectors(flying.from, flying.to, e);
+    flying.m.position.y += Math.sin(k * Math.PI) * 3;
+    flying.m.rotation.y = k * Math.PI * 2;
+    if (k >= 1) { scene.remove(flying.m); flying.target.visible = true; Sound.clunk(); flying = null; }
+  }
   refs.dust.rotation.y += dt * 0.01;
   refs.craftLight.intensity = damp(refs.craftLight.intensity, 2.6, 3, dt);
   const bst = guideTarget;
@@ -333,10 +356,13 @@ function updateWorld(dt, s, acts) {
     launchT += dt;
     const rk = launchRocket.group;
     // 0–1.2 s: the rocket rises out of the floor around the spacecraft; 3.0 s ignition; 3.6 s liftoff
-    if (launchT < 1.2) { const k = launchT / 1.2, e = 1 - Math.pow(1 - k, 3); rk.position.y = -10 + e * 10.42; refs.craft.visible = k < 0.6; }
-    else { refs.craft.visible = false; }
+    // 0–0.45 s screen fades to black; the rocket is placed on the pad and the roof opens; 3.0 s ignition; 3.6 s liftoff
+    const placed = launchT >= 0.45;
+    rk.visible = placed; refs.craft.visible = !placed;
+    refs.trusses.forEach(tr => { tr.visible = !placed; });
+    refs.beacon.visible = refs.beaconRing.visible = false;
     const lift = Math.max(0, launchT - 3.6);
-    if (launchT >= 1.2) rk.position.y = 0.42 + lift * lift * 2.6;
+    rk.position.y = 0.42 + lift * lift * 2.6;
     rk.position.x = launchT > 3 && lift < 0.6 ? Math.sin(launchT * 50) * 0.03 : 0;
     const on = launchT > 3.0;
     launchRocket.flames.forEach((f, i) => { f.visible = on; const k = 1 + Math.random() * 0.25; f.scale.set(k, 0.9 + Math.random() * 0.35 + Math.min(1, lift) * 0.4, k); });
@@ -386,7 +412,8 @@ function updateCamera(dt, s) {
     const a = time * 0.07; desired = new V3(Math.sin(a) * 15, 7.5, Math.cos(a) * 12); look = new V3(0, 2.2, 0);
   } else if (s.screen === 'launching') {
     const ry = launchRocket ? launchRocket.group.position.y : 0;
-    look = new V3(0, 4.5 + Math.max(0, ry) * 0.85, 0); desired = new V3(9, 3.5, 15); fov = 55;
+    look = new V3(0, 4.6 + Math.max(0, ry - 0.42) * 0.9, 0); desired = new V3(-7.5, 1.9, 9.5); fov = 58;
+    if (launchT < 0.45) { cam.pos.copy(desired); cam.look.copy(look); }
   } else if (s.firstPerson) {
     desired = new V3(player.pos.x, 1.72 + player.y, player.pos.z);
     const a = cam.pitch - 0.38;

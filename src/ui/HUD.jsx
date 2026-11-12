@@ -6,6 +6,8 @@ import { StationPanel, SignoffModal } from './Panels.jsx';
 import { TutorialCard } from './Tutorial.jsx';
 import { TasksCard, Pointer, LaunchOverlay } from './Guide.jsx';
 import { stepOf } from '../state/tutorial.js';
+import { Picker } from './Picker.jsx';
+import { stationById, STAGE_NAMES } from '../engine/index.js';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
 import { partById, isFree, money } from '../engine/index.js';
@@ -65,16 +67,31 @@ export function Settings({ s }) {
   );
 }
 
+function PickerHost({ s }) {
+  const id = s.panel;
+  if (!['payload', 'systems', 'board'].includes(id)) return null;
+  const st = stationById(id);
+  if (!isFree(s) && st.stage > s.stage) {
+    return (
+      <div className="picker-ov" onClick={A.close}><section className="picker small glass" onClick={e => e.stopPropagation()}>
+        <h2>{st.label}</h2><p className="sub">This station opens at stage {st.stage}, {STAGE_NAMES[st.stage - 1]}. Finish {STAGE_NAMES[s.stage - 1].toLowerCase()} first.</p>
+        <div className="foot"><span></span><button className="btn" onClick={A.close}>OK</button></div>
+      </section></div>
+    );
+  }
+  return <Picker s={s} station={id} key={id} />;
+}
+
 export function HUD({ s }) {
   const step = stepOf(s);
   const focus = step && step.focus;
+  if (s.screen === 'launching') return <LaunchOverlay />; // nothing else on screen during the launch
   return (
     <div className={focus === 'info' ? 'tut-info' : ''}>
       <TopBar s={s} />
       <Resources s={s} focus={focus === 'res'} />
       {s.screen === 'game' && <TasksCard s={s} focus={focus === 'tasks'} />}
       {s.screen === 'game' && <Pointer />}
-      {s.screen === 'launching' && <LaunchOverlay />}
       <Toasts s={s} />
       {s.screen === 'game' && <Prompt />}
       {s.screen === 'game' && <TutorialCard s={s} />}
@@ -83,6 +100,7 @@ export function HUD({ s }) {
         {s.screen === 'game' && <StationPanel s={s} />}
         <LogPanel s={s} />
       </div>
+      {s.screen === 'game' && <PickerHost s={s} />}
       {s.tutorial == null && <div className="controls glass passthru">
         <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump</span><span><b>E</b> interact</span><span><b>V</b> camera</span><span><b>L</b> log</span>
       </div>}

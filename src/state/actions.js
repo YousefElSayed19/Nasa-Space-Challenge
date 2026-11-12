@@ -100,6 +100,12 @@ export const A = {
     if (!s.installed.length && !s.tutorial) A.toast('Carry it to the Assembly Cradle in the middle of the hangar, then hold E to install.');
     else if (changeFee(s, p)) A.toast(`This stage is locked. Installing it files a change request costing ${money(changeFee(s, p))}.`, 'warn');
   },
+  installDirect(id) {
+    const s = store.get(); if (!isFree(s) && s.stage > 5) return;
+    store.set({ carrying: id }); // the picker stays open so you can keep choosing
+    A.install();
+    bus.emit('fly', id);
+  },
   putBack() { if (store.get().carrying) { store.set({ carrying: null }); Sound.click(); } },
   install() {
     const s = store.get(); const p = partById(s.carrying); if (!p) return;

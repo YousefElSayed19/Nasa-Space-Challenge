@@ -354,6 +354,7 @@ export function StationPanel({ s }) {
     );
   }
   const T = totals(s);
+  if (id === 'payload' || id === 'systems' || id === 'board') return null; // shown by the full-screen picker
   const map = { control: Briefing, payload: Payload, systems: Systems, cradle: Cradle, board: Board, fuel: Fuel, review: Review };
   const C = map[id];
   return C ? <C key={id} s={s} T={T} /> : null;

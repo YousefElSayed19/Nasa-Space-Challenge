@@ -17,7 +17,7 @@ export function App() {
       {(s.screen === 'game' || s.screen === 'launching') && <HUD s={s} />}
       {s.screen === 'mission' && <MissionScreen s={s} />}
       {s.screen === 'report' && <ReportScreen s={s} />}
-      <Settings s={s} />
+      {s.screen !== 'launching' && <Settings s={s} />}
       {s.showGlossary && <Glossary />}
     </>
   );

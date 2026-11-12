@@ -24,7 +24,7 @@ Opens in Chrome or Edge on a laptop. No installation, no login.
 - **Interactive tour** on first play: each step waits for you to try it, then you press Next (or Skip).
 - **Task list and guide arrow:** the current stage's tasks with an arrow on the one to do now, a floating arrow over the station, and an edge arrow when it is off screen.
 - **Opening story** with short quizzes, then an interactive tour.
-- **Part and rocket cards** with a rendered picture, price, real-world values, strengths and weaknesses, and how each choice changes your budget.
+- **Full-screen part and rocket picker:** one big card at a time with a live 3D model you can turn, price, real-world values, strengths and weaknesses, how to use it, and the budget after choosing. Carry it yourself or install it directly.
 - **Jump, launch countdown, and a 3D flight** for each mission: liftoff from Earth, cruise with a chase camera, orbit insertion and science orbits.
 - **Budget in dollars everywhere:** money left in the top bar, cost and budget-after on every card.
 - **Optional extra funding** (a loan with interest: if the mission fails while you hold it, the program is cancelled).

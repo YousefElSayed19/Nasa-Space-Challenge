@@ -57,7 +57,8 @@ export function buildWorld(scene) {
   box(46, 10, 0.4, wallM(12), 0, 5, -17); box(46, 10, 0.4, wallM(12), 0, 5, 17);
   box(0.4, 10, 34, wallM(9), -23, 5, 0); box(0.4, 10, 34, wallM(9), 23, 5, 0);
   // ceiling trusses
-  for (let x = -18; x <= 18; x += 6) box(0.3, 0.5, 34, metal, x, 9.6, 0);
+  refs.trusses = [];
+  for (let x = -18; x <= 18; x += 6) refs.trusses.push(box(0.3, 0.5, 34, metal, x, 9.6, 0));
   // skirting glow
   const skirt = std('#6EA8FF', { emissive: '#6EA8FF', emissiveIntensity: 0.9 });
   box(45.4, 0.06, 0.06, skirt, 0, 0.12, -16.75); box(45.4, 0.06, 0.06, skirt, 0, 0.12, 16.75);
