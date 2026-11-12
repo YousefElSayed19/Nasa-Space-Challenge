@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { A, unlockedMissions } from '../state/actions.js';
 import { loadJSON } from '../state/store.js';
 import { useAnimatedNumber } from './hooks.js';
-import { MISSION, MISSIONS, STAGE_NAMES, partById, causeTrace, pct, fmt, money, isFree } from '../engine/index.js';
+import { MISSION, MISSIONS, STAGE_NAMES, partById, causeTrace, badgesFor, pct, fmt, money, isFree } from '../engine/index.js';
 
 const END = {
   power: 'Science was lost to a power shortfall.', data: 'Science was lost because data could not be sent home.',
@@ -115,6 +115,12 @@ export function ReportScreen({ s }) {
             <table><thead><tr><th></th><th>Yours</th><th>Real</th></tr></thead>
               <tbody>{comp.map(c => <tr key={c[0]}><td>{c[0]}</td><td>{c[1]}</td><td>{c[2]}</td></tr>)}</tbody></table>
             <p className="approx">Real values from NASA and JPL sources; see the info markers and the source register.</p>
+          </div>
+          <div className="sec wide-sec"><h3>Badges</h3>
+            <div className="badges">{badgesFor(s, r).map(b => (
+              <div key={b.id} className={'badge' + (b.earned ? ' earned' : '')} title={b.desc}>
+                <span className="b-icon" aria-hidden="true">{b.icon}</span><div><b>{b.title}</b><div className="tag">{b.desc}</div></div>
+              </div>))}</div>
           </div>
           <Compare s={s} r={r} key={s.savedTick} />
           <div className="sec wide-sec"><h3>Every decision</h3>

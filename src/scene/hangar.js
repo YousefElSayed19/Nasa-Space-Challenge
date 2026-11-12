@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { std, basic, glow, lin } from './materials.js';
 import { canvasTex, label } from './textures.js';
 import { partMesh, BUS_Y } from './spacecraft.js';
+import { buildRocket } from './rocket.js';
 import { ALL_PARTS, ALL_ROCKETS, MISSIONS, stationById } from '../engine/index.js';
 
 export function buildWorld(scene) {
@@ -161,10 +162,33 @@ export function buildWorld(scene) {
     cyl(1.75, 1.75, 0.05, std('#6EA8FF', { emissive: '#6EA8FF', emissiveIntensity: 1.4 }), 0, 0.42, 0);
     for (const sx of [-1, 1]) box(0.25, 1.4, 1.4, metal, sx * 0.85, 1.0, 0);
     const craft = new THREE.Group(); scene.add(craft); refs.craft = craft;
-    const foil = std('#D4AC52', { metalness: 0.9, roughness: 0.28, emissive: '#2A1C00', emissiveIntensity: 0.25 });
-    box(2, 2, 2, foil, 0, BUS_Y, 0, craft);
-    for (const y of [-0.55, 0.55]) box(2.02, 0.03, 2.02, std('#B08A3A', { metalness: 0.9, roughness: 0.4 }), 0, BUS_Y + y, 0, craft);
-    box(2.04, 0.08, 2.04, std('#9AA6D8', { metalness: 0.8 }), 0, BUS_Y - 0.98, 0, craft);
+    // multilayer-insulation foil: crinkled gold, an octagonal bus like real orbiters
+    const foilTex = canvasTex(512, 512, (g, w, h) => {
+      g.fillStyle = '#C9A04A'; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 900; i++) {
+        const x = Math.random() * w, y = Math.random() * h, r = 6 + Math.random() * 26;
+        g.fillStyle = Math.random() < 0.5 ? `rgba(255,236,170,${0.08 + Math.random() * 0.18})` : `rgba(90,60,10,${0.08 + Math.random() * 0.2})`;
+        g.beginPath(); g.moveTo(x, y); g.lineTo(x + r, y + Math.random() * r); g.lineTo(x + Math.random() * r, y + r); g.closePath(); g.fill();
+      }
+      g.strokeStyle = 'rgba(80,55,10,.35)'; g.lineWidth = 3; for (let y = 64; y < h; y += 128) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    });
+    const foil = new THREE.MeshStandardMaterial({ map: foilTex, metalness: 0.85, roughness: 0.32, emissive: lin('#2A1C00'), emissiveIntensity: 0.25 });
+    const bus = new THREE.Mesh(new THREE.CylinderGeometry(1.08, 1.08, 2, 8), foil); bus.rotation.y = Math.PI / 8; bus.position.y = BUS_Y; craft.add(bus);
+    const silver = std('#C9D0E6', { metalness: 0.9, roughness: 0.25 });
+    for (const yy of [-1, 1]) { const deck = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 0.08, 8), silver); deck.rotation.y = Math.PI / 8; deck.position.y = BUS_Y + yy; craft.add(deck); }
+    const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.7, 0.3, 32), std('#9AA6D8', { metalness: 0.9, roughness: 0.3 })); ring.position.y = BUS_Y - 1.18; craft.add(ring);
+    // white radiator panels on the diagonal faces
+    for (const a of [Math.PI / 4, -Math.PI / 4, Math.PI * 3 / 4, -Math.PI * 3 / 4]) {
+      const rad = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.3, 0.03), std('#EEF1FF', { roughness: 0.4 }));
+      rad.position.set(Math.sin(a) * 1.02, BUS_Y, Math.cos(a) * 1.02); rad.rotation.y = a; craft.add(rad);
+    }
+    // attitude thruster pods and a star tracker
+    for (const a of [Math.PI / 4, -Math.PI / 4, Math.PI * 3 / 4, -Math.PI * 3 / 4]) {
+      const pod = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.16, 12), std('#5A5F70', { metalness: 0.9, roughness: 0.3 }));
+      pod.position.set(Math.sin(a) * 1.05, BUS_Y - 0.92, Math.cos(a) * 1.05); pod.rotation.z = Math.PI; craft.add(pod);
+    }
+    const tracker = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 0.22, 16), std('#1B2250', { metalness: 0.6 })); tracker.position.set(0.6, BUS_Y + 1.15, 0.55); tracker.rotation.x = 0.5; craft.add(tracker);
+    refs.busParts = craft.children.slice();
     const shellM = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.22, roughness: 0.05, metalness: 0.3 }); shellM.color = lin('#BFD4FF');
     const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.4, 28), shellM); shell.position.set(0, 2.5, -1.5); craft.add(shell);
     const liqM = std('#8FD3FF', { emissive: '#3D63FF', emissiveIntensity: 0.9, transparent: true, opacity: 0.9 });
@@ -222,14 +246,8 @@ export function buildWorld(scene) {
     board.position.set(x, 4.2, z - 0.3); board.userData.noCast = true; scene.add(board);
     box(6.6, 0.3, 2.2, std('#2C3670', { metalness: 0.5 }), x, 0.15, z + 0.9);
     ALL_ROCKETS.forEach((r, i) => {
-      const g = new THREE.Group();
-      const white = std('#E8ECFF', { roughness: 0.35 }), dark = std('#30395F'), body = std(r.body, { roughness: 0.4 });
-      const core = (cx, h) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, h, 24), body); c.position.set(cx, h / 2, 0); g.add(c); };
-      core(0, r.h); if (r.cores === 3) { core(-0.58, r.h * 0.72); core(0.58, r.h * 0.72); }
-      const fair = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.8, 24), white); fair.position.y = r.h + 0.4; g.add(fair);
-      const band = new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.29, 0.12, 24), dark); band.position.y = r.h * 0.62; g.add(band);
-      for (let k = 0; k < 4; k++) { const fin = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.5, 0.25), dark); fin.position.set(Math.cos(k * Math.PI / 2) * 0.3, 0.25, Math.sin(k * Math.PI / 2) * 0.3); fin.rotation.y = -k * Math.PI / 2; g.add(fin); }
-      g.position.set(x - 2.2 + i * 2.2, 0.3, z + 0.9); scene.add(g); refs.rockets[r.id] = g;
+      const { group } = buildRocket(r, r.h);
+      group.position.set(x - 2.2 + i * 2.2, 0.3, z + 0.9); scene.add(group); refs.rockets[r.id] = group;
     });
     refs.rocketRing = new THREE.Mesh(new THREE.RingGeometry(0.8, 0.92, 48), glow('#6EA8FF', 1));
     refs.rocketRing.material.side = THREE.DoubleSide; refs.rocketRing.rotation.x = -Math.PI / 2; refs.rocketRing.visible = false; scene.add(refs.rocketRing);
@@ -283,8 +301,14 @@ export function buildWorld(scene) {
   }
 
   // beacon that floats over the next station
-  refs.beacon = new THREE.Mesh(new THREE.OctahedronGeometry(0.32), std('#6EA8FF', { emissive: '#6EA8FF', emissiveIntensity: 2.2 }));
-  refs.beacon.userData.noCast = true; scene.add(refs.beacon);
+  // big guide arrow that floats over the current task's station
+  refs.beacon = new THREE.Group();
+  const arrowMat = std('#FFC24B', { emissive: '#FFB020', emissiveIntensity: 1.8, roughness: 0.3 });
+  const head = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.7, 4), arrowMat); head.rotation.x = Math.PI; head.position.y = 0.35; refs.beacon.add(head);
+  const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.75, 0.22), arrowMat); shaft.position.y = 1.05; refs.beacon.add(shaft);
+  refs.beaconRing = new THREE.Mesh(new THREE.RingGeometry(0.7, 0.85, 48), glow('#FFC24B', 0.7));
+  refs.beaconRing.material.side = THREE.DoubleSide; refs.beaconRing.rotation.x = -Math.PI / 2; refs.beaconRing.userData.noCast = true; scene.add(refs.beaconRing);
+  refs.beacon.traverse(o => { o.userData.noCast = true; }); scene.add(refs.beacon);
 
   refs.setMissionVisuals = (id) => { const m = MISSIONS.find(x => x.id === id) || MISSIONS[1]; refs.drawControl(m); refs.drawBoard(m); };
   refs.setMissionVisuals('mars');

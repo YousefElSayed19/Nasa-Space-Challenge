@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
 import { MISSION } from '../engine/index.js';
+import { hud } from '../state/store.js';
 
 const PHASES = ['Launch', 'Cruise', 'Orbit insertion', 'Science operations', 'End of mission'];
 
@@ -17,10 +18,11 @@ export function MissionScreen({ s }) {
     }, 1500);
     return () => clearTimeout(t);
   }, [shown, r]);
+  useEffect(() => { const e = r.timeline[Math.min(shown, r.timeline.length) - 1]; hud.set({ missionPhase: e.phase, missionKind: e.kind }); }, [shown, r]);
   const reached = new Set(r.timeline.slice(0, shown).map(e => e.phase));
   const done = shown >= r.timeline.length;
   return (
-    <div className="overlay">
+    <div className="overlay mission-ov">
       <section className="mission glass" aria-live="polite">
         <div className="label">Mission timeline</div>
         <h2 style={{ margin: '2px 0 0', fontSize: 24 }}>{MISSION.name} in flight</h2>

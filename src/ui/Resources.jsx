@@ -38,10 +38,10 @@ function Row({ r, T, s }) {
   );
 }
 
-export function Resources({ s }) {
+export function Resources({ s, focus }) {
   const T = totals(s);
   return (
-    <section className="res glass" aria-label="Live resource budget">
+    <section className={'res glass' + (focus ? ' tut-focus' : '')} aria-label="Live resource budget">
       <h3>Live budget <InfoDot title="Margins" info={{
         what: 'Each white tick marks 75% of the limit: the recommended 25% headroom.',
         why: 'Estimates grow as a design matures, and space throws surprises at you. Margin absorbs both.',

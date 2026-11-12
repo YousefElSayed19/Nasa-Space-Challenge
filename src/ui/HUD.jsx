@@ -4,6 +4,8 @@ import { Resources } from './Resources.jsx';
 import { Prompt } from './Prompt.jsx';
 import { StationPanel, SignoffModal } from './Panels.jsx';
 import { TutorialCard } from './Tutorial.jsx';
+import { TasksCard, Pointer, LaunchOverlay } from './Guide.jsx';
+import { stepOf } from '../state/tutorial.js';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
 import { partById, isFree } from '../engine/index.js';
@@ -57,30 +59,33 @@ export function Settings({ s }) {
     <div className="settings">
       <button className="btn" aria-pressed={s.muted} onClick={() => { Sound.hum(false); A.setPrefs({ muted: !s.muted }); }}>{s.muted ? 'Sound off' : 'Sound on'}</button>
       <button className="btn" onClick={() => A.setPrefs({ graphics: s.graphics === 'low' ? 'high' : 'low' })}>{s.graphics === 'low' ? 'Low graphics' : 'High graphics'}</button>
-      <button className="btn" onClick={A.toggleGlossary}>Glossary</button>
+      <button className="btn" onClick={A.toggleGlossary}>Help</button>
       {s.screen === 'game' && <button className="btn" onClick={A.backToMenu}>Menu</button>}
     </div>
   );
 }
 
 export function HUD({ s }) {
+  const step = stepOf(s);
+  const focus = step && step.focus;
   return (
-    <>
+    <div className={focus === 'info' ? 'tut-info' : ''}>
       <TopBar s={s} />
-      <Resources s={s} />
-      {s.screen === 'game' && s.tutorial == null && <div className="objective glass passthru" key={s.stage + (s.carrying || '')}>{objectiveText(s)}</div>}
-      {s.screen === 'game' && <TutorialCard s={s} />}
-      <SignoffModal s={s} />
+      <Resources s={s} focus={focus === 'res'} />
+      {s.screen === 'game' && <TasksCard s={s} focus={focus === 'tasks'} />}
+      {s.screen === 'game' && <Pointer />}
+      {s.screen === 'launching' && <LaunchOverlay />}
       <Toasts s={s} />
       {s.screen === 'game' && <Prompt />}
-      {s.carrying && <div className="carry glass passthru">Carrying {partById(s.carrying).name}. Press X to put it back.</div>}
+      {s.screen === 'game' && <TutorialCard s={s} />}
+      <SignoffModal s={s} />
       <div className="side">
         {s.screen === 'game' && <StationPanel s={s} />}
         <LogPanel s={s} />
       </div>
       <div className="controls glass passthru">
-        <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>E</b> interact</span><span><b>V</b> camera</span><span><b>L</b> log</span>
+        <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump</span><span><b>E</b> interact</span><span><b>V</b> camera</span><span><b>L</b> log</span>
       </div>
-    </>
+    </div>
   );
 }

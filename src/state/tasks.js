@@ -1,0 +1,53 @@
+// The task list for the current stage, and which station the arrow should point at.
+import { MISSION, CHECKS, partById, totals, isFree, skippedChecks } from '../engine/index.js';
+
+export function tasksFor(s) {
+  const T = totals(s);
+  const nInst = s.installed.filter(id => partById(id).slot === 'instrument').length;
+  const fuelOk = s.propLoaded >= T.need * 0.98 && s.propLoaded <= T.need * 1.15;
+  let title, items;
+  if (isFree(s)) {
+    title = s.mode === 'sandbox' ? 'Sandbox' : 'Replay';
+    items = [
+      { text: 'Change the design at the racks and the cradle', done: s.installed.length > 0, station: 'payload', optional: true },
+      { text: 'Choose a rocket', done: !!s.rocket, station: 'board' },
+      { text: 'Load propellant to the target line', done: fuelOk, station: 'fuel' },
+      { text: 'Launch from the Go/No-Go console', done: false, station: 'review' },
+    ];
+  } else {
+    switch (s.stage) {
+      case 1: title = 'Stage 1: Briefing'; items = [
+        { text: 'Walk to Mission Control', done: s.panel === 'control', station: 'control' },
+        { text: 'Read the briefing and accept the mission', done: false, station: 'control' },
+      ]; break;
+      case 2: title = 'Stage 2: Payload'; items = [
+        { text: 'Pick up an instrument at the Payload Bay', done: !!s.carrying || nInst > 0, station: 'payload' },
+        { text: 'Install it at the Assembly Cradle', done: nInst > 0, station: 'cradle' },
+        { text: `Reach science value ${Math.ceil(MISSION.sciTarget * 0.67)} or more`, done: T.sci >= MISSION.sciTarget * 0.67, station: 'payload', optional: true },
+        { text: 'Confirm the payload at the Payload Bay', done: false, station: 'payload' },
+      ]; break;
+      case 3: title = 'Stage 3: Systems'; items = [
+        { text: 'Fit a solar array', done: T.has('array'), station: 'systems' },
+        { text: 'Fit an antenna', done: T.has('antenna'), station: 'systems' },
+        { text: 'Fit a battery', done: T.has('battery'), station: 'systems' },
+        { text: MISSION.events.includes('radiation') ? 'Fit the radiation vault' : 'Fit shielding', done: T.has('shield'), station: 'systems' },
+        { text: 'Confirm the systems at the Systems Rack', done: false, station: 'systems' },
+      ]; break;
+      case 4: title = 'Stage 4: Launch vehicle'; items = [
+        { text: 'Choose a rocket that can lift your spacecraft', done: !!s.rocket, station: 'board' },
+        { text: 'Confirm the rocket', done: false, station: 'board' },
+      ]; break;
+      case 5: title = 'Stage 5: Fueling'; items = [
+        { text: 'Pump propellant to the green band', done: fuelOk, station: 'fuel' },
+        { text: 'Finish fueling', done: false, station: 'fuel' },
+      ]; break;
+      default: title = 'Stage 6: Go/No-Go'; items = [
+        { text: `Run the ${CHECKS.length} pre-launch checks at the cradle`, done: skippedChecks(s).length === 0, station: 'cradle', optional: true },
+        { text: 'Hold the Go/No-Go review and launch', done: false, station: 'review' },
+      ];
+    }
+  }
+  if (s.carrying) items = [{ text: `Install the ${partById(s.carrying).name} at the Assembly Cradle (hold E)`, done: false, station: 'cradle' }, ...items.filter(i => i.done)];
+  const current = items.find(i => !i.done) || null;
+  return { title, items, current, target: current ? current.station : null };
+}

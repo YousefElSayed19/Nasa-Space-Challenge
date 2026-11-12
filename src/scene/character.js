@@ -22,7 +22,7 @@ export function createCharacter(profile) {
   const root = new THREE.Group();
   const carryHolder = new THREE.Group();
   root.add(carryHolder);
-  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0 } };
+  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0 } };
   let rig = build(profile);
   root.add(rig.body);
 
@@ -191,9 +191,10 @@ export function createCharacter(profile) {
     W.crouch = damp(W.crouch, inp.crouch ? 1 : 0, 8, dt);
     W.pump = damp(W.pump, inp.pump ? 1 : 0, 8, dt);
     W.wave = damp(W.wave, inp.wave ? 1 : 0, 5, dt);
+    W.air = damp(W.air, inp.air ? 1 : 0, 14, dt);
     st.phase += dt * inp.speed * 1.75;
     const ph = st.phase, t = st.t, idle = 1 - W.walk;
-    const a = W.walk * (0.55 + 0.3 * W.run);
+    const a = W.walk * (0.55 + 0.3 * W.run) * (1 - W.air);
 
     // legs
     const swing = s => -Math.sin(ph + s) * a;
@@ -202,6 +203,12 @@ export function createCharacter(profile) {
     r.legL.knee.rotation.x = lerp(bend(0), 1.55, W.crouch);
     r.legR.hip.rotation.x = lerp(swing(Math.PI), -0.35, W.crouch);
     r.legR.knee.rotation.x = lerp(bend(Math.PI), 1.05, W.crouch);
+    // airborne: tuck the legs, rising then reaching for the floor
+    const rising = inp.vy > 0 ? 1 : 0;
+    r.legL.hip.rotation.x = lerp(r.legL.hip.rotation.x, rising ? -0.75 : -0.3, W.air);
+    r.legL.knee.rotation.x = lerp(r.legL.knee.rotation.x, rising ? 1.25 : 0.5, W.air);
+    r.legR.hip.rotation.x = lerp(r.legR.hip.rotation.x, rising ? -0.35 : -0.15, W.air);
+    r.legR.knee.rotation.x = lerp(r.legR.knee.rotation.x, rising ? 0.95 : 0.35, W.air);
 
     // body bob, lean and breathing
     const bob = Math.abs(Math.sin(ph)) * 0.05 * W.walk * (1 + W.run * 0.7);
@@ -224,6 +231,7 @@ export function createCharacter(profile) {
     lx = lerp(lx, -1.35 + tw, W.crouch); rx = lerp(rx, -1.35 - tw, W.crouch);
     rx = lerp(rx, -0.8 + Math.sin(t * 6) * 0.28, W.pump); re = lerp(re, -0.95, W.pump);
     rz = lerp(rz, -2.7, W.wave); rx = lerp(rx, -0.15, W.wave);
+    if (!inp.carrying) { lx = lerp(lx, -0.5, W.air); rx = lerp(rx, -0.5, W.air); lz = lerp(lz, 0.75, W.air); rz = lerp(rz, -0.75, W.air); }
     r.armL.sh.rotation.set(lx, 0, lz);
     r.armR.sh.rotation.set(rx, 0, rz);
     r.armL.el.rotation.set(le, 0, 0);
@@ -231,8 +239,8 @@ export function createCharacter(profile) {
 
     // effects
     r.jets.forEach(j => {
-      j.scale.y = 0.5 + W.walk * W.run * 1.2 + Math.random() * 0.2;
-      j.material.opacity = 0.15 + 0.6 * W.run * W.walk;
+      j.scale.y = 0.5 + Math.max(W.walk * W.run, W.air) * 1.4 + Math.random() * 0.25;
+      j.material.opacity = 0.15 + 0.7 * Math.max(W.run * W.walk, W.air);
     });
     r.lights.forEach((l, i) => { l.material.emissiveIntensity = 1 + Math.sin(t * 3 + i * 2.1) * 0.6; });
 

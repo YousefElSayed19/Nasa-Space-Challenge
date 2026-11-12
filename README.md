@@ -4,6 +4,12 @@ A browser-based 3D game for **NASA Space Apps Cairo 2026** (challenge: *Space Mi
 You walk around a spacecraft hangar, carry parts with your hands, bolt them onto a spacecraft, fuel it, launch it,
 and then the game explains which of your own decisions made the mission succeed or fail.
 
+## ▶ Play now
+
+**https://yousefelsayed19.github.io/Nasa-Space-Challenge/**
+
+Opens in Chrome or Edge on a laptop. No installation, no login.
+
 > MissionForge is a placeholder name. Not reviewed or endorsed by NASA.
 
 ## What is in the game
@@ -15,7 +21,10 @@ and then the game explains which of your own decisions made the mission succeed 
 - **Hands-on build:** carry parts, hold to install, pump propellant, and run four pre-launch checks. Skipped checks can cause faults.
 - **Events:** solar storms, eclipses, Jupiter radiation, antenna pointing during flybys, random instrument faults.
 - **Debrief:** score, cause trace back to your decisions, comparison with the real mission, and saved designs you can compare.
-- **First-time tutorial** and a **glossary** of the twelve engineering ideas the game teaches.
+- **Interactive tour** on first play: each step waits for you to try it, then you press Next (or Skip).
+- **Task list and guide arrow:** the current stage's tasks with an arrow on the one to do now, a floating arrow over the station, and an edge arrow when it is off screen.
+- **Jump, launch countdown and a 3D mission view** of the path to the destination.
+- **Badges** in the debrief, a **Help** page with controls, and a **glossary** of the twelve engineering ideas the game teaches.
 
 ## Run it
 
