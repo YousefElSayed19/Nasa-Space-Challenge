@@ -27,6 +27,7 @@ let launchRocket = null, smoke = [], dust = [], guideTarget = null, lastPtr = ''
 let time = 0, holdT = 0, ratchetT = 0, pumpAcc = 0, launchT = -1, launched = false;
 const keys = {};
 const player = { pos: START_POS.clone(), vel: new V3(), facing: Math.PI, speed: 0, spin: 0, y: 0, vy: 0, air: false, land: 0 };
+let inputYaw = null, lastDrag = -1e9;
 const cam = { yaw: 0, pitch: 0.38, pos: new V3(0, 7, 22), look: new V3(0, 2, 0), fov: 60 };
 const perf = { ema: 1 / 60, timer: 0, pr: 1, maxPr: 1 };
 let bgRaw, bgLin;
@@ -169,7 +170,7 @@ function bindInput() {
     if (!drag) return;
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (store.get().screen === 'start') player.spin += dx * 0.012;
-    else { cam.yaw -= dx * 0.0055; cam.pitch = Math.max(0.05, Math.min(1.2, cam.pitch + dy * 0.004)); if (Math.abs(dx) + Math.abs(dy) > 2) bus.emit('looked'); }
+    else { cam.yaw -= dx * 0.0055; cam.pitch = Math.max(0.05, Math.min(1.2, cam.pitch + dy * 0.004)); lastDrag = performance.now(); inputYaw = null; if (Math.abs(dx) + Math.abs(dy) > 2) bus.emit('looked'); }
     drag = { x: e.clientX, y: e.clientY };
   });
   const end = () => { drag = null; };
@@ -201,6 +202,7 @@ function onKeyDown(e) {
   if (e.repeat) return;
   if (e.code === 'KeyE') interact();
   else if (e.code === 'KeyV') store.set(st => ({ firstPerson: !st.firstPerson }));
+  else if (e.code === 'KeyC') A.toggleCamera();
   else if (e.code === 'KeyL') store.set(st => ({ showLog: !st.showLog }));
   else if (e.code === 'KeyX') A.putBack();
   else if (e.code === 'Escape') A.close();
@@ -255,7 +257,13 @@ function updatePlayer(dt, s) {
   const f = picking ? 0 : (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) - (tj ? tj.y : 0);
   const r = picking ? 0 : (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + (tj ? tj.x : 0);
   const stick = tj ? Math.min(1, Math.hypot(tj.x, tj.y)) : 1;
-  const fwd = new V3(-Math.sin(cam.yaw), 0, -Math.cos(cam.yaw)), right = new V3(Math.cos(cam.yaw), 0, -Math.sin(cam.yaw));
+  // Auto camera: hold the input direction steady while keys are held, so the camera can swing behind
+  // the engineer without changing what "forward" means mid-step (no spinning in circles).
+  const auto = s.camMode === 'auto' && !s.firstPerson;
+  const anyInput = Math.abs(f) > 0.02 || Math.abs(r) > 0.02;
+  if (!anyInput) inputYaw = null; else if (inputYaw === null) inputYaw = cam.yaw;
+  const refYaw = auto && inputYaw !== null ? inputYaw : cam.yaw;
+  const fwd = new V3(-Math.sin(refYaw), 0, -Math.cos(refYaw)), right = new V3(Math.cos(refYaw), 0, -Math.sin(refYaw));
   const dir = fwd.multiplyScalar(f).add(right.multiplyScalar(r));
   const running = keys.ShiftLeft || keys.ShiftRight;
   let sp = running ? 8.2 : 4.6;
@@ -275,6 +283,11 @@ function updatePlayer(dt, s) {
     const want = Math.atan2(player.vel.x, player.vel.z);
     let d = want - player.facing; d = Math.atan2(Math.sin(d), Math.cos(d));
     player.facing += d * (1 - Math.exp(-14 * dt));
+  }
+  // swing the camera behind the engineer while walking, unless the player has just looked around with the mouse
+  if (auto && player.speed > 0.6 && performance.now() - lastDrag > 900) {
+    let dy = (player.facing + Math.PI) - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    cam.yaw += dy * (1 - Math.exp(-(1.6 + player.speed * 0.25) * dt));
   }
   if (player.air) {
     player.vy -= 15 * dt;

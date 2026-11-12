@@ -82,8 +82,13 @@ export const A = {
   setPrefs(patch) {
     store.set(patch);
     const s = store.get();
-    saveJSON('mf-prefs', { graphics: s.graphics, muted: s.muted });
+    saveJSON('mf-prefs', { graphics: s.graphics, muted: s.muted, camMode: s.camMode });
     if ('graphics' in patch) bus.emit('graphics', s.graphics);
+  },
+  toggleCamera() {
+    const m = store.get().camMode === 'auto' ? 'free' : 'auto';
+    A.setPrefs({ camMode: m });
+    A.toast(m === 'auto' ? 'Camera: Auto. It swings behind your engineer as you walk; drag any time to look around.' : 'Camera: Free. The camera moves only when you drag with the mouse.');
   },
   toggleGlossary() { Sound.click(); store.set(s => ({ showGlossary: !s.showGlossary })); },
 

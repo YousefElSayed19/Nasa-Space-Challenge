@@ -31,7 +31,7 @@ export function freshState(profile, prefs = {}) {
     propLoaded: 0, changeFees: 0, changeCount: 0, overruled: 0, objections: 0, verdicts: null, checks: {},
     log: [], panel: null, firstPerson: false, showLog: true, toasts: [], result: null,
     signoff: null, tutorial: null, tutTick: 0, introBeat: 0, replayNotice: false, thumbsTick: 0, loan: 0, scoreId: null, showGlossary: false, savedTick: 0,
-    graphics: prefs.graphics || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 'low' : 'high'), muted: !!prefs.muted,
+    camMode: prefs.camMode || 'auto', graphics: prefs.graphics || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 'low' : 'high'), muted: !!prefs.muted,
   };
 }
 

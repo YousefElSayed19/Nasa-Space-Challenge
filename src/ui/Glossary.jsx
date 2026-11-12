@@ -3,7 +3,7 @@ import { A } from '../state/actions.js';
 import GLOSSARY from '../data/glossary.json';
 import { restartTutorial } from '../state/tutorial.js';
 
-const CONTROLS = [['W A S D / arrows', 'Walk'], ['Shift', 'Run'], ['Space', 'Jump'], ['Mouse drag', 'Look around'], ['E', 'Use a station, pick up'], ['Hold E', 'Install a part, pump propellant'], ['X', 'Put a part back'], ['V', 'First or third person'], ['L', 'Show or hide the decision log'], ['Esc', 'Close a panel']];
+const CONTROLS = [['W A S D / arrows', 'Walk'], ['Shift', 'Run'], ['Space', 'Jump'], ['Mouse drag', 'Look around (in Auto camera, it swings back behind you when you walk)'], ['C', 'Auto camera or free camera'], ['E', 'Use a station, pick up'], ['Hold E', 'Install a part, pump propellant'], ['X', 'Put a part back'], ['V', 'First or third person'], ['L', 'Show or hide the decision log'], ['Esc', 'Close a panel']];
 
 export function Glossary() {
   return (

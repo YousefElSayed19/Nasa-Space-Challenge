@@ -751,3 +751,6 @@ button{touch-action:manipulation}
 #ui .hud,#ui .hud-grid,#ui .hud-left,#ui .hud-center,#ui .hud-right,#ui .hud-bottom,#ui .hb-left,#ui .hb-center,#ui .hb-right,#ui .hud .toasts{pointer-events:none}
 #ui .hud-left > *,#ui .hud-right > *,#ui .hud-center > .tasks,#ui .hud .toast,#ui .hb-left > *,#ui .hb-center > *,#ui .hb-right > *,#ui .hud .topbar,#ui .hud .topbar *{pointer-events:auto}
 #ui .hud .passthru,#ui .hud .passthru *{pointer-events:none}
+
+.cam-btn.auto{border-color:rgba(62,224,160,.55)!important;color:#BDF3DA}
+.cam-btn.free{border-color:rgba(255,194,75,.55)!important;color:#FFE2A6}
