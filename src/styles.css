@@ -378,3 +378,10 @@ th{color:var(--muted);font-weight:600}
 .quiz p{margin:0;font-size:13px}.quiz p.ok{color:#9FE8C8}.quiz p.no{color:#FFB3BA}
 .roles4{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 10px}
 .roles4 span{padding:8px 10px;border-radius:10px;border:1px solid var(--edge);font-size:13px;opacity:0;animation:pop .4s ease forwards}
+
+/* tour card bottom-left so it never hides the path; prompt stays visible above everything */
+.tutorial{left:12px;right:auto;transform:none;bottom:12px;width:min(430px,calc(100vw - 24px))}
+.tutorial h3{font-size:16px}
+.tutorial p{font-size:13.5px}
+.prompt{z-index:5;border-color:rgba(255,194,75,.7);box-shadow:0 0 24px rgba(255,194,75,.35)}
+@media (max-width:900px){.tutorial{bottom:12px}}

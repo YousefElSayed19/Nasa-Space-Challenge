@@ -83,9 +83,9 @@ export function HUD({ s }) {
         {s.screen === 'game' && <StationPanel s={s} />}
         <LogPanel s={s} />
       </div>
-      <div className="controls glass passthru">
+      {s.tutorial == null && <div className="controls glass passthru">
         <span><b>WASD</b> move</span><span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump</span><span><b>E</b> interact</span><span><b>V</b> camera</span><span><b>L</b> log</span>
-      </div>
+      </div>}
     </div>
   );
 }

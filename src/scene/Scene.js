@@ -194,9 +194,19 @@ function jump(s) {
   bus.emit('jumped');
   Sound.tone(260, 0.16, 'sine', 0.05, 520);
 }
+let farToastAt = 0;
 function interact() {
   const s = store.get(); const near = nearStation();
-  if (!near) return;
+  if (!near) {
+    if (performance.now() - farToastAt < 2500) return;
+    farToastAt = performance.now();
+    if (guideTarget) {
+      const d = Math.round(Math.hypot(player.pos.x - guideTarget.pos[0], player.pos.z - guideTarget.pos[1]));
+      A.toast(`Nothing to use here. ${guideTarget.label} is ${d} m away: follow the gold arrow, then press E when the prompt appears.`, 'warn');
+    } else A.toast('Nothing to use here. Walk up to a station until the E prompt appears.', 'warn');
+    Sound.tone(220, 0.12, 'triangle', 0.05);
+    return;
+  }
   if (s.carrying) { if (near.id === homeOf(partById(s.carrying))) A.putBack(); return; }
   if (s.panel === near.id) { if (near.id !== 'fuel') A.close(); return; }
   A.open(near.id);

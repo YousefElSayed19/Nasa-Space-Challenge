@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { TUTORIAL, isStepDone, nextStep, prevStep, finishTutorial } from '../state/tutorial.js';
+import { useHud } from './hooks.js';
 
 export function TutorialCard({ s }) {
   const i = s.tutorial;
+  const h = useHud();
   useEffect(() => {
     const onKey = e => { if (e.key === 'Enter' && document.activeElement?.tagName !== 'INPUT') nextStep(); };
     window.addEventListener('keydown', onKey);
@@ -29,7 +31,7 @@ export function TutorialCard({ s }) {
       </div>
       {action && (
         <div className={'tut-status ' + (done ? 'ok' : 'wait')}>
-          {done ? <><b>✓</b> Done. Press Next when you are ready.</> : <><span className="tut-spin" aria-hidden="true"></span>Try it: {step.wait}</>}
+          {done ? <><b>✓</b> Done. Press Next when you are ready.</> : <><span className="tut-spin" aria-hidden="true"></span>Try it: {step.wait}{step.target && h.ptr && h.near !== step.target ? ` (${h.ptr.label} is ${h.ptr.dist} m away; walk until the E prompt appears)` : ''}</>}
         </div>
       )}
       <div className="tut-foot">
