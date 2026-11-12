@@ -40,7 +40,9 @@ export const A = {
     saveJSON('mf-profile', s.profile);
     setMission(s.missionId);
     const team = [s.profile.nick, ...s.teamNames.map(n => n.trim()).filter(Boolean)].slice(0, 4);
-    let patch = { screen: 'game', team, stage: 1, locked: {} };
+    // every run starts empty: the player decides everything (Replay alone starts from the real design, and says so)
+    let patch = { screen: 'game', team, stage: 1, locked: {}, installed: [], carrying: null, rocket: null, propLoaded: 0, changeFees: 0, changeCount: 0,
+      overruled: 0, objections: 0, verdicts: null, checks: {}, log: [], panel: null, result: null, signoff: null, replayNotice: s.mode === 'replay' };
     if (s.mode === 'replay') patch = { ...patch, ...preloadReal(s), stage: 6, locked: { 1: true, 2: true, 3: true, 4: true, 5: true } };
     if (s.mode === 'sandbox') patch = { ...patch, stage: 6 };
     store.set(patch);
@@ -54,6 +56,20 @@ export const A = {
     A.toast(intro[s.mode]);
     if (s.mode === 'campaign' && !loadJSON('mf-tutorial-done', false)) store.set({ tutorial: 0 });
   },
+  enter() {
+    const s = store.get();
+    setMission(s.missionId);
+    saveJSON('mf-profile', s.profile);
+    if (s.mode === 'campaign') { store.set({ screen: 'intro', introBeat: 0 }); bus.emit('mission', s.missionId); }
+    else A.start();
+  },
+  setIntroBeat(i) { Sound.click(); store.set({ introBeat: i }); },
+  finishIntro() { saveJSON('mf-intro-done', true); A.start(); },
+  clearDesign() {
+    store.set({ installed: [], rocket: null, propLoaded: 0, checks: {}, replayNotice: false, mode: 'sandbox', stage: 6, locked: {} });
+    A.toast('Cleared. You are now in sandbox with an empty spacecraft.');
+  },
+  dismissReplay() { store.set({ replayNotice: false }); },
   setPrefs(patch) {
     store.set(patch);
     const s = store.get();

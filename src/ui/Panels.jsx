@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { InfoDot, Stars } from './InfoDot.jsx';
 import { useHud } from './hooks.js';
+import { THUMBS } from '../state/thumbs.js';
+import { HOWTO, WHAT, prosCons, statsOf, rocketProsCons } from './explain.js';
 import { A, roleOwner } from '../state/actions.js';
 import { hud } from '../state/store.js';
 import { Sound } from '../audio/sound.js';
 import {
   MISSION, PARTS, PART_REAL, ROCKETS, ROLES, STAGE_NAMES, MARGIN, CHECKS, partById, rocketById, stationById,
-  totals, headroom, changeFee, reviewVerdicts, stageChecks, isFree, pct, fmt,
+  totals, headroom, changeFee, reviewVerdicts, stageChecks, isFree, pct, fmt, money,
 } from '../engine/index.js';
 
 const lvl = (v, max) => { if (!v) return ''; const r = v / max; return r <= 0.34 ? '▲' : r <= 0.67 ? '▲▲' : '▲▲▲'; };
@@ -48,37 +50,59 @@ function HoldButton({ ms = 1200, onDone, children, disabled }) {
   );
 }
 
-function PartCard({ p, s }) {
+function BudgetLine({ s, T, cost, replacing = 0 }) {
+  if (s.mode === 'sandbox') return <span className="tag">Sandbox: no budget limit</span>;
+  const left = T.budget - T.cost, after = left - cost + replacing;
+  return <span className={'tag' + (after < 0 ? ' fee' : '')}>Budget left {fmt(left)} → after this {fmt(after)}{after < 0 ? ' (over budget)' : ''}</span>;
+}
+
+function PartCard({ p, s, T }) {
+  const [open, setOpen] = useState(false);
   const installed = s.installed.includes(p.id);
   const carrying = s.carrying === p.id;
   const fee = changeFee(s, p);
   const frozen = !isFree(s) && s.stage > 5;
-  const occupied = p.slot !== 'instrument' && !installed && s.installed.some(id => partById(id).slot === p.slot);
-  const info = {
-    what: p.note,
-    why: p.slot === 'instrument' ? 'Instruments are why the mission exists, but each one costs mass, power, data and money.' : 'Spacecraft systems keep the instruments alive and talking to Earth.',
-    real: PART_REAL[p.slot],
-  };
+  const current = p.slot !== 'instrument' ? s.installed.map(partById).find(x => x.slot === p.slot && x.id !== p.id) : null;
+  const pc = prosCons(p);
+  const info = { what: `${WHAT[p.slot]} ${p.note}`, why: HOWTO[p.slot], real: PART_REAL[p.slot] };
+  const delta = (k) => current ? (p[k] || 0) - (current[k] || 0) : null;
   return (
-    <div className={'card' + (installed || carrying ? ' sel' : '')}>
-      <div className="card-top">
-        <span className="card-name">{p.name}<InfoDot left title={p.name} info={info} /></span>
-        {p.science ? <Stars n={p.science} /> : null}
+    <div className={'card part' + (installed || carrying ? ' sel' : '')}>
+      <div className="part-top">
+        <div className="thumb">{THUMBS[p.id] ? <img src={THUMBS[p.id]} alt={p.name} /> : <span className="thumb-wait" />}</div>
+        <div className="part-head">
+          <div className="card-top">
+            <span className="card-name">{p.name}<InfoDot left title={p.name} info={info} /></span>
+            {p.science ? <Stars n={p.science} /> : null}
+          </div>
+          <div className="card-note">{p.note}</div>
+          <div className="price">{money(p.cost)}{p.approximate && <em>approx.</em>}</div>
+        </div>
       </div>
-      <div className="card-note">{p.note}</div>
-      <div className="arrows">
-        {p.supply ? <span>Power supply <span className="good">{lvl(p.supply, maxOf('array', 'supply'))}</span></span> : null}
-        {p.downlink ? <span>Downlink <span className="good">{lvl(p.downlink, maxOf('antenna', 'downlink'))}</span></span> : null}
-        <span>Mass <span className="up">{lvl(p.mass, maxOf(null, 'mass'))}</span></span>
-        {p.power ? <span>Power <span className="up">{lvl(p.power, maxOf('instrument', 'power'))}</span></span> : null}
-        {p.data ? <span>Data <span className="up">{lvl(p.data, maxOf('instrument', 'data'))}</span></span> : null}
-        <span>Cost <span className="up">{lvl(p.cost, maxOf(null, 'cost'))}</span></span>
+      <div className="stats">
+        {statsOf(p).map(([k, v, real, dir]) => (
+          <div key={k} className="stat"><span className="k">{k}</span><b className={dir}>{v}</b><span className="r">{real}</span></div>
+        ))}
       </div>
+      {current && (
+        <div className="vs">Compared with your {current.name}:{' '}
+          {[['mass', 'mass'], ['supply', 'power'], ['downlink', 'downlink'], ['cost', 'cost']].filter(([k]) => delta(k)).map(([k, l]) => (
+            <span key={k} className={(k === 'supply' || k === 'downlink') === delta(k) > 0 ? 'good' : 'up'}>{delta(k) > 0 ? '+' : ''}{delta(k)} {l}</span>
+          ))}
+        </div>
+      )}
+      <div className="pc">
+        {pc.pros.map(x => <span key={x} className="pro">✓ {x}</span>)}
+        {pc.cons.map(x => <span key={x} className="con">✕ {x}</span>)}
+      </div>
+      {open && <p className="howto"><b>How to use it.</b> {HOWTO[p.slot]}</p>}
       <div className="card-act">
-        <span className={'tag' + (fee ? ' fee' : '')}>
-          {installed ? 'Installed on the spacecraft' : carrying ? 'In your hands' : fee ? `Change request: ${fee}` : occupied ? 'Replaces the current one' : p.approximate ? 'Approximate values' : ''}
+        <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {installed ? <span className="tag">Installed on the spacecraft</span> : carrying ? <span className="tag">In your hands</span>
+            : fee ? <span className="tag fee">Change request: {fee}</span> : <BudgetLine s={s} T={T} cost={p.cost} replacing={current ? current.cost : 0} />}
+          <button className="linkbtn" style={{ alignSelf: 'flex-start' }} onClick={() => setOpen(o => !o)}>{open ? 'Less' : 'How to use it'}</button>
         </span>
-        {!installed && !carrying && !frozen && <button className="btn small" onClick={() => A.pickUp(p.id)}>Pick up</button>}
+        {!installed && !carrying && !frozen && <button className="btn small primary" onClick={() => A.pickUp(p.id)}>{current ? 'Pick up to swap' : 'Pick up'}</button>}
       </div>
     </div>
   );
@@ -111,7 +135,7 @@ function Payload({ s, T }) {
   const n = s.installed.filter(x => partById(x).slot === 'instrument').length;
   return (
     <PanelShell title="Payload Bay" sub="Pick up an instrument, then carry it to the Assembly Cradle.">
-      <div className="cards">{PARTS.filter(p => p.slot === 'instrument').map(p => <PartCard key={p.id} p={p} s={s} />)}</div>
+      <div className="cards">{PARTS.filter(p => p.slot === 'instrument').map(p => <PartCard key={p.id} p={p} s={s} T={T} />)}</div>
       <div className="foot">
         <span className="tag">{n} instrument{n === 1 ? '' : 's'} installed. Science value {T.sci} of target {MISSION.sciTarget}.</span>
         {s.stage === 2 && !isFree(s) && <button className="btn primary" disabled={n === 0} onClick={() => A.requestLock('stage', 2)}>Confirm payload</button>}
@@ -128,7 +152,7 @@ function Systems({ s, T }) {
       {groups.map(([slot, name]) => (
         <div key={slot}>
           <div className="label group-t">{name}</div>
-          <div className="cards">{PARTS.filter(p => p.slot === slot).map(p => <PartCard key={p.id} p={p} s={s} />)}</div>
+          <div className="cards">{PARTS.filter(p => p.slot === slot).map(p => <PartCard key={p.id} p={p} s={s} T={T} />)}</div>
         </div>
       ))}
       <div className="foot">
@@ -195,16 +219,24 @@ function Board({ s, T }) {
         {ROCKETS.map(r => {
           const sel = s.rocket === r.id, fits = T.wet <= r.cap, h = headroom(r.cap, T.wet);
           return (
-            <div key={r.id} className={'card' + (sel ? ' sel' : '')}>
-              <div className="card-top">
-                <span className="card-name">{r.name}<InfoDot left title={r.name} info={{ what: r.note, why: `A bigger rocket lifts more mass toward ${MISSION.destination}, but costs more.`, real: r.real }} /></span>
-                <span className="tag">Cost {r.cost}{r.approx ? '*' : ''}</span>
+            <div key={r.id} className={'card part' + (sel ? ' sel' : '')}>
+              <div className="part-top">
+                <div className="thumb tall">{THUMBS['rocket-' + r.id] ? <img src={THUMBS['rocket-' + r.id]} alt={r.name} /> : <span className="thumb-wait" />}</div>
+                <div className="part-head">
+                  <div className="card-top"><span className="card-name">{r.name}<InfoDot left title={r.name} info={{ what: r.note, why: `A bigger rocket lifts more mass toward ${MISSION.destination}, but costs more. Pick the smallest rocket that still leaves margin.`, real: r.real }} /></span></div>
+                  <div className="card-note">{r.note}</div>
+                  <div className="price">{money(r.cost)}{r.approx && <em>approx.</em>}</div>
+                </div>
               </div>
-              <div className="card-note">{r.note}</div>
+              <div className="stats">
+                <div className="stat"><span className="k">Lift to {MISSION.destination}</span><b className="good">{r.cap} u</b><span className="r">≈ {fmt(r.cap * MISSION.u.mass)} kg</span></div>
+                <div className="stat"><span className="k">Your spacecraft</span><b className={fits ? '' : 'up'}>{fmt(T.wet)} u</b><span className="r">{fits ? `headroom ${pct(h)}` : 'too heavy'}</span></div>
+              </div>
               <div className="bar"><div className="fill" style={{ width: Math.min(1, T.wet / r.cap) * 100 + '%', background: !fits ? 'var(--red)' : h < MARGIN ? 'var(--amber)' : 'var(--go)' }}></div><div className="tick" style={{ left: '75%' }}></div></div>
+              <div className="pc">{(() => { const pc = rocketProsCons(r, T.wet); return [...pc.pros.map(x => <span key={x} className="pro">✓ {x}</span>), ...pc.cons.map(x => <span key={x} className="con">✕ {x}</span>)]; })()}</div>
               <div className="card-act">
-                <span className="tag">{fits ? `Headroom ${pct(h)} of ${r.cap} units to ${MISSION.destination}` : `Too heavy: limit ${r.cap} units`}</span>
-                {canPick && <button className="btn small" onClick={() => A.chooseRocket(r.id)}>{sel ? 'Selected' : 'Select'}</button>}
+                <BudgetLine s={s} T={T} cost={r.cost} replacing={s.rocket ? rocketById(s.rocket).cost : 0} />
+                {canPick && <button className={'btn small' + (sel ? '' : ' primary')} onClick={() => A.chooseRocket(r.id)}>{sel ? 'Selected' : 'Select'}</button>}
               </div>
             </div>
           );

@@ -123,7 +123,7 @@ function LookStep({ s }) {
         </div>
         <div className="foot">
           <button className="btn" onClick={() => A.setStartStep('name')}>Back</button>
-          <button className="btn primary" onClick={A.start}>Enter the hangar</button>
+          <button className="btn primary" onClick={A.enter}>{s.mode === 'campaign' ? 'Begin the story' : 'Enter the hangar'}</button>
         </div>
       </section>
       <div className="nameplate glass passthru">{p.nick}</div>

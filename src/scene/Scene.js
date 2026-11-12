@@ -14,6 +14,7 @@ import { buildRocket, smokeMaterial } from './rocket.js';
 import { tasksFor } from '../state/tasks.js';
 import { stepOf } from '../state/tutorial.js';
 import { lin } from './materials.js';
+import { renderThumbs } from './thumbs.js';
 
 const V3 = THREE.Vector3;
 const damp = (cur, target, k, dt) => cur + (target - cur) * (1 - Math.exp(-k * dt));
@@ -50,6 +51,7 @@ export function initScene(container) {
   scene.add(hero.root);
   space = createSpaceView();
   space.setMission(store.get().missionId);
+  setTimeout(() => renderThumbs(renderer, scene.environment, () => store.set(s => ({ thumbsTick: (s.thumbsTick || 0) + 1 }))), 300);
 
   applyGraphics(store.get().graphics);
   bindInput();
@@ -57,6 +59,7 @@ export function initScene(container) {
   bus.on('launch', () => {
     hud.set({ missionPhase: 'Launch', missionKind: 'ok' });
     const s = store.get();
+    space.setMission(s.missionId, s.installed, s.rocket);
     if (launchRocket) scene.remove(launchRocket.group);
     launchRocket = buildRocket(rocketById(s.rocket) || rocketById('atlas'), 10);
     launchRocket.group.position.set(0, -10, 0); scene.add(launchRocket.group);
@@ -68,7 +71,7 @@ export function initScene(container) {
   bus.on('reset', reset);
   bus.on('enter', () => { player.pos.copy(START_POS); player.facing = Math.PI; cam.yaw = 0; cam.pitch = 0.38; });
   bus.on('installed', () => { refs.craftLight.intensity = 6; });
-  bus.on('mission', id => { refs.setMissionVisuals(id); space.setMission(id); last.installed = null; onStore(); });
+  bus.on('mission', id => { refs.setMissionVisuals(id); last.installed = null; onStore(); });
   store.sub(onStore); onStore();
   window.addEventListener('resize', onResize);
   tick();
@@ -356,7 +359,17 @@ function updateWorld(dt, s, acts) {
 function updateCamera(dt, s) {
   let desired, look, fov = 60;
   const target = new V3(player.pos.x, 1.6 + player.y * 0.6, player.pos.z);
-  if (s.screen === 'start' && s.startStep === 'look') {
+  if (s.screen === 'intro') {
+    const K = [
+      [[Math.sin(time * 0.06) * 18, 11, Math.cos(time * 0.06) * 16], [0, 1.5, 0]],
+      [[-10.5, 3.2, -5.5], [-14.2, 1.9, -12.2]],
+      [[4.5, 3.6, 6.5], [0, 2.4, 0]],
+      [[3.5, 7, 9], [0, 2.4, 0]],
+      [[3, 3.4, -5], [0, 1, -12.4]],
+      [[1.6, 2.1, 15.2], [0, 1.3, 11]],
+    ][Math.min(s.introBeat || 0, 5)];
+    desired = new V3(...K[0]); look = new V3(...K[1]); fov = 50;
+  } else if (s.screen === 'start' && s.startStep === 'look') {
     // close-up turntable for the character creator; character sits right of centre
     desired = new V3(START_POS.x - 1.25, 1.55, START_POS.z + 4.1); look = new V3(START_POS.x - 0.95, 1.15, START_POS.z); fov = 42;
   } else if (s.screen === 'start') {
@@ -376,7 +389,7 @@ function updateCamera(dt, s) {
     look = target;
     fov = 60 + (player.running && player.speed > 5 ? 6 : 0);
   }
-  const k = s.screen === 'start' ? 3 : s.firstPerson ? 18 : 8;
+  const k = s.screen === 'start' ? 3 : s.screen === 'intro' ? 1.6 : s.firstPerson ? 18 : 8;
   cam.pos.lerp(desired, 1 - Math.exp(-k * dt)); cam.look.lerp(look, 1 - Math.exp(-(k + 2) * dt));
   cam.fov = damp(cam.fov, fov, 5, dt);
   if (Math.abs(camera.fov - cam.fov) > 0.01) { camera.fov = cam.fov; camera.updateProjectionMatrix(); }
@@ -424,7 +437,7 @@ function tick() {
   if (s.screen === 'game') updatePlayer(dt, s);
   else { player.vel.set(0, 0, 0); player.speed = 0; player.y = 0; player.vy = 0; player.air = false; }
   const acts = updateInteract(dt, s);
-  if (s.screen === 'start') {
+  if (s.screen === 'start' || s.screen === 'intro') {
     player.pos.copy(START_POS);
     player.facing = damp(player.facing, 0.35 + player.spin + Math.sin(time * 0.3) * 0.25, 4, dt);
   }
@@ -433,7 +446,7 @@ function tick() {
   hero.setVisible(!(s.firstPerson && s.screen === 'game'));
   const ev = hero.update(dt, {
     speed: player.speed, run: player.running, carrying: !!s.carrying,
-    crouch: acts.installing || player.land > 0.15, pump: acts.pumping, wave: s.screen === 'launching', air: player.air, vy: player.vy,
+    crouch: acts.installing || player.land > 0.15, pump: acts.pumping, wave: s.screen === 'launching' || (s.screen === 'intro' && (s.introBeat === 0 || s.introBeat === 5)), air: player.air, vy: player.vy,
   });
   if (ev === 'step') Sound.step();
   updateWorld(dt, s, acts);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
 import { MISSION } from '../engine/index.js';
@@ -9,6 +9,8 @@ const PHASES = ['Launch', 'Cruise', 'Orbit insertion', 'Science operations', 'En
 export function MissionScreen({ s }) {
   const r = s.result;
   const [shown, setShown] = useState(1);
+  const feedRef = useRef(null);
+  useEffect(() => { const el = feedRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, [shown]);
   useEffect(() => {
     if (shown >= r.timeline.length) return;
     const t = setTimeout(() => {
@@ -27,7 +29,7 @@ export function MissionScreen({ s }) {
         <div className="label">Mission timeline</div>
         <h2 style={{ margin: '2px 0 0', fontSize: 24 }}>{MISSION.name} in flight</h2>
         <div className="phases">{PHASES.map(p => <div key={p} className={'phase' + (reached.has(p) ? ' on' : '')}><div className="pb"><i></i></div>{p}</div>)}</div>
-        <div className="feed">
+        <div className="feed" ref={feedRef}>
           {r.timeline.slice(0, shown).map((e, i) => (
             <div key={i} className={'ev ' + e.kind}>
               <span className="ic">{e.kind === 'ok' ? '✓' : e.kind === 'warn' ? '!' : '✕'}</span>

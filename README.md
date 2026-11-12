@@ -23,7 +23,9 @@ Opens in Chrome or Edge on a laptop. No installation, no login.
 - **Debrief:** score, cause trace back to your decisions, comparison with the real mission, and saved designs you can compare.
 - **Interactive tour** on first play: each step waits for you to try it, then you press Next (or Skip).
 - **Task list and guide arrow:** the current stage's tasks with an arrow on the one to do now, a floating arrow over the station, and an edge arrow when it is off screen.
-- **Jump, launch countdown and a 3D mission view** of the path to the destination.
+- **Opening story** with short quizzes, then an interactive tour.
+- **Part and rocket cards** with a rendered picture, price, real-world values, strengths and weaknesses, and how each choice changes your budget.
+- **Jump, launch countdown, and a 3D flight** for each mission: liftoff from Earth, cruise with a chase camera, orbit insertion and science orbits.
 - **Badges** in the debrief, a **Help** page with controls, and a **glossary** of the twelve engineering ideas the game teaches.
 
 ## Run it

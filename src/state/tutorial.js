@@ -5,7 +5,6 @@ import { bus } from './bus.js';
 import { Sound } from '../audio/sound.js';
 
 export const TUTORIAL = [
-  { title: 'Welcome, engineer', text: 'You will design, fuel and launch a real-style space mission. This tour takes about a minute. You can skip it at any time.', icon: '🚀' },
   { title: 'Walk', text: 'Use W A S D or the arrow keys to walk. Hold Shift to run.', keys: ['W', 'A', 'S', 'D'], done: f => f.moved, wait: 'Walk a few steps' },
   { title: 'Look around', text: 'Drag with the mouse to turn the camera. Press V any time to switch to first person.', keys: ['Drag', 'V'], done: f => f.looked, wait: 'Drag the mouse on the hangar' },
   { title: 'Jump', text: 'Press Space to jump. A jet pack jumps higher; heavy parts keep you lower.', keys: ['Space'], done: f => f.jumped, wait: 'Press Space' },
