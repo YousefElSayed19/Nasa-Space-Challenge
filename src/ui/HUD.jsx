@@ -10,7 +10,8 @@ import { stepOf } from '../state/tutorial.js';
 import { Picker } from './Picker.jsx';
 import { LockedStation } from './Locked.jsx';
 import { isTouch, goFullscreen } from './TouchControls.jsx';
-import { stationById, STAGE_NAMES } from '../engine/index.js';
+import { stationById, STAGE_NAMES, isPickerStation } from '../engine/index.js';
+import { MiniMap, FullMap, WarpOverlay } from './Map.jsx';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
 import { partById, isFree, money } from '../engine/index.js';
@@ -94,7 +95,7 @@ function PickerHost({ s }) {
   const id = s.panel;
   if (!id) return null;
   const st = stationById(id);
-  if (!['payload', 'systems', 'board'].includes(id)) return !isFree(s) && st.stage > s.stage ? <LockedStation s={s} station={st} key={'lock' + id} /> : null;
+  if (!isPickerStation(id)) return !isFree(s) && st.stage > s.stage ? <LockedStation s={s} station={st} key={'lock' + id} /> : null;
   if (!isFree(s) && st.stage > s.stage) return <LockedStation s={s} station={st} key={'lock' + id} />;
   return <Picker s={s} station={id} key={id} />;
 }
@@ -118,6 +119,7 @@ export function HUD({ s }) {
           <Toasts s={s} />
         </div>
         <div className="hud-right">
+          {game && <MiniMap s={s} />}
           {game && <StationPanel s={s} />}
           <LogPanel s={s} />
         </div>
@@ -125,7 +127,7 @@ export function HUD({ s }) {
       <div className="hud-bottom">
         <div className="hb-left">
           {s.tutorial == null && !isTouch && <div className="controls glass">
-            {s.camMode === 'auto' ? <><span><b>W/S</b> forward · back</span><span><b>A/D</b> turn</span></> : <span><b>WASD</b> move</span>}<span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump{s.firstPerson ? '' : ' · hold to fly'}</span>{!s.firstPerson && <span><b>F</b> flight mode</span>}<span><b>E</b> interact</span><span><b>V</b> view (3rd · 1st · hands)</span><span><b>C</b> auto/free camera</span><span><b>L</b> log</span>
+            {s.camMode === 'auto' ? <><span><b>W/S</b> forward · back</span><span><b>A/D</b> turn</span></> : <span><b>WASD</b> move</span>}<span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump{s.firstPerson ? '' : ' · hold to fly'}</span>{!s.firstPerson && <span><b>F</b> flight mode</span>}<span><b>E</b> interact</span><span><b>V</b> view (3rd · 1st · hands)</span><span><b>C</b> auto/free camera</span><span><b>M</b> map</span><span><b>L</b> log</span>
           </div>}
         </div>
         <div className="hb-center">{game && <FlightBadge />}{game && <Prompt />}</div>
@@ -134,6 +136,8 @@ export function HUD({ s }) {
       {game && <Pointer />}
       <SignoffModal s={s} />
       {game && <PickerHost s={s} />}
+      {game && s.showMap && <FullMap s={s} />}
+      <WarpOverlay />
     </div>
   );
 }

@@ -1,0 +1,154 @@
+{
+ "hall": {
+  "id": "hall",
+  "label": "Assembly Hall",
+  "x0": -15,
+  "x1": 15,
+  "z0": -11,
+  "z1": 11,
+  "color": "#6EA8FF",
+  "icon": "🛠"
+ },
+ "rooms": [
+  {
+   "id": "control",
+   "label": "Mission Control",
+   "x0": -15,
+   "x1": -5,
+   "z0": -23,
+   "z1": -11,
+   "door": [
+    -10,
+    -11
+   ],
+   "color": "#6EA8FF",
+   "icon": "🖥"
+  },
+  {
+   "id": "launch",
+   "label": "Launch Vehicle Hall",
+   "x0": -5,
+   "x1": 5,
+   "z0": -23,
+   "z1": -11,
+   "door": [
+    0,
+    -11
+   ],
+   "color": "#FFC24B",
+   "icon": "🚀"
+  },
+  {
+   "id": "propulsion",
+   "label": "Propulsion & Fueling",
+   "x0": 5,
+   "x1": 15,
+   "z0": -23,
+   "z1": -11,
+   "door": [
+    10,
+    -11
+   ],
+   "color": "#FF9A6E",
+   "icon": "⛽"
+  },
+  {
+   "id": "power",
+   "label": "Power Room",
+   "x0": -15,
+   "x1": -5,
+   "z0": 11,
+   "z1": 23,
+   "door": [
+    -10,
+    11
+   ],
+   "color": "#FFD166",
+   "icon": "🔋"
+  },
+  {
+   "id": "comms",
+   "label": "Communications Room",
+   "x0": -5,
+   "x1": 5,
+   "z0": 11,
+   "z1": 23,
+   "door": [
+    0,
+    11
+   ],
+   "color": "#8FD3FF",
+   "icon": "📡"
+  },
+  {
+   "id": "protection",
+   "label": "Protection & Entry Room",
+   "x0": 5,
+   "x1": 15,
+   "z0": 11,
+   "z1": 23,
+   "door": [
+    10,
+    11
+   ],
+   "color": "#B48CFF",
+   "icon": "🛡"
+  },
+  {
+   "id": "imaging",
+   "label": "Imaging Lab",
+   "x0": -27,
+   "x1": -15,
+   "z0": -11,
+   "z1": 0,
+   "door": [
+    -15,
+    -5.5
+   ],
+   "color": "#6EA8FF",
+   "icon": "📷"
+  },
+  {
+   "id": "spectro",
+   "label": "Spectroscopy Lab",
+   "x0": -27,
+   "x1": -15,
+   "z0": 0,
+   "z1": 11,
+   "door": [
+    -15,
+    5.5
+   ],
+   "color": "#C9A2FF",
+   "icon": "🌈"
+  },
+  {
+   "id": "radar",
+   "label": "Radar & Atmosphere Lab",
+   "x0": 15,
+   "x1": 27,
+   "z0": -11,
+   "z1": 0,
+   "door": [
+    15,
+    -5.5
+   ],
+   "color": "#3EE0A0",
+   "icon": "📶"
+  },
+  {
+   "id": "fields",
+   "label": "Fields & Geophysics Lab",
+   "x0": 15,
+   "x1": 27,
+   "z0": 0,
+   "z1": 11,
+   "door": [
+    15,
+    5.5
+   ],
+   "color": "#FFB3BA",
+   "icon": "🧲"
+  }
+ ]
+}

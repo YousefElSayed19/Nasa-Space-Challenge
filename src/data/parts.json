@@ -14,7 +14,8 @@
    "approximate": true,
    "missions": [
     "mars"
-   ]
+   ],
+   "lab": "imaging"
   },
   {
    "id": "spectro",
@@ -30,7 +31,8 @@
    "approximate": true,
    "missions": [
     "mars"
-   ]
+   ],
+   "lab": "spectro"
   },
   {
    "id": "radar",
@@ -46,7 +48,8 @@
    "approximate": true,
    "missions": [
     "mars"
-   ]
+   ],
+   "lab": "radar"
   },
   {
    "id": "ctx",
@@ -62,7 +65,8 @@
    "approximate": true,
    "missions": [
     "mars"
-   ]
+   ],
+   "lab": "imaging"
   },
   {
    "id": "sounder",
@@ -78,7 +82,8 @@
    "approximate": true,
    "missions": [
     "mars"
-   ]
+   ],
+   "lab": "radar"
   },
   {
    "id": "color",
@@ -94,7 +99,8 @@
    "approximate": true,
    "missions": [
     "mars"
-   ]
+   ],
+   "lab": "imaging"
   },
   {
    "id": "array-s",
@@ -204,7 +210,8 @@
    "approximate": true,
    "missions": [
     "moon"
-   ]
+   ],
+   "lab": "imaging"
   },
   {
    "id": "moon-lola",
@@ -220,7 +227,8 @@
    "approximate": true,
    "missions": [
     "moon"
-   ]
+   ],
+   "lab": "radar"
   },
   {
    "id": "moon-diviner",
@@ -236,7 +244,8 @@
    "approximate": true,
    "missions": [
     "moon"
-   ]
+   ],
+   "lab": "spectro"
   },
   {
    "id": "moon-lamp",
@@ -252,7 +261,8 @@
    "approximate": true,
    "missions": [
     "moon"
-   ]
+   ],
+   "lab": "spectro"
   },
   {
    "id": "moon-lend",
@@ -268,7 +278,8 @@
    "approximate": true,
    "missions": [
     "moon"
-   ]
+   ],
+   "lab": "fields"
   },
   {
    "id": "moon-crater",
@@ -284,7 +295,8 @@
    "approximate": true,
    "missions": [
     "moon"
-   ]
+   ],
+   "lab": "fields"
   },
   {
    "id": "moon-array-s",
@@ -394,7 +406,8 @@
    "approximate": true,
    "missions": [
     "europa"
-   ]
+   ],
+   "lab": "imaging"
   },
   {
    "id": "eu-mise",
@@ -410,7 +423,8 @@
    "approximate": true,
    "missions": [
     "europa"
-   ]
+   ],
+   "lab": "spectro"
   },
   {
    "id": "eu-reason",
@@ -426,7 +440,8 @@
    "approximate": true,
    "missions": [
     "europa"
-   ]
+   ],
+   "lab": "radar"
   },
   {
    "id": "eu-themis",
@@ -442,7 +457,8 @@
    "approximate": true,
    "missions": [
     "europa"
-   ]
+   ],
+   "lab": "imaging"
   },
   {
    "id": "eu-ecm",
@@ -458,7 +474,8 @@
    "approximate": true,
    "missions": [
     "europa"
-   ]
+   ],
+   "lab": "fields"
   },
   {
    "id": "eu-maspex",
@@ -474,7 +491,8 @@
    "approximate": true,
    "missions": [
     "europa"
-   ]
+   ],
+   "lab": "fields"
   },
   {
    "id": "eu-array-s",
@@ -584,7 +602,8 @@
    "approximate": true,
    "missions": [
     "lander"
-   ]
+   ],
+   "lab": "fields"
   },
   {
    "id": "lander-hp3",
@@ -600,7 +619,8 @@
    "approximate": true,
    "missions": [
     "lander"
-   ]
+   ],
+   "lab": "fields"
   },
   {
    "id": "lander-rise",
@@ -616,7 +636,8 @@
    "approximate": true,
    "missions": [
     "lander"
-   ]
+   ],
+   "lab": "fields"
   },
   {
    "id": "lander-arm",
@@ -632,7 +653,8 @@
    "approximate": true,
    "missions": [
     "lander"
-   ]
+   ],
+   "lab": "imaging"
   },
   {
    "id": "lander-weather",
@@ -648,7 +670,8 @@
    "approximate": true,
    "missions": [
     "lander"
-   ]
+   ],
+   "lab": "radar"
   },
   {
    "id": "lander-mag",
@@ -664,7 +687,8 @@
    "approximate": true,
    "missions": [
     "lander"
-   ]
+   ],
+   "lab": "fields"
   },
   {
    "id": "lander-array-s",

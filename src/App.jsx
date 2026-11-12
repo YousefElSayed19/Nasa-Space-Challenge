@@ -7,6 +7,7 @@ import { ReportScreen } from './ui/ReportScreen.jsx';
 import { Glossary } from './ui/Glossary.jsx';
 import { Intro, ReplayNotice } from './ui/Intro.jsx';
 import { TouchControls, RotateNotice, isTouch } from './ui/TouchControls.jsx';
+import { isPickerStation } from './engine/index.js';
 
 export function App() {
   const s = useGame();
@@ -19,7 +20,7 @@ export function App() {
       {s.screen === 'mission' && <MissionScreen s={s} />}
       {s.screen === 'report' && <ReportScreen s={s} />}
       {s.screen !== 'launching' && s.screen !== 'game' && <div className="settings-float"><Settings s={s} /></div>}
-      {isTouch && s.screen === 'game' && !['payload', 'systems', 'board'].includes(s.panel) && <TouchControls s={s} />}
+      {isTouch && s.screen === 'game' && !isPickerStation(s.panel) && <TouchControls s={s} />}
       <RotateNotice />
       {s.showGlossary && <Glossary />}
     </>

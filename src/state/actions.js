@@ -97,6 +97,8 @@ export const A = {
     const fp = store.get().firstPerson;
     A.toast(m === 'auto' ? '🎥 Auto camera: W/S walk, hold A/D to turn, the camera stays behind you. Drag to look around.' : '🎥 Free camera: WASD walks relative to the camera; drag to turn the view.');
   },
+  toggleMap() { Sound.click(); store.set(s => ({ showMap: !s.showMap })); },
+  travel(roomId) { store.set({ showMap: false, panel: null }); bus.emit('travel', roomId); },
   toggleGlossary() { Sound.click(); store.set(s => ({ showGlossary: !s.showGlossary })); },
 
   // ---------- hangar ----------

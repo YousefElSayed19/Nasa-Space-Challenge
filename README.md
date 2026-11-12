@@ -14,6 +14,8 @@ Opens in any modern browser on a laptop, tablet or phone (landscape). No install
 
 ## What is in the game
 
+- **A mission facility:** a central Assembly Hall with the spacecraft and ten themed rooms around it (four instrument labs, power, communications, protection and entry, propulsion and fueling, the launch vehicle hall, and mission control). A minimap shows where you are and pulses the room of your next task; press M for the full map and travel through a portal, or follow the gold arrows from door to door.
+
 - **Four missions** that unlock in order: Lunar Orbiter (inspired by LRO), Mars Orbiter (MRO), Mars Lander (InSight, with heat shield, parachute and a landing) and Europa Flyby Explorer (Europa Clipper).
 - **Three modes:** Campaign, Sandbox (no locks, no budget limit) and Replay a real mission (start from the real NASA design).
 - **1 to 4 players on one screen.** The four roles (Systems Engineer, Science Lead, Launch and Orbit Lead, Budget and Risk Manager)

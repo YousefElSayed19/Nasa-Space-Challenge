@@ -9,7 +9,7 @@ import { hud } from '../state/store.js';
 import { Sound } from '../audio/sound.js';
 import {
   MISSION, PARTS, PART_REAL, ROCKETS, ROLES, STAGE_NAMES, MARGIN, CHECKS, partById, rocketById, stationById,
-  totals, headroom, changeFee, reviewVerdicts, stageChecks, isFree, pct, fmt, money, missionSlots, LOAN_SHARE, LOAN_RATE,
+  totals, headroom, changeFee, reviewVerdicts, stageChecks, isFree, pct, fmt, money, missionSlots, LOAN_SHARE, LOAN_RATE, isPickerStation,
 } from '../engine/index.js';
 
 const lvl = (v, max) => { if (!v) return ''; const r = v / max; return r <= 0.34 ? '▲' : r <= 0.67 ? '▲▲' : '▲▲▲'; };
@@ -349,7 +349,7 @@ export function StationPanel({ s }) {
   const st = stationById(id);
   if (!isFree(s) && st.stage > s.stage) return null; // the full-screen lock card is shown instead
   const T = totals(s);
-  if (id === 'payload' || id === 'systems' || id === 'board') return null; // shown by the full-screen picker
+  if (isPickerStation(id)) return null; // shown by the full-screen picker
   const map = { control: Briefing, payload: Payload, systems: Systems, cradle: Cradle, board: Board, fuel: Fuel, review: Review };
   const C = map[id];
   return C ? <C key={id} s={s} T={T} /> : null;

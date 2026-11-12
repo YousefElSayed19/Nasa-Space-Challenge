@@ -30,11 +30,11 @@ export function freshState(profile, prefs = {}) {
     mode: prefs.mode || 'campaign', missionId: prefs.missionId || 'moon', teamNames: prefs.teamNames || [], team: [],
     propLoaded: 0, changeFees: 0, changeCount: 0, overruled: 0, objections: 0, verdicts: null, checks: {},
     log: [], panel: null, firstPerson: false, view: 'third', showLog: true, toasts: [], result: null,
-    signoff: null, tutorial: null, tutTick: 0, introBeat: 0, replayNotice: false, thumbsTick: 0, loan: 0, scoreId: null, showGlossary: false, savedTick: 0,
+    signoff: null, tutorial: null, showMap: false, tutTick: 0, introBeat: 0, replayNotice: false, thumbsTick: 0, loan: 0, scoreId: null, showGlossary: false, savedTick: 0,
     camMode: prefs.camMode || 'auto', graphics: prefs.graphics || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 'low' : 'high'), muted: !!prefs.muted,
   };
 }
 
 export const store = makeStore(freshState(loadProfile(), loadJSON('mf-prefs', {})));
 // Fast-changing values (prompt, hold progress) live apart so the panels don't re-render every frame.
-export const hud = makeStore({ prompt: null, hold: 0, near: null, pumping: false, uiPump: 0, ptr: null, missionPhase: 'Launch', missionKind: 'ok', touch: null, flying: false });
+export const hud = makeStore({ prompt: null, hold: 0, near: null, pumping: false, uiPump: 0, ptr: null, missionPhase: 'Launch', missionKind: 'ok', touch: null, flying: false, me: null, guideRoom: null, warp: false });

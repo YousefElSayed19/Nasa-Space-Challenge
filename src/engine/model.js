@@ -4,8 +4,9 @@ import PARTS_DATA from '../data/parts.json';
 import ROCKETS_DATA from '../data/rockets.json';
 import STATIONS from '../data/stations.json';
 import RES_BASE from '../data/resources.json';
+import FACILITY from '../data/facility.json';
 
-export { MISSIONS, STATIONS };
+export { MISSIONS, STATIONS, FACILITY };
 export const ALL_PARTS = PARTS_DATA.items;
 export const ALL_ROCKETS = ROCKETS_DATA;
 export const STAGE_NAMES = ['Briefing', 'Payload', 'Systems', 'Launch vehicle', 'Fueling', 'Go/No-Go', 'Mission', 'Debrief'];
@@ -44,7 +45,13 @@ export const missionById = id => MISSIONS.find(m => m.id === id);
 export const partById = id => ALL_PARTS.find(p => p.id === id);
 export const rocketById = id => ROCKETS.find(r => r.id === id);
 export const stationById = id => STATIONS.find(s => s.id === id);
-export const homeOf = p => (p.slot === 'instrument' ? 'payload' : 'systems');
+/** The station where a part is chosen and put back. */
+export const homeOf = p => (p.slot === 'instrument' ? 'lab-' + p.lab : p.slot === 'antenna' ? 'comms' : p.slot === 'array' || p.slot === 'battery' ? 'power' : 'protection');
+export const isPickerStation = id => !!(STATIONS.find(s => s.id === id) || {}).picker;
+export const ROOMS = [FACILITY.hall, ...FACILITY.rooms];
+export const roomById = id => ROOMS.find(r => r.id === id);
+/** Which room a floor position is in (rooms first, then the hall). */
+export const roomAt = (x, z) => FACILITY.rooms.find(r => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1) || FACILITY.hall;
 export const partStage = p => (p.slot === 'instrument' ? 2 : 3);
 export const missionSlots = () => [...new Set(PARTS.map(p => p.slot))];
 /** Sandbox and replay have no stage locks, fees or order. */

@@ -4,7 +4,7 @@ import { Stars } from './InfoDot.jsx';
 import { THUMBS } from '../state/thumbs.js';
 import { attachPreview, showInPreview, zoomBy, resetView } from '../scene/preview.js';
 import { HOWTO, WHAT, prosCons, statsOf, rocketProsCons } from './explain.js';
-import { MISSION, PARTS, PART_REAL, ROCKETS, MARGIN, partById, rocketById, totals, headroom, changeFee, isFree, missionSlots, pct, fmt, money } from '../engine/index.js';
+import { MISSION, PARTS, PART_REAL, ROCKETS, MARGIN, partById, rocketById, stationById, totals, headroom, changeFee, isFree, missionSlots, pct, fmt, money } from '../engine/index.js';
 
 const SLOT_NAMES = () => ({ instrument: 'Instruments', array: 'Solar arrays', antenna: 'Antennas', battery: 'Battery', shield: MISSION.events.includes('radiation') ? 'Radiation vault' : 'Shielding', aeroshell: 'Heat shields', parachute: 'Parachutes' });
 const STAT_KEY = { 'Mass': 'mass', 'Power use': 'power', 'Power made': 'supply', 'Data': 'data', 'Downlink': 'downlink', 'Cost': 'cost', 'Entry mass limit': 'maxEntry', 'Braking': 'dvSave' };
@@ -47,8 +47,18 @@ function BudgetMeter({ s, T, cost }) {
 export function Picker({ s, station }) {
   const T = totals(s);
   const isRocket = station === 'board';
+  const def = stationById(station);
   const groups = isRocket ? [{ key: 'rocket', label: 'Rockets', items: ROCKETS }]
-    : (station === 'payload' ? ['instrument'] : missionSlots().filter(k => k !== 'instrument')).map(k => ({ key: k, label: SLOT_NAMES()[k] || k, items: PARTS.filter(p => p.slot === k) }));
+    : def.lab ? [{ key: 'instrument', label: def.label, items: PARTS.filter(p => p.slot === 'instrument' && p.lab === def.lab) }]
+      : (def.slots || []).filter(k => missionSlots().includes(k)).map(k => ({ key: k, label: SLOT_NAMES()[k] || k, items: PARTS.filter(p => p.slot === k) }));
+  if (!groups.length || !groups[0].items.length) {
+    return (
+      <div className="picker-ov" onClick={() => A.close()}><section className="picker small glass" onClick={e => e.stopPropagation()}>
+        <h2>{def.label}</h2><p className="sub">This mission has nothing to choose in this room. The {MISSION.name} uses instruments from the other labs.</p>
+        <div className="foot"><span></span><button className="btn" onClick={() => A.close()}>OK</button></div>
+      </section></div>
+    );
+  }
   const [g, setG] = useState(0);
   const [i, setI] = useState(0);
   const [dir, setDir] = useState('r');
@@ -129,8 +139,8 @@ export function Picker({ s, station }) {
   }
 
   const stageBtn = !isFree(s) && (
-    station === 'payload' && s.stage === 2 ? <button className="btn ghost-go" disabled={!s.installed.some(id => partById(id).slot === 'instrument')} onClick={() => A.requestLock('stage', 2)}>Confirm payload ➜</button>
-      : station === 'systems' && s.stage === 3 ? <button className="btn ghost-go" disabled={!(T.has('array') && T.has('antenna'))} onClick={() => A.requestLock('stage', 3)}>Confirm systems ➜</button>
+    def.lab && s.stage === 2 ? <button className="btn ghost-go" disabled={!s.installed.some(id => partById(id).slot === 'instrument')} onClick={() => A.requestLock('stage', 2)}>Confirm payload ➜</button>
+      : def.slots && s.stage === 3 ? <button className="btn ghost-go" disabled={!(T.has('array') && T.has('antenna'))} onClick={() => A.requestLock('stage', 3)}>Confirm systems ➜</button>
         : station === 'board' && s.stage === 4 ? <button className="btn ghost-go" disabled={!s.rocket} onClick={() => A.requestLock('rocket')}>Confirm rocket ➜</button> : null);
 
   const spec = isRocket ? { kind: 'rocket', id: item.id } : { kind: 'part', id: item.id };
@@ -139,7 +149,7 @@ export function Picker({ s, station }) {
     <div className="picker-ov" onClick={() => A.close()}>
       <section className="picker glass" onClick={e => e.stopPropagation()} role="dialog" aria-label={groups[g].label}>
         <header className="pk-head">
-          <div className="pk-title"><div className="label">{station === 'payload' ? 'Payload Bay' : station === 'systems' ? 'Systems Rack' : 'Launch Vehicle Board'}</div>
+          <div className="pk-title"><div className="label">{def.label}</div>
             <b>{groups[g].label}</b></div>
           {groups.length > 1 && <nav className="pk-tabs">{groups.map((x, k) => <button key={x.key} className={k === g ? 'on' : ''} onClick={() => tab(k)}>{!isRocket && x.key !== 'instrument' && T.has(x.key) ? <span className="ok">✓</span> : null}{x.label}</button>)}</nav>}
           <button className="x" aria-label="Close" onClick={() => A.close()}>✕</button>
