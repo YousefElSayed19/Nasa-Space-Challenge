@@ -112,11 +112,11 @@ export function HUD({ s }) {
       <div className="hud-grid">
         <div className="hud-left">
           <Resources s={s} focus={focus === 'res'} />
-          {game && <TutorialCard s={s} />}
         </div>
         <div className="hud-center">
           {game && <TasksCard s={s} focus={focus === 'tasks'} />}
           <Toasts s={s} />
+          {game && <TutorialCard s={s} />}
         </div>
         <div className="hud-right">
           {game && <MiniMap s={s} />}

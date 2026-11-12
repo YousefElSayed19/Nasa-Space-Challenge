@@ -169,7 +169,7 @@ function onStore() {
     });
   }
   const tut = stepOf(s);
-  const tid = s.screen === 'game' ? ((tut && tut.target) || (s.tutorial != null && tut && !tut.target ? null : tasksFor(s).target)) : null;
+  const tid = s.screen === 'game' ? ((tut && tut.target) || tasksFor(s).target) : null;
   guideTarget = tid ? stationById(tid) : null;
   last = { installed: s.installed, carrying: s.carrying, profile: s.profile, stage: s.stage, propLoaded: s.propLoaded, verdicts: s.verdicts };
 }
@@ -413,6 +413,13 @@ function updateInteract(dt, s) {
 function updateWorld(dt, s, acts) {
   refs.mars.rotation.y += dt * 0.25;
   for (const id in refs.shelf) { const h = refs.shelf[id]; if (h.visible && h.userData.spin) h.rotation.y += dt * 0.35; }
+  // door signs: show the ones close to you, and always the room of the next task; fade in and out
+  const nextRoom = guideTarget ? guideTarget.room : null, inHall = roomAt(player.pos.x, player.pos.z).id === 'hall';
+  (refs.signs || []).forEach(g => {
+    const d = Math.hypot(player.pos.x - g.x, player.pos.z - g.z);
+    const want = s.screen !== 'game' || g.room === nextRoom || (inHall && d < 11) ? 1 : 0;
+    const m = g.sprite.material; m.opacity += (want - m.opacity) * (1 - Math.exp(-6 * dt)); g.sprite.visible = m.opacity > 0.02;
+  });
   // portal sequence: open, step in, flash, step out of the second portal, both close
   if (traveling) {
     const T = traveling; T.t += dt;

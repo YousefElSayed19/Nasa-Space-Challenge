@@ -779,3 +779,20 @@ button{touch-action:manipulation}
 .warp{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:0;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.95),rgba(143,211,255,.75) 25%,rgba(138,91,255,.45) 55%,rgba(5,8,22,0) 80%);transform:scale(.2);transition:opacity .25s ease,transform .45s cubic-bezier(.16,1,.3,1)}
 .warp.on{opacity:1;transform:scale(1.6)}
 @media (max-height:620px){.minimap{display:none}}
+
+/* v0.19.1: tour card in the middle column, compact minimap */
+.hud .hud-center .tutorial{margin-top:auto;width:100%;max-width:500px}
+.tut-foot{gap:10px}
+.tut-dots{flex:1;min-width:0;flex-wrap:wrap;gap:4px}
+.tut-dots i{width:12px}
+.tut-foot > div:last-child{flex:none}
+.minimap{width:min(240px,100%);align-self:flex-end;padding:7px 9px 6px;cursor:default}
+.minimap .plan{max-height:170px}
+.mm-plan{cursor:pointer}
+.mm-btns{display:flex;gap:4px}
+.mm-btns button{width:24px;height:22px;border-radius:7px;border:1px solid var(--edge);background:rgba(255,255,255,.05);font-size:13px;line-height:1;padding:0}
+.mm-btns button:hover{background:rgba(110,168,255,.2)}
+.mm-next-line{font-size:11.5px;color:var(--amber);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.minimap-chip{align-self:flex-end;flex:none;padding:6px 12px;border-radius:999px;font-size:12.5px;white-space:nowrap}
+.mm-next{color:var(--amber)}
+@media (max-height:760px){.minimap .plan{max-height:130px}.minimap{width:min(200px,100%)}}

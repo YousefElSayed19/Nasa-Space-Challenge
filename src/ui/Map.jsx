@@ -43,10 +43,25 @@ export function MiniMap({ s }) {
     last.current = h.guideRoom;
   }, [h.guideRoom]);
   const here = h.me ? roomById(h.me.room) : null;
+  const next = h.guideRoom && h.me && h.me.room !== h.guideRoom ? roomById(h.guideRoom) : null;
+  if (s.mapHidden) {
+    return (
+      <button className="minimap-chip glass" onClick={A.toggleMiniMap} title="Show the minimap">
+        🗺 {here ? here.label : 'Map'}{next && <span className="mm-next"> · next: {next.icon}</span>}
+      </button>
+    );
+  }
   return (
-    <section className="minimap glass" onClick={A.toggleMap} title="Open the map (M)">
-      <div className="mm-head"><b>{here ? `${here.icon} ${here.label}` : 'Map'}</b><span className="tag">M</span></div>
-      <Plan me={h.me} guideRoom={h.guideRoom} />
+    <section className="minimap glass">
+      <div className="mm-head">
+        <b>{here ? `${here.icon} ${here.label}` : 'Map'}</b>
+        <span className="mm-btns">
+          <button onClick={A.toggleMap} title="Full map (M)">⤢</button>
+          <button onClick={A.toggleMiniMap} title="Hide the minimap">–</button>
+        </span>
+      </div>
+      <div className="mm-plan" onClick={A.toggleMap} title="Open the full map (M)"><Plan me={h.me} guideRoom={h.guideRoom} /></div>
+      {next && <div className="mm-next-line">Next: {next.icon} {next.label}</div>}
     </section>
   );
 }

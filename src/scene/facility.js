@@ -110,9 +110,11 @@ export function buildWorld(scene) {
     }
     // room sign over the door, on the hall side, and a soft coloured light inside
     const [dx, dz] = r.door;
-    const sg = label(`${r.icon}  ${r.label}`, r.color); sg.scale.set(4.4, 1.1, 1);
-    const off = dz === H.z0 ? 0.5 : dz === H.z1 ? -0.5 : 0, offx = dx === H.x0 ? 0.5 : dx === H.x1 ? -0.5 : 0;
-    sg.position.set(dx + offx, DOOR_H + 0.9, dz + off); scene.add(sg);
+    const sg = label(`${r.icon}  ${r.label}`, r.color); sg.scale.set(3.6, 0.9, 1);
+    // stand the sign 1.4 m out from the wall so it never cuts into it when seen from an angle
+    const off = dz === H.z0 ? 1.4 : dz === H.z1 ? -1.4 : 0, offx = dx === H.x0 ? 1.4 : dx === H.x1 ? -1.4 : 0;
+    sg.position.set(dx + offx, DOOR_H + 0.7, dz + off); sg.material.depthTest = true; sg.renderOrder = 2; scene.add(sg);
+    (refs.signs = refs.signs || []).push({ sprite: sg, room: r.id, x: dx + offx, z: dz + off });
     point(r.color, (r.x0 + r.x1) / 2, ROOM_H - 1, (r.z0 + r.z1) / 2, 1.8, 16);
     const strip = std(r.color, { emissive: r.color, emissiveIntensity: 1.6 });
     box(r.x1 - r.x0 - 0.8, 0.08, 0.08, strip, (r.x0 + r.x1) / 2, ROOM_H - 0.2, r.z0 + 0.3);

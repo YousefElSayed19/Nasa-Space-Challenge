@@ -82,7 +82,7 @@ export const A = {
   setPrefs(patch) {
     store.set(patch);
     const s = store.get();
-    saveJSON('mf-prefs', { graphics: s.graphics, muted: s.muted, camMode: s.camMode });
+    saveJSON('mf-prefs', { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden });
     if ('graphics' in patch) bus.emit('graphics', s.graphics);
   },
   cycleView() {
@@ -97,6 +97,7 @@ export const A = {
     const fp = store.get().firstPerson;
     A.toast(m === 'auto' ? '🎥 Auto camera: W/S walk, hold A/D to turn, the camera stays behind you. Drag to look around.' : '🎥 Free camera: WASD walks relative to the camera; drag to turn the view.');
   },
+  toggleMiniMap() { A.setPrefs({ mapHidden: !store.get().mapHidden }); },
   toggleMap() { Sound.click(); store.set(s => ({ showMap: !s.showMap })); },
   travel(roomId) { store.set({ showMap: false, panel: null }); bus.emit('travel', roomId); },
   toggleGlossary() { Sound.click(); store.set(s => ({ showGlossary: !s.showGlossary })); },
@@ -257,7 +258,7 @@ export const A = {
     const missionId = patch.missionId || s.missionId;
     const mode = patch.mode || s.mode;
     setMission(missionId);
-    store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, mode, missionId, teamNames: s.teamNames }), team: s.team, screen: 'game' });
+    store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden, mode, missionId, teamNames: s.teamNames }), team: s.team, screen: 'game' });
     let extra = { stage: 1 };
     if (mode === 'replay') extra = { ...preloadReal(store.get()), stage: 6, locked: { 1: true, 2: true, 3: true, 4: true, 5: true } };
     if (mode === 'sandbox') extra = { stage: 6, ...(patch.design ? { installed: patch.design.installed, rocket: patch.design.rocket, propLoaded: patch.design.propLoaded } : {}) };
@@ -280,5 +281,5 @@ export const A = {
   },
   deleteDesign(id) { saveJSON('mf-designs', loadJSON('mf-designs', []).filter(d => d.id !== id)); store.set(st => ({ savedTick: st.savedTick + 1 })); },
   openInSandbox(design) { A.reset({ mode: 'sandbox', missionId: design.mission, design }); },
-  backToMenu() { const s = store.get(); store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, mode: s.mode, missionId: s.missionId, teamNames: s.teamNames }) }); bus.emit('reset'); },
+  backToMenu() { const s = store.get(); store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden, mode: s.mode, missionId: s.missionId, teamNames: s.teamNames }) }); bus.emit('reset'); },
 };
