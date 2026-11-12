@@ -1,255 +1,258 @@
-// Original low-poly engineer (GDD 5.3). Built from simple shapes in code: no outside model, no licence needed.
+// Original engineer character, built in code from smooth turned (lathed) shapes so the body reads as one figure,
+// not separate blocks. Joints are hidden by matching radii; suit lines glow and flow with each step.
 import * as THREE from 'three';
 import { std, glow, lin } from './materials.js';
-import { patchTexture, nameTexture, chestPanelTexture } from './textures.js';
+import { patchTexture, nameTexture, chestPanelTexture, canvasTex } from './textures.js';
 import OPTIONS from '../data/character.json';
 
-const BODY = { slim: { w: 0.88, l: 0.86 }, standard: { w: 1, l: 1 }, sturdy: { w: 1.16, l: 1.14 } };
+const BODY = { slim: { w: 0.9, l: 0.88 }, standard: { w: 1, l: 1 }, sturdy: { w: 1.14, l: 1.12 } };
 const HEIGHT = { short: 0.93, medium: 1, tall: 1.07 };
 const damp = (cur, target, k, dt) => cur + (target - cur) * (1 - Math.exp(-k * dt));
 const lerp = (a, b, t) => a + (b - a) * t;
+const V2 = (x, y) => new THREE.Vector2(x, y);
 
-const sphere = (r, ws = 20, hs = 14) => new THREE.SphereGeometry(r, ws, hs);
-const cyl = (rt, rb, h, seg = 16) => new THREE.CylinderGeometry(rt, rb, h, seg);
-const boxG = (w, h, d) => new THREE.BoxGeometry(w, h, d);
-function mesh(geo, mat, parent, x = 0, y = 0, z = 0) {
-  const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z);
-  if (parent) parent.add(m);
-  return m;
+/** A smooth capsule from r1 (top) to r2 (bottom), length L between the sphere centres, hanging down from y=0. */
+function capsule(r1, r2, L, seg = 20) {
+  const pts = [];
+  for (let i = 0; i <= 6; i++) { const a = -Math.PI / 2 + (i / 6) * (Math.PI / 2); pts.push(V2(Math.cos(a) * r2, -L + Math.sin(a) * r2)); }
+  for (let i = 0; i <= 6; i++) { const a = (i / 6) * (Math.PI / 2); pts.push(V2(Math.cos(a) * r1, Math.sin(a) * r1)); }
+  return new THREE.LatheGeometry(pts, seg);
+}
+function lathe(points, seg = 32) { return new THREE.LatheGeometry(points.map(([x, y]) => V2(x, y)), seg); }
+function mesh(geo, mat, parent, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); if (parent) parent.add(m); return m; }
+
+/** Dashed light that scrolls along suit lines: the "flowing" glow when walking. */
+function stripTexture(color) {
+  const t = canvasTex(128, 8, (g, w, h) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+    const gr = g.createLinearGradient(0, 0, w, 0);
+    gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.35, color); gr.addColorStop(0.5, '#ffffff'); gr.addColorStop(0.65, color); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  });
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
 }
 
 export function createCharacter(profile) {
   const root = new THREE.Group();
-  const carryHolder = new THREE.Group();
-  root.add(carryHolder);
-  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0 } };
+  const carryHolder = new THREE.Group(); root.add(carryHolder);
+  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0 }, look: 0 };
   let rig = build(profile);
   root.add(rig.body);
 
   function build(p) {
-    const b = BODY[p.body] || BODY.standard;
-    const hs = HEIGHT[p.height] || 1;
+    const b = BODY[p.body] || BODY.standard, hs = HEIGHT[p.height] || 1;
     const visorHex = (OPTIONS.visor.find(v => v.id === p.visor) || OPTIONS.visor[0]).color;
-
-    const suit = std(p.suit, { roughness: 0.68, metalness: 0.04 });
-    const suitDark = std(new THREE.Color(p.suit).multiplyScalar(0.5).getStyle(), { roughness: 0.75 });
-    const accent = std(p.accent, { roughness: 0.4, metalness: 0.3 });
-    const accentGlow = std(p.accent, { emissive: p.accent, emissiveIntensity: 1.3, roughness: 0.4 });
-    const shell = std('#EEF1FF', { roughness: 0.28, metalness: 0.12 });
-    const dark = std('#1B2250', { roughness: 0.6, metalness: 0.35 });
-    const metal = std('#9AA6D8', { roughness: 0.3, metalness: 0.85 });
+    const suit = std(p.suit, { roughness: 0.62, metalness: 0.05 });
+    const suitSoft = std(new THREE.Color(p.suit).lerp(new THREE.Color('#ffffff'), 0.18).getStyle(), { roughness: 0.7 });
+    const suitDark = std(new THREE.Color(p.suit).multiplyScalar(0.45).getStyle(), { roughness: 0.75 });
+    const accent = std(p.accent, { roughness: 0.38, metalness: 0.3 });
+    const shell = std('#F1F4FF', { roughness: 0.22, metalness: 0.1 });
+    const dark = std('#1A2048', { roughness: 0.55, metalness: 0.35 });
+    const metal = std('#A8B2DC', { roughness: 0.25, metalness: 0.9 });
     const hand = p.gloves === 'accent' ? accent : p.gloves === 'white' ? shell : dark;
-    const visorM = new THREE.MeshStandardMaterial({ metalness: 1, roughness: 0.05, envMapIntensity: 2.2 });
-    visorM.color = lin(visorHex); visorM.emissive = lin(visorHex); visorM.emissiveIntensity = 0.08;
+    const visorM = new THREE.MeshStandardMaterial({ metalness: 1, roughness: 0.04, envMapIntensity: 2.4 });
+    visorM.color = lin(visorHex); visorM.emissive = lin(visorHex); visorM.emissiveIntensity = 0.1;
+    const stripTex = stripTexture(p.accent);
+    const stripM = new THREE.MeshBasicMaterial({ map: stripTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    stripM.color = lin(p.accent);
+    const strips = [], lights = [], jets = [];
 
-    const lights = [], jets = [];
     const body = new THREE.Group(); body.scale.setScalar(hs);
-    const hips = new THREE.Group(); hips.position.y = 0.92; body.add(hips);
+    const hips = new THREE.Group(); hips.position.y = 0.93; body.add(hips);
+    // pelvis: one smooth turned shape with a belt
+    const pelvis = mesh(lathe([[0, -0.14], [0.15, -0.13], [0.24, -0.06], [0.27, 0.03], [0.26, 0.1], [0, 0.1]]), suit, hips);
+    pelvis.scale.set(b.w, 1, 0.82 * b.w);
+    const belt = mesh(new THREE.TorusGeometry(0.265, 0.03, 10, 40), dark, hips, 0, 0.06, 0); belt.rotation.x = Math.PI / 2; belt.scale.set(b.w, 0.82 * b.w, 1);
+    mesh(new THREE.BoxGeometry(0.13, 0.08, 0.035), accent, hips, 0, 0.06, 0.225 * b.w);
 
-    // pelvis and belt
-    const pelvis = mesh(sphere(0.27), suit, hips); pelvis.scale.set(1.05 * b.w, 0.62, 0.8 * b.w);
-    const belt = mesh(new THREE.TorusGeometry(0.26 * b.w, 0.035, 8, 32), dark, hips, 0, 0.09, 0);
-    belt.rotation.x = Math.PI / 2; belt.scale.set(1.02, 0.8, 1);
-    mesh(boxG(0.12, 0.08, 0.04), accent, hips, 0, 0.09, 0.215 * b.w);
-    mesh(boxG(0.09, 0.11, 0.06), dark, hips, 0.2 * b.w, 0.04, 0.1); // utility pouch
-
-    // legs: hip pivot > thigh > knee pivot > shin > boot
     function leg(side) {
-      const hip = new THREE.Group(); hip.position.set(side * 0.13 * b.w, -0.02, 0); hips.add(hip);
-      mesh(cyl(0.1 * b.l, 0.085 * b.l, 0.42), suit, hip, 0, -0.21, 0);
+      const hip = new THREE.Group(); hip.position.set(side * 0.13 * b.w, -0.04, 0); hips.add(hip);
+      mesh(capsule(0.105 * b.l, 0.088 * b.l, 0.42), suit, hip);
+      const strip = mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.34, 6), stripM, hip, side * 0.095 * b.l, -0.2, 0.02); strips.push(strip);
       const knee = new THREE.Group(); knee.position.y = -0.42; hip.add(knee);
-      const pad = mesh(sphere(0.078 * b.l, 14, 10), accent, knee, 0, 0, 0.055); pad.scale.set(1, 1.15, 0.7);
-      mesh(cyl(0.085 * b.l, 0.072 * b.l, 0.38), suit, knee, 0, -0.19, 0);
-      const boot = new THREE.Group(); boot.position.y = -0.4; knee.add(boot);
-      mesh(cyl(0.095 * b.l, 0.1 * b.l, 0.15), hand, boot, 0, 0.03, 0);
-      const toe = mesh(sphere(0.1, 14, 10), hand, boot, 0, -0.03, 0.09); toe.scale.set(0.95, 0.6, 1.25);
-      mesh(boxG(0.18 * b.l, 0.05, 0.32), dark, boot, 0, -0.07, 0.05);
-      return { hip, knee };
+      const pad = mesh(new THREE.SphereGeometry(0.083 * b.l, 18, 12), accent, knee, 0, 0, 0.05); pad.scale.set(1, 1.1, 0.7);
+      mesh(capsule(0.088 * b.l, 0.075 * b.l, 0.38), suitSoft, knee);
+      const ankle = new THREE.Group(); ankle.position.y = -0.38; knee.add(ankle);
+      // boot: cuff, rounded upper and a thicker sole that rolls with the ankle
+      mesh(lathe([[0.075 * b.l, 0.1], [0.098 * b.l, 0.06], [0.1 * b.l, -0.02], [0, -0.03]], 24), hand, ankle);
+      const upper = mesh(new THREE.SphereGeometry(0.1, 20, 14), hand, ankle, 0, -0.05, 0.07); upper.scale.set(0.95 * b.l, 0.62, 1.55);
+      const sole = mesh(new THREE.BoxGeometry(0.19 * b.l, 0.045, 0.34), dark, ankle, 0, -0.1, 0.07);
+      sole.geometry.translate(0, 0, 0);
+      return { hip, knee, ankle };
     }
     const legL = leg(1), legR = leg(-1);
 
-    // torso
-    const spine = new THREE.Group(); spine.position.y = 0.06; hips.add(spine);
-    const torso = mesh(cyl(0.3 * b.w, 0.26 * b.w, 0.6, 28), suit, spine, 0, 0.33, 0); torso.scale.z = 0.82;
-    const front = 0.82 * 0.29 * b.w;
-    const waist = mesh(new THREE.TorusGeometry(0.265 * b.w, 0.022, 8, 32), accent, spine, 0, 0.1, 0); waist.rotation.x = Math.PI / 2; waist.scale.set(1, 0.82, 1);
-    // chest panel with lights
+    // torso: one turned shape with a waist, chest and shoulders
+    const spine = new THREE.Group(); spine.position.y = 0.08; hips.add(spine);
+    const torso = mesh(lathe([[0.25, 0], [0.27, 0.07], [0.3, 0.2], [0.33, 0.36], [0.33, 0.47], [0.29, 0.56], [0.18, 0.63], [0.0, 0.64]], 40), suit, spine);
+    torso.scale.set(b.w, 1, 0.8 * b.w);
+    const front = 0.8 * 0.33 * b.w;
+    const chestPlate = mesh(new THREE.SphereGeometry(0.3, 28, 16, -Math.PI / 2.6, Math.PI / 1.3, 0.6, 0.9), shell, spine, 0, 0.36, 0.02);
+    chestPlate.scale.set(b.w * 1.03, 0.9, 0.85 * b.w);
     const panelTex = chestPanelTexture();
-    const panelM = new THREE.MeshStandardMaterial({ map: panelTex, emissiveMap: panelTex, emissive: new THREE.Color(1, 1, 1), emissiveIntensity: 0.55, roughness: 0.4 });
-    const panel = mesh(boxG(0.2 * b.w, 0.15, 0.04), panelM, spine, -0.09 * b.w, 0.42, front + 0.01);
-    panel.rotation.x = -0.08;
-    // emblem patch
+    const panelM = new THREE.MeshStandardMaterial({ map: panelTex, emissiveMap: panelTex, emissive: new THREE.Color(1, 1, 1), emissiveIntensity: 0.6, roughness: 0.4 });
+    const panel = mesh(new THREE.PlaneGeometry(0.16 * b.w, 0.12), panelM, spine, -0.08 * b.w, 0.4, front + 0.02); panel.rotation.y = -0.2; lights.push(panel);
     if (p.patch !== 'none') {
       const pm = new THREE.MeshStandardMaterial({ map: patchTexture(p.patch, p.accent), roughness: 0.7, transparent: true });
-      const patch = mesh(new THREE.CircleGeometry(0.065, 24), pm, spine, 0.13 * b.w, 0.47, front + 0.012);
-      patch.rotation.y = 0.28;
+      const patch = mesh(new THREE.CircleGeometry(0.06, 28), pm, spine, 0.13 * b.w, 0.43, front + 0.02); patch.rotation.y = 0.32;
     }
-    // accent stripes down the torso sides
+    // glowing suit lines down the chest sides
     for (const side of [1, -1]) {
-      const s = mesh(boxG(0.03, 0.5, 0.05), accent, spine, side * 0.29 * b.w, 0.33, 0); s.rotation.z = side * -0.06;
+      const s = mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.42, 6), stripM, spine, side * 0.25 * b.w, 0.3, front * 0.72); s.rotation.z = side * 0.12; s.rotation.x = -0.12; strips.push(s);
     }
-    // shoulder pads and neck ring
-    for (const side of [1, -1]) { const sp = mesh(sphere(0.135, 18, 12), accent, spine, side * 0.33 * b.w, 0.58, 0); sp.scale.set(1.1, 0.68, 1); }
-    const neck = mesh(new THREE.TorusGeometry(0.17, 0.045, 10, 28), shell, spine, 0, 0.66, 0); neck.rotation.x = Math.PI / 2;
-
-    // head and helmet
-    const head = new THREE.Group(); head.position.y = 0.87; spine.add(head);
+    const waist = mesh(new THREE.TorusGeometry(0.255, 0.02, 8, 40), accent, spine, 0, 0.08, 0); waist.rotation.x = Math.PI / 2; waist.scale.set(b.w, 0.8 * b.w, 1);
+    // shoulders: rounded pads that hide the arm joint
+    for (const side of [1, -1]) { const sp = mesh(new THREE.SphereGeometry(0.14, 22, 16, 0, Math.PI * 2, 0, Math.PI / 1.8), accent, spine, side * 0.33 * b.w, 0.53, 0); sp.scale.set(1.05, 0.75, 1); }
+    // neck seal and helmet
+    const seal = mesh(new THREE.TorusGeometry(0.17, 0.05, 12, 36), shell, spine, 0, 0.66, 0); seal.rotation.x = Math.PI / 2;
+    mesh(new THREE.TorusGeometry(0.175, 0.012, 6, 36), accent, spine, 0, 0.69, 0).rotation.x = Math.PI / 2;
+    const head = new THREE.Group(); head.position.y = 0.88; spine.add(head);
     if (p.helmet === 'angular') {
-      const h = mesh(cyl(0.27, 0.3, 0.46, 6), shell, head); h.rotation.y = Math.PI / 6;
-      const top = mesh(cyl(0.18, 0.27, 0.1, 6), shell, head, 0, 0.28, 0); top.rotation.y = Math.PI / 6;
-      const v = mesh(boxG(0.36, 0.19, 0.05), visorM, head, 0, 0.03, 0.245); v.rotation.x = -0.12;
-      mesh(boxG(0.4, 0.035, 0.06), accent, head, 0, 0.145, 0.24);
-      mesh(boxG(0.06, 0.2, 0.06), accent, head, 0.29, 0.02, 0);
-      mesh(boxG(0.06, 0.2, 0.06), accent, head, -0.29, 0.02, 0);
+      const h = mesh(lathe([[0, -0.24], [0.27, -0.22], [0.3, 0.02], [0.27, 0.2], [0.16, 0.29], [0, 0.3]], 6), shell, head); h.rotation.y = Math.PI / 6;
+      const v = mesh(new THREE.BoxGeometry(0.38, 0.2, 0.05), visorM, head, 0, 0.03, 0.25); v.rotation.x = -0.1;
+      mesh(new THREE.BoxGeometry(0.42, 0.03, 0.06), accent, head, 0, 0.145, 0.245);
     } else {
-      mesh(sphere(0.29, 32, 22), shell, head);
-      const v = mesh(new THREE.SphereGeometry(0.297, 32, 16, Math.PI / 2 - 0.78, 1.56, 0.95, 0.95), visorM, head);
-      v.rotation.y = 0;
-      const crest = mesh(boxG(0.05, 0.05, 0.42), accent, head, 0, 0.27, -0.04); crest.rotation.x = 0.12;
+      mesh(new THREE.SphereGeometry(0.29, 40, 28), shell, head);
+      mesh(new THREE.SphereGeometry(0.297, 40, 20, Math.PI / 2 - 0.8, 1.6, 0.95, 0.95), visorM, head);
+      const frame = mesh(new THREE.TorusGeometry(0.3, 0.016, 8, 48, Math.PI * 0.95), accent, head, 0, 0.02, 0); frame.rotation.set(0, Math.PI / 2 - 0.05, Math.PI / 2 + 0.03);
+      mesh(new THREE.BoxGeometry(0.045, 0.05, 0.42), accent, head, 0, 0.27, -0.04).rotation.x = 0.12;
       if (p.helmet === 'halo') {
-        const ring = mesh(new THREE.TorusGeometry(0.38, 0.022, 10, 48), accentGlow, head, 0, 0.08, 0);
-        ring.rotation.x = Math.PI / 2 - 0.25;
+        const ring = mesh(new THREE.TorusGeometry(0.38, 0.022, 10, 56), glow(p.accent, 0.9), head, 0, 0.08, 0); ring.rotation.x = Math.PI / 2 - 0.25; lights.push(ring);
         for (const side of [1, -1]) {
-          const ant = mesh(cyl(0.012, 0.012, 0.28, 6), metal, head, side * 0.14, 0.38, -0.05); ant.rotation.z = side * -0.25;
-          mesh(sphere(0.03, 10, 8), accentGlow, head, side * 0.175, 0.51, -0.05);
+          const ant = mesh(new THREE.CylinderGeometry(0.01, 0.012, 0.28, 6), metal, head, side * 0.14, 0.38, -0.05); ant.rotation.z = side * -0.25;
+          const tip = mesh(new THREE.SphereGeometry(0.03, 10, 8), std(p.accent, { emissive: p.accent, emissiveIntensity: 1.5 }), head, side * 0.175, 0.51, -0.05); lights.push(tip);
         }
       }
     }
-    // helmet lamp
-    const lampBody = mesh(cyl(0.045, 0.045, 0.1, 12), dark, head, 0.29, 0.05, 0.06); lampBody.rotation.x = Math.PI / 2;
-    const lampLens = mesh(new THREE.CircleGeometry(0.035, 12), std('#FFFFFF', { emissive: '#DDE6FF', emissiveIntensity: 2 }), head, 0.29, 0.05, 0.112);
-    lights.push(lampLens);
+    const lamp = mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.1, 16), dark, head, 0.29, 0.05, 0.05); lamp.rotation.x = Math.PI / 2;
+    const lens = mesh(new THREE.CircleGeometry(0.035, 16), std('#FFFFFF', { emissive: '#DDE6FF', emissiveIntensity: 2 }), head, 0.29, 0.05, 0.102); lights.push(lens);
 
-    // arms: shoulder pivot > upper arm > elbow pivot > forearm > glove
     function arm(side) {
-      const sh = new THREE.Group(); sh.position.set(side * 0.37 * b.w, 0.56, 0); spine.add(sh);
-      mesh(cyl(0.078 * b.l, 0.068 * b.l, 0.3), suit, sh, 0, -0.15, 0);
+      const sh = new THREE.Group(); sh.position.set(side * 0.37 * b.w, 0.52, 0); spine.add(sh);
+      mesh(capsule(0.082 * b.l, 0.07 * b.l, 0.3), suit, sh);
+      const strip = mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.24, 6), stripM, sh, side * 0.075 * b.l, -0.15, 0); strips.push(strip);
       const el = new THREE.Group(); el.position.y = -0.3; sh.add(el);
-      mesh(sphere(0.07 * b.l, 12, 10), suitDark, el);
-      mesh(cyl(0.068 * b.l, 0.06 * b.l, 0.26), suit, el, 0, -0.13, 0);
-      mesh(cyl(0.078 * b.l, 0.078 * b.l, 0.06), accent, el, 0, -0.25, 0);
-      const g = mesh(sphere(0.072 * b.l, 14, 10), hand, el, 0, -0.32, 0.01); g.scale.set(0.95, 1.2, 0.85);
-      const thumb = mesh(sphere(0.03, 8, 6), hand, el, side * -0.05, -0.3, 0.05); thumb.scale.set(1, 1.4, 1);
+      mesh(capsule(0.07 * b.l, 0.062 * b.l, 0.26), suitSoft, el);
+      mesh(new THREE.TorusGeometry(0.068 * b.l, 0.018, 8, 24), accent, el, 0, -0.24, 0).rotation.x = Math.PI / 2;
+      // glove: palm, fingers block and thumb
+      const palm = mesh(new THREE.SphereGeometry(0.068 * b.l, 18, 14), hand, el, 0, -0.33, 0.005); palm.scale.set(0.9, 1.15, 0.75);
+      const fingers = mesh(capsule(0.045, 0.04, 0.05, 14), hand, el, 0, -0.37, 0.012); fingers.scale.set(1.1, 1, 0.75);
+      const thumb = mesh(capsule(0.024, 0.02, 0.05, 10), hand, el, side * -0.05, -0.32, 0.04); thumb.rotation.z = side * 0.6;
       return { sh, el };
     }
     const armL = arm(1), armR = arm(-1);
 
-    // backpack
-    const pack = new THREE.Group(); pack.position.set(0, 0.38, -0.25 * b.w); spine.add(pack);
-    const hose = (side) => {
-      const curve = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(side * 0.15, 0.28, -0.25 * b.w), new THREE.Vector3(side * 0.27, 0.74, -0.2), new THREE.Vector3(side * 0.22, 0.84, -0.06),
-      ]);
-      mesh(new THREE.TubeGeometry(curve, 16, 0.022, 6), dark, spine);
+    // backpack with rounded edges built from a lathe
+    const pack = new THREE.Group(); pack.position.set(0, 0.36, -0.26 * b.w); spine.add(pack);
+    const rounded = (w, h, d, mat) => { const g = new THREE.Group(); mesh(new THREE.BoxGeometry(w - 0.06, h, d), mat, g); mesh(new THREE.BoxGeometry(w, h - 0.06, d), mat, g); for (const sx of [-1, 1]) for (const sy of [-1, 1]) mesh(new THREE.CylinderGeometry(0.03, 0.03, d, 12), mat, g, sx * (w / 2 - 0.03), sy * (h / 2 - 0.03), 0).rotation.x = Math.PI / 2; return g; };
+    const hose = side => {
+      const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(side * 0.15, 0.62, -0.28 * b.w), new THREE.Vector3(side * 0.27, 0.72, -0.2), new THREE.Vector3(side * 0.2, 0.8, -0.06)]);
+      mesh(new THREE.TubeGeometry(curve, 20, 0.022, 8), dark, spine);
     };
     if (p.pack === 'tool') {
-      mesh(boxG(0.4, 0.5, 0.1), dark, pack, 0, 0, -0.03);
-      mesh(boxG(0.36, 0.17, 0.18), accent, pack, 0, -0.2, -0.1);
-      for (const side of [1, -1]) { const t = mesh(cyl(0.025, 0.025, 0.5, 8), metal, pack, side * 0.08, 0.06, -0.12); t.rotation.z = side * 0.5; }
-      mesh(boxG(0.12, 0.1, 0.08), shell, pack, 0.12, 0.17, -0.12);
-      const l = mesh(sphere(0.025, 8, 6), std(p.accent, { emissive: p.accent, emissiveIntensity: 1.5 }), pack, -0.14, 0.2, -0.1); lights.push(l);
+      pack.add(rounded(0.4, 0.5, 0.1, dark));
+      const box = rounded(0.36, 0.17, 0.16, accent); box.position.set(0, -0.2, -0.08); pack.add(box);
+      for (const side of [1, -1]) { const t = mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.5, 10), metal, pack, side * 0.08, 0.06, -0.1); t.rotation.z = side * 0.5; }
+      const l = mesh(new THREE.SphereGeometry(0.025, 10, 8), std(p.accent, { emissive: p.accent, emissiveIntensity: 1.6 }), pack, -0.14, 0.2, -0.07); lights.push(l);
     } else if (p.pack === 'jet') {
-      mesh(boxG(0.34, 0.42, 0.18), shell, pack, 0, 0.02, -0.06);
-      mesh(boxG(0.36, 0.05, 0.2), accent, pack, 0, 0.14, -0.06);
+      const core = rounded(0.34, 0.42, 0.18, shell); core.position.z = -0.04; pack.add(core);
       for (const side of [1, -1]) {
-        mesh(cyl(0.08, 0.09, 0.44, 16), dark, pack, side * 0.2, -0.02, -0.1);
-        mesh(cyl(0.085, 0.085, 0.04, 16), accent, pack, side * 0.2, 0.16, -0.1);
-        mesh(cyl(0.06, 0.09, 0.08, 16), metal, pack, side * 0.2, -0.28, -0.1);
-        const flame = mesh(new THREE.ConeGeometry(0.06, 0.32, 14, 1, true), glow('#8FD3FF', 0.5), pack, side * 0.2, -0.48, -0.1);
+        mesh(lathe([[0.07, -0.24], [0.09, -0.18], [0.09, 0.16], [0.07, 0.22], [0, 0.23]], 20), dark, pack, side * 0.2, 0, -0.1);
+        mesh(lathe([[0.04, 0], [0.06, -0.05], [0.085, -0.11], [0.08, -0.12]], 20), metal, pack, side * 0.2, -0.24, -0.1);
+        const flame = mesh(new THREE.ConeGeometry(0.06, 0.34, 14, 1, true), glow('#8FD3FF', 0.5), pack, side * 0.2, -0.53, -0.1);
         flame.rotation.x = Math.PI; jets.push(flame);
       }
       hose(1); hose(-1);
     } else {
-      mesh(boxG(0.46, 0.56, 0.2), shell, pack, 0, 0, -0.04);
-      mesh(boxG(0.48, 0.06, 0.22), accent, pack, 0, 0.19, -0.04);
-      for (const side of [1, -1]) mesh(cyl(0.07, 0.07, 0.5, 14), dark, pack, side * 0.26, -0.02, -0.04);
-      ['#3EE0A0', '#FFC24B', '#6EA8FF'].forEach((c, i) => { const l = mesh(sphere(0.022, 8, 6), std(c, { emissive: c, emissiveIntensity: 1.5 }), pack, -0.12 + i * 0.06, 0.1, -0.146); lights.push(l); });
-      const nm = new THREE.MeshStandardMaterial({ map: nameTexture(p.nick, p.accent), roughness: 0.6 });
-      const plate = mesh(new THREE.PlaneGeometry(0.3, 0.075), nm, pack, 0, -0.08, -0.146); plate.rotation.y = Math.PI;
+      const core = rounded(0.46, 0.56, 0.2, shell); core.position.z = -0.03; pack.add(core);
+      mesh(new THREE.BoxGeometry(0.48, 0.05, 0.22), accent, pack, 0, 0.19, -0.03);
+      for (const side of [1, -1]) mesh(lathe([[0.065, -0.25], [0.07, -0.22], [0.07, 0.22], [0.065, 0.25], [0, 0.26]], 18), dark, pack, side * 0.26, -0.01, -0.03);
+      ['#3EE0A0', '#FFC24B', '#6EA8FF'].forEach((c, i) => { const l = mesh(new THREE.SphereGeometry(0.022, 10, 8), std(c, { emissive: c, emissiveIntensity: 1.6 }), pack, -0.12 + i * 0.06, 0.1, -0.135); lights.push(l); });
+      const plate = mesh(new THREE.PlaneGeometry(0.3, 0.075), new THREE.MeshStandardMaterial({ map: nameTexture(p.nick, p.accent), roughness: 0.6 }), pack, 0, -0.08, -0.135); plate.rotation.y = Math.PI;
       hose(1); hose(-1);
     }
 
     body.traverse(o => { if (o.isMesh) { o.castShadow = !o.material.transparent; o.receiveShadow = false; } });
-    return { body, hips, spine, head, legL, legR, armL, armR, lights, jets, hs };
+    return { body, hips, spine, head, legL, legR, armL, armR, lights, jets, strips, stripTex, stripM, hs, b };
   }
 
   function disposeRig(r) {
-    r.body.traverse(o => {
-      if (!o.isMesh) return;
-      o.geometry.dispose();
-      const m = o.material; if (m.map) m.map.dispose(); m.dispose();
-    });
+    r.body.traverse(o => { if (!o.isMesh) return; o.geometry.dispose(); const m = o.material; if (m.map) m.map.dispose(); m.dispose(); });
   }
 
-  /** inp: { speed, run, carrying, crouch, pump, wave } */
+  /** inp: { speed, run, carrying, crouch, pump, wave, air, vy } */
   function update(dt, inp) {
     const W = st.w, r = rig;
     st.t += dt;
-    W.walk = damp(W.walk, Math.min(1, inp.speed / 4.6), 10, dt);
-    W.run = damp(W.run, inp.run && inp.speed > 0.5 ? 1 : 0, 6, dt);
+    W.walk = damp(W.walk, Math.min(1, inp.speed / 4.4), 9, dt);
+    W.run = damp(W.run, inp.run && inp.speed > 0.5 ? 1 : 0, 5, dt);
     W.carry = damp(W.carry, inp.carrying ? 1 : 0, 9, dt);
-    W.crouch = damp(W.crouch, inp.crouch ? 1 : 0, 8, dt);
+    W.crouch = damp(W.crouch, inp.crouch ? 1 : 0, 9, dt);
     W.pump = damp(W.pump, inp.pump ? 1 : 0, 8, dt);
     W.wave = damp(W.wave, inp.wave ? 1 : 0, 5, dt);
     W.air = damp(W.air, inp.air ? 1 : 0, 14, dt);
-    st.phase += dt * inp.speed * 1.75;
-    const ph = st.phase, t = st.t, idle = 1 - W.walk;
-    const a = W.walk * (0.55 + 0.3 * W.run) * (1 - W.air);
+    st.phase += dt * (inp.speed * (1.55 + W.run * 0.25));
+    const ph = st.phase, t = st.t, idle = 1 - W.walk, ground = 1 - W.air;
+    const a = W.walk * (0.48 + 0.3 * W.run) * ground;
 
-    // legs
-    const swing = s => -Math.sin(ph + s) * a;
-    const bend = s => a * (0.15 + 1.05 * Math.max(0, Math.sin(ph + s + 1.3)));
-    r.legL.hip.rotation.x = lerp(swing(0), -0.95, W.crouch);
-    r.legL.knee.rotation.x = lerp(bend(0), 1.55, W.crouch);
-    r.legR.hip.rotation.x = lerp(swing(Math.PI), -0.35, W.crouch);
-    r.legR.knee.rotation.x = lerp(bend(Math.PI), 1.05, W.crouch);
-    // airborne: tuck the legs, rising then reaching for the floor
-    const rising = inp.vy > 0 ? 1 : 0;
-    r.legL.hip.rotation.x = lerp(r.legL.hip.rotation.x, rising ? -0.75 : -0.3, W.air);
-    r.legL.knee.rotation.x = lerp(r.legL.knee.rotation.x, rising ? 1.25 : 0.5, W.air);
-    r.legR.hip.rotation.x = lerp(r.legR.hip.rotation.x, rising ? -0.35 : -0.15, W.air);
-    r.legR.knee.rotation.x = lerp(r.legR.knee.rotation.x, rising ? 0.95 : 0.35, W.air);
+    // legs: swing, knee bend in the swing phase, a small bend on contact, and the foot rolls with the ankle
+    const legPose = (L, s) => {
+      const sw = Math.sin(ph + s);
+      let hip = -sw * a;
+      let knee = a * (0.18 + 1.15 * Math.max(0, Math.sin(ph + s + 1.7))) + W.walk * 0.06;
+      hip = lerp(hip, s ? -0.38 : -0.95, W.crouch); knee = lerp(knee, s ? 1.05 : 1.6, W.crouch);
+      const rising = inp.vy > 0 ? 1 : 0;
+      hip = lerp(hip, rising ? (s ? -0.35 : -0.75) : (s ? -0.15 : -0.3), W.air);
+      knee = lerp(knee, rising ? (s ? 0.95 : 1.25) : (s ? 0.35 : 0.5), W.air);
+      L.hip.rotation.x = hip; L.knee.rotation.x = knee;
+      const toeOff = Math.max(0, -Math.cos(ph + s)) * 0.35 * a;
+      L.ankle.rotation.x = -(hip + knee) * 0.85 + toeOff;
+    };
+    legPose(r.legL, 0); legPose(r.legR, Math.PI);
 
-    // body bob, lean and breathing
-    const bob = Math.abs(Math.sin(ph)) * 0.05 * W.walk * (1 + W.run * 0.7);
+    // body: double-frequency bob, side sway, pelvis twist and roll, spine counter-twist, breathing and weight shift
+    const bob = (Math.abs(Math.sin(ph)) - 0.35) * 0.055 * W.walk * (1 + W.run * 0.6) * ground;
     r.body.position.y = bob - 0.26 * W.crouch * r.hs;
-    r.spine.rotation.x = 0.06 * W.walk + 0.16 * W.run * W.walk + 0.32 * W.crouch + Math.sin(t * 1.7) * 0.012 * idle;
-    r.spine.rotation.y = Math.sin(ph) * 0.09 * W.walk;
-    r.spine.scale.set(1, 1 + Math.sin(t * 1.7) * 0.008 * idle, 1);
-    r.head.rotation.y = Math.sin(t * 0.37) * 0.4 * idle * (1 - W.crouch) * (1 - W.wave);
-    r.head.rotation.x = -0.1 * W.walk * W.run + 0.25 * W.crouch - 0.2 * W.wave;
+    r.body.position.x = Math.sin(ph) * 0.025 * W.walk * ground;
+    r.hips.rotation.y = Math.sin(ph) * 0.14 * W.walk;
+    r.hips.rotation.z = Math.sin(ph) * 0.045 * W.walk + Math.sin(t * 0.55) * 0.025 * idle;
+    r.spine.rotation.y = -Math.sin(ph) * 0.22 * W.walk;
+    r.spine.rotation.x = 0.05 * W.walk + 0.17 * W.run * W.walk + 0.32 * W.crouch + Math.sin(t * 1.6) * 0.014 * idle - 0.08 * W.air;
+    r.spine.rotation.z = -Math.sin(ph) * 0.03 * W.walk;
+    r.spine.scale.set(1, 1 + Math.sin(t * 1.6) * 0.01 * idle, 1);
+    // head stays steady, looks around when idle
+    st.look = damp(st.look, idle > 0.8 ? Math.sin(t * 0.33) * 0.45 : 0, 3, dt);
+    r.head.rotation.y = st.look * (1 - W.crouch) * (1 - W.wave) - r.spine.rotation.y * 0.6;
+    r.head.rotation.x = -bob * 1.2 - 0.06 * W.run * W.walk + 0.25 * W.crouch - 0.2 * W.wave;
 
-    // arms
-    const armSwing = s => Math.sin(ph + s) * a * 0.95;
-    let lx = armSwing(0), rx = armSwing(Math.PI);
-    let le = -0.22 - 0.6 * W.run * W.walk, re = le;
-    let lz = 0.1, rz = -0.1;
-    lx = lerp(lx, -1.15, W.carry); rx = lerp(rx, -1.15, W.carry);
-    le = lerp(le, -0.6, W.carry); re = lerp(re, -0.6, W.carry);
+    // arms: opposite swing with elbow bend; pump when running; carry, install, fuel and wave poses blend on top
+    const swing = s => Math.sin(ph + s) * a * (0.85 + 0.35 * W.run);
+    let lx = swing(0), rx = swing(Math.PI);
+    let le = -0.25 - 0.25 * W.walk - 0.85 * W.run * W.walk - Math.max(0, Math.sin(ph)) * 0.2 * W.walk;
+    let re = -0.25 - 0.25 * W.walk - 0.85 * W.run * W.walk - Math.max(0, -Math.sin(ph)) * 0.2 * W.walk;
+    let lz = 0.12, rz = -0.12;
+    lx = lerp(lx, -1.15, W.carry); rx = lerp(rx, -1.15, W.carry); le = lerp(le, -0.6, W.carry); re = lerp(re, -0.6, W.carry);
     lz = lerp(lz, -0.08, W.carry); rz = lerp(rz, 0.08, W.carry);
-    const tw = Math.sin(t * 14) * 0.13; // tightening motion while installing
+    const tw = Math.sin(t * 14) * 0.13;
     lx = lerp(lx, -1.35 + tw, W.crouch); rx = lerp(rx, -1.35 - tw, W.crouch);
     rx = lerp(rx, -0.8 + Math.sin(t * 6) * 0.28, W.pump); re = lerp(re, -0.95, W.pump);
+    if (!inp.carrying) { lx = lerp(lx, -0.45, W.air); rx = lerp(rx, -0.45, W.air); lz = lerp(lz, 0.8, W.air); rz = lerp(rz, -0.8, W.air); }
     rz = lerp(rz, -2.7, W.wave); rx = lerp(rx, -0.15, W.wave);
-    if (!inp.carrying) { lx = lerp(lx, -0.5, W.air); rx = lerp(rx, -0.5, W.air); lz = lerp(lz, 0.75, W.air); rz = lerp(rz, -0.75, W.air); }
-    r.armL.sh.rotation.set(lx, 0, lz);
-    r.armR.sh.rotation.set(rx, 0, rz);
+    r.armL.sh.rotation.set(lx, 0, lz); r.armR.sh.rotation.set(rx, 0, rz);
     r.armL.el.rotation.set(le, 0, 0);
     r.armR.el.rotation.set(lerp(re, -0.35, W.wave), 0, Math.sin(t * 9) * 0.5 * W.wave);
 
-    // effects
-    r.jets.forEach(j => {
-      j.scale.y = 0.5 + Math.max(W.walk * W.run, W.air) * 1.4 + Math.random() * 0.25;
-      j.material.opacity = 0.15 + 0.7 * Math.max(W.run * W.walk, W.air);
-    });
-    r.lights.forEach((l, i) => { l.material.emissiveIntensity = 1 + Math.sin(t * 3 + i * 2.1) * 0.6; });
+    // light: suit lines brighten and flow with each step, LEDs blink, jets flare when running or airborne
+    r.stripTex.offset.x -= dt * (0.4 + inp.speed * 0.45);
+    r.stripM.opacity = 0.35 + 0.65 * Math.min(1, W.walk * (0.7 + 0.5 * Math.abs(Math.sin(ph))) + W.air + 0.15);
+    r.lights.forEach((l, i) => { if (l.material.emissiveIntensity !== undefined) l.material.emissiveIntensity = 1 + Math.sin(t * 3 + i * 2.1) * 0.6; });
+    r.jets.forEach(j => { const f = Math.max(W.walk * W.run, W.air); j.scale.y = 0.5 + f * 1.5 + Math.random() * 0.25; j.material.opacity = 0.12 + 0.75 * f; });
 
-    // carried part follows the hands
-    carryHolder.position.set(0, (1.2 - 0.26 * W.crouch) * r.hs, (0.55 + 0.12 * W.crouch) * r.hs);
+    carryHolder.position.set(0, (1.2 - 0.26 * W.crouch) * r.hs + bob, (0.55 + 0.12 * W.crouch) * r.hs);
 
-    // footstep event for the sound layer
     const sgn = Math.sin(ph) >= 0 ? 1 : -1;
-    if (W.walk > 0.35 && sgn !== st.lastStep) { st.lastStep = sgn; return 'step'; }
+    if (W.walk > 0.35 && ground > 0.5 && sgn !== st.lastStep) { st.lastStep = sgn; return sgn > 0 ? 'stepR' : 'stepL'; }
     st.lastStep = sgn;
     return null;
   }

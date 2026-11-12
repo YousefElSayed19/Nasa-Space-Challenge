@@ -7,6 +7,7 @@ import { TutorialCard } from './Tutorial.jsx';
 import { TasksCard, Pointer, LaunchOverlay } from './Guide.jsx';
 import { stepOf } from '../state/tutorial.js';
 import { Picker } from './Picker.jsx';
+import { LockedStation } from './Locked.jsx';
 import { stationById, STAGE_NAMES } from '../engine/index.js';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
@@ -69,16 +70,10 @@ export function Settings({ s }) {
 
 function PickerHost({ s }) {
   const id = s.panel;
-  if (!['payload', 'systems', 'board'].includes(id)) return null;
+  if (!id) return null;
   const st = stationById(id);
-  if (!isFree(s) && st.stage > s.stage) {
-    return (
-      <div className="picker-ov" onClick={A.close}><section className="picker small glass" onClick={e => e.stopPropagation()}>
-        <h2>{st.label}</h2><p className="sub">This station opens at stage {st.stage}, {STAGE_NAMES[st.stage - 1]}. Finish {STAGE_NAMES[s.stage - 1].toLowerCase()} first.</p>
-        <div className="foot"><span></span><button className="btn" onClick={A.close}>OK</button></div>
-      </section></div>
-    );
-  }
+  if (!['payload', 'systems', 'board'].includes(id)) return !isFree(s) && st.stage > s.stage ? <LockedStation s={s} station={st} key={'lock' + id} /> : null;
+  if (!isFree(s) && st.stage > s.stage) return <LockedStation s={s} station={st} key={'lock' + id} />;
   return <Picker s={s} station={id} key={id} />;
 }
 

@@ -3,6 +3,7 @@ import { InfoDot, Stars } from './InfoDot.jsx';
 import { useHud } from './hooks.js';
 import { THUMBS } from '../state/thumbs.js';
 import { HOWTO, WHAT, prosCons, statsOf, rocketProsCons } from './explain.js';
+import { LockedStation } from './Locked.jsx';
 import { A, roleOwner } from '../state/actions.js';
 import { hud } from '../state/store.js';
 import { Sound } from '../audio/sound.js';
@@ -346,13 +347,7 @@ function Review({ s }) {
 export function StationPanel({ s }) {
   const id = s.panel; if (!id) return null;
   const st = stationById(id);
-  if (!isFree(s) && st.stage > s.stage) {
-    return (
-      <PanelShell title={st.label}>
-        <div className="lockmsg">This station opens at stage {st.stage}, {STAGE_NAMES[st.stage - 1]}. Finish {STAGE_NAMES[s.stage - 1].toLowerCase()} first.</div>
-      </PanelShell>
-    );
-  }
+  if (!isFree(s) && st.stage > s.stage) return null; // the full-screen lock card is shown instead
   const T = totals(s);
   if (id === 'payload' || id === 'systems' || id === 'board') return null; // shown by the full-screen picker
   const map = { control: Briefing, payload: Payload, systems: Systems, cradle: Cradle, board: Board, fuel: Fuel, review: Review };

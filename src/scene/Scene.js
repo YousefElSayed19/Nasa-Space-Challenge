@@ -23,7 +23,7 @@ const damp = (cur, target, k, dt) => cur + (target - cur) * (1 - Math.exp(-k * d
 const START_POS = new V3(0, 0, 11);
 
 let renderer, scene, camera, clock, fx = null, world, refs, colliders, hero, space;
-let launchRocket = null, smoke = [], guideTarget = null, lastPtr = '';
+let launchRocket = null, smoke = [], dust = [], guideTarget = null, lastPtr = '';
 let time = 0, holdT = 0, ratchetT = 0, pumpAcc = 0, launchT = -1, launched = false;
 const keys = {};
 const player = { pos: START_POS.clone(), vel: new V3(), facing: Math.PI, speed: 0, spin: 0, y: 0, vy: 0, air: false, land: 0 };
@@ -489,7 +489,26 @@ function tick() {
     speed: player.speed, run: player.running, carrying: !!s.carrying,
     crouch: acts.installing || player.land > 0.15, pump: acts.pumping, wave: s.screen === 'launching' || (s.screen === 'intro' && (s.introBeat === 0 || s.introBeat === 5)), air: player.air, vy: player.vy,
   });
-  if (ev === 'step') Sound.step();
+  if (ev && ev.startsWith('step')) {
+    Sound.step();
+    // a small puff of dust under the foot that just landed
+    if (!dust.length) for (let i = 0; i < 16; i++) { const sp = new THREE.Sprite(smokeMaterial()); sp.visible = false; scene.add(sp); dust.push({ sp, life: 0 }); }
+    const d = dust.find(q => q.life <= 0);
+    if (d && player.speed > 1.2) {
+      const side = ev === 'stepR' ? -1 : 1, f = player.facing;
+      d.life = 1; d.sp.visible = true;
+      d.sp.position.set(player.pos.x + Math.cos(f) * 0.15 * side, 0.06, player.pos.z - Math.sin(f) * 0.15 * side);
+      d.sp.material.color = lin(s.profile.accent || '#8FD3FF');
+    }
+  }
+  dust.forEach(d => {
+    if (d.life <= 0) return;
+    d.life -= dt * 1.8;
+    const k = 1 - Math.max(0, d.life), sc = 0.25 + k * 0.6;
+    d.sp.scale.set(sc, sc * 0.6, 1); d.sp.position.y = 0.06 + k * 0.12;
+    d.sp.material.opacity = Math.max(0, d.life) * 0.35;
+    if (d.life <= 0) d.sp.visible = false;
+  });
   updateWorld(dt, s, acts);
   updateCamera(dt, s);
   updatePointer(s);
