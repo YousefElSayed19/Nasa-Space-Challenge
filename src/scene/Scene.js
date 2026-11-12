@@ -74,10 +74,10 @@ export function initScene(container) {
     if (!smoke.length) for (let i = 0; i < 90; i++) { const sp = new THREE.Sprite(smokeMaterial()); sp.visible = false; scene.add(sp); smoke.push({ sp, life: 0, v: new V3() }); }
     launchT = 0; launched = false;
     // step back to a safe viewing spot and wave the spacecraft off
-    player.pos.set(3.4, 0, 5.6); player.vel.set(0, 0, 0); player.facing = Math.atan2(-3.4, -5.6);
+    player.pos.set(3.4, 0, 5.6); player.vel.set(0, 0, 0); player.facing = player.heading = Math.atan2(-3.4, -5.6);
   });
   bus.on('reset', reset);
-  bus.on('enter', () => { player.pos.copy(START_POS); player.facing = Math.PI; cam.yaw = 0; cam.pitch = 0.38; });
+  bus.on('enter', () => { player.pos.copy(START_POS); player.facing = Math.PI; player.heading = Math.PI; player.turnVel = 0; cam.yaw = 0; cam.pitch = 0.38; });
   bus.on('installed', () => { refs.craftLight.intensity = 6; });
   bus.on('fly', id => {
     const p = partById(id), from = refs.shelf[id] ? refs.shelf[id].getWorldPosition(new V3()) : new V3(0, 3, 6);
@@ -122,7 +122,7 @@ function reset() {
   if (launchRocket) { scene.remove(launchRocket.group); launchRocket = null; }
   refs.trusses.forEach(tr => { tr.visible = true; });
   smoke.forEach(p => { p.sp.visible = false; p.life = 0; });
-  player.pos.copy(START_POS); player.vel.set(0, 0, 0); player.facing = Math.PI; cam.yaw = 0; cam.pitch = 0.38;
+  player.pos.copy(START_POS); player.vel.set(0, 0, 0); player.facing = Math.PI; player.heading = Math.PI; player.turnVel = 0; cam.yaw = 0; cam.pitch = 0.38;
   player.y = 0; player.vy = 0; player.air = false; player.flyMode = false; player.boosted = false; player.thrust = 0; hud.set({ flying: false });
 }
 
@@ -176,7 +176,7 @@ function bindInput() {
     if (!drag) return;
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (store.get().screen === 'start') player.spin += dx * 0.012;
-    else { cam.yaw -= dx * 0.0055; cam.pitch = Math.max(0.05, Math.min(1.2, cam.pitch + dy * 0.004)); lastDrag = performance.now(); inputYaw = null; if (Math.abs(dx) + Math.abs(dy) > 2) bus.emit('looked'); }
+    else { cam.yaw -= dx * 0.0055; cam.pitch = Math.max(0.05, Math.min(1.2, cam.pitch + dy * 0.004)); lastDrag = performance.now(); if (Math.abs(dx) + Math.abs(dy) > 2) bus.emit('looked'); }
     drag = { x: e.clientX, y: e.clientY };
   });
   const end = () => { drag = null; };
@@ -218,6 +218,7 @@ function onKeyDown(e) {
 function toggleFlight() {
   const s = store.get();
   if (['payload', 'systems', 'board'].includes(s.panel)) return;
+  if (s.firstPerson) { A.toast('✈ Flight works in third-person view. Press V to switch.', 'warn'); return; }
   player.flyMode = !player.flyMode;
   if (player.flyMode) { player.cruise = Math.min(FLY_MAX, Math.max(1.5, player.y)); if (!player.air) { player.air = true; player.vy = 3.5; player.airT = 0; } }
   else player.boosted = true; // glide down gently
@@ -273,45 +274,63 @@ function updatePlayer(dt, s) {
   const tj = hud.get().touch;
   const f = picking ? 0 : (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) - (tj ? tj.y : 0);
   const r = picking ? 0 : (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + (tj ? tj.x : 0);
-  const stick = tj ? Math.min(1, Math.hypot(tj.x, tj.y)) : 1;
-  // Auto camera: hold the input direction steady while keys are held, so the camera can swing behind
-  // the engineer without changing what "forward" means mid-step (no spinning in circles).
   const auto = s.camMode === 'auto';
-  const anyInput = Math.abs(f) > 0.02 || Math.abs(r) > 0.02;
-  if (!anyInput) inputYaw = null; else if (inputYaw === null) inputYaw = cam.yaw;
-  const refYaw = auto && inputYaw !== null ? inputYaw : cam.yaw;
-  const fwd = new V3(-Math.sin(refYaw), 0, -Math.cos(refYaw)), right = new V3(Math.cos(refYaw), 0, -Math.sin(refYaw));
-  const dir = fwd.multiplyScalar(f).add(right.multiplyScalar(r));
   const running = keys.ShiftLeft || keys.ShiftRight;
   let sp = running ? 8.2 : 4.6;
   if (player.air && (player.boosted || player.flyMode)) sp *= 1.45; // flying is faster
   if (s.carrying) sp *= 1 - Math.min(0.35, partById(s.carrying).mass * 0.035); // heavy parts slow you (teaches mass)
-  const target = dir.lengthSq() > 0.0004 ? dir.normalize().multiplyScalar(sp * (tj ? Math.max(0.35, stick) : 1)) : new V3();
+  if (player.heading === undefined) player.heading = player.facing;
+  let target;
+  if (auto) {
+    // Auto: steering controls. Hold A/D to keep turning smoothly; W/S move forward and back along the heading.
+    const turnTarget = -r * (running ? 2.9 : 2.4);
+    player.turnVel = damp(player.turnVel || 0, turnTarget, Math.abs(turnTarget) > 0.01 ? 9 : 14, dt);
+    if (s.firstPerson) { cam.yaw += player.turnVel * dt; player.heading = cam.yaw + Math.PI; } // the view is the heading; dragging also steers
+    else player.heading += player.turnVel * dt;
+    const back = f < 0;
+    const mag = Math.min(1, Math.abs(f)) * (back ? 0.6 : 1);
+    const dir = new V3(Math.sin(player.heading), 0, Math.cos(player.heading)).multiplyScalar(Math.sign(f) * sp * mag);
+    target = Math.abs(f) > 0.02 ? dir : new V3();
+    player.backward = back && Math.abs(f) > 0.02;
+  } else {
+    // Free: walk relative to the camera; the engineer turns to face the way it walks
+    const fwd = new V3(-Math.sin(cam.yaw), 0, -Math.cos(cam.yaw)), right = new V3(Math.cos(cam.yaw), 0, -Math.sin(cam.yaw));
+    const dir = fwd.multiplyScalar(f).add(right.multiplyScalar(r));
+    const stick = tj ? Math.min(1, Math.hypot(tj.x, tj.y)) : 1;
+    target = dir.lengthSq() > 0.0004 ? dir.normalize().multiplyScalar(sp * (tj ? Math.max(0.35, stick) : 1)) : new V3();
+    player.turnVel = 0; player.backward = false;
+  }
   // smooth acceleration and braking
   const k = target.lengthSq() > 0 ? 9 : 12;
   player.vel.x = damp(player.vel.x, target.x, k, dt);
   player.vel.z = damp(player.vel.z, target.z, k, dt);
   player.pos.addScaledVector(player.vel, dt);
-  const flyingHigh = player.y > 1.2;
   player.walked = (player.walked || 0) + player.vel.length() * dt;
-  if (player.walked > 3 && !player.movedSent) { player.movedSent = true; bus.emit('moved'); }
+  if ((player.walked > 3 || Math.abs(player.turnVel || 0) > 1) && !player.movedSent) { player.movedSent = true; bus.emit('moved'); }
   collide(player.pos); // at hover height the engineer still goes around desks, racks and tanks
   player.speed = Math.hypot(player.vel.x, player.vel.z);
   player.running = running;
-  if (player.speed > 0.3) {
-    const want = Math.atan2(player.vel.x, player.vel.z);
-    let d = want - player.facing; d = Math.atan2(Math.sin(d), Math.cos(d));
-    player.facing += d * (1 - Math.exp(-14 * dt));
-  }
-  // swing the camera behind the engineer while walking, unless the player has just looked around with the mouse
-  if (auto && player.speed > 0.6 && performance.now() - lastDrag > 900) {
-    // third person: swing behind the engineer; first person and hands view: turn the view toward the direction of travel
-    const travel = Math.atan2(player.vel.x, player.vel.z);
-    let dy = (s.firstPerson ? travel : player.facing) + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
-    cam.yaw += dy * (1 - Math.exp(-(1.6 + player.speed * 0.25) * dt));
+  if (auto) {
+    // body faces the heading (walking backward keeps facing forward)
+    let d = player.heading - player.facing; d = Math.atan2(Math.sin(d), Math.cos(d));
+    player.facing += d * (1 - Math.exp(-16 * dt));
+    // third person: the camera swings in behind while moving or turning, unless the player just looked around
+    if (!s.firstPerson && (player.speed > 0.4 || Math.abs(player.turnVel) > 0.2) && performance.now() - lastDrag > 900) {
+      let dy = player.heading + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      cam.yaw += dy * (1 - Math.exp(-(Math.abs(player.turnVel) > 0.2 ? 7 : 3.2) * dt));
+    }
+  } else {
+    if (player.speed > 0.3) {
+      const want = Math.atan2(player.vel.x, player.vel.z);
+      let d = want - player.facing; d = Math.atan2(Math.sin(d), Math.cos(d));
+      player.facing += d * (1 - Math.exp(-14 * dt));
+    }
+    player.heading = player.facing;
   }
   // flight: hold Space in the air to fire the thrusters; F keeps you airborne; Q descends
-  const holdUp = !!keys.Space && !picking, holdDown = !!keys.KeyQ && !picking;
+  const canFly = !s.firstPerson; // flight is a third-person feature: it cannot be seen from the visor
+  if (!canFly && player.flyMode) { player.flyMode = false; player.boosted = true; hud.set({ flying: false }); }
+  const holdUp = !!keys.Space && !picking && canFly, holdDown = !!keys.KeyQ && !picking;
   if (player.air) {
     player.airT += dt;
     let thrust = 0;
@@ -554,6 +573,7 @@ function tick() {
   const ev = hero.update(dt, {
     speed: player.speed, run: player.running, carrying: !!s.carrying,
     fly: player.air && (player.boosted || player.flyMode), thrust: player.air ? player.thrust : 0,
+    back: !!player.backward,
     crouch: acts.installing || player.land > 0.15, pump: acts.pumping, wave: s.screen === 'launching' || (s.screen === 'intro' && (s.introBeat === 0 || s.introBeat === 5)), air: player.air, vy: player.vy,
   });
   if (player.air && player.thrust > 0.2 && s.screen === 'game') {

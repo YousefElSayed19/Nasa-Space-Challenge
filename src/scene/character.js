@@ -215,7 +215,7 @@ export function createCharacter(profile) {
     W.fly = damp(W.fly, inp.fly ? 1 : 0, 4, dt);
     W.hands = damp(W.hands, viewMode === 'hands' ? 1 : 0, 10, dt);
     W.thrust = damp(W.thrust, inp.thrust || 0, 10, dt);
-    st.phase += dt * (inp.speed * (1.55 + W.run * 0.25));
+    st.phase += dt * (inp.speed * (1.55 + W.run * 0.25)) * (inp.back ? -1 : 1);
     const ph = st.phase, t = st.t, idle = 1 - W.walk, ground = 1 - W.air;
     const a = W.walk * (0.48 + 0.3 * W.run) * ground;
 
@@ -335,12 +335,14 @@ export function createHands(profile) {
     const make = side => {
       const arm = new THREE.Group();
       // forearm along -z (into the screen), cuff ring, glove with fingers and thumb
-      const fore = new THREE.Mesh(capsule(0.05, 0.043, 0.34, 18), suit); fore.rotation.x = -Math.PI / 2; arm.add(fore);
+      const fore = new THREE.Mesh(capsule(0.05, 0.043, 0.34, 18), suit); fore.rotation.x = Math.PI / 2; arm.add(fore);
       const strip = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.26, 6), stripM); strip.rotation.x = Math.PI / 2; strip.position.set(side * 0.046, 0.012, -0.17); arm.add(strip);
       const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.047, 0.012, 8, 24), accent); cuff.position.z = -0.31; arm.add(cuff);
+      const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.056, 16, 12), suit); elbow.position.z = 0.02; arm.add(elbow);
+      const pad = new THREE.Mesh(new THREE.SphereGeometry(0.05, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), accent); pad.rotation.x = -Math.PI / 2; pad.position.set(side * 0.02, 0, 0.04); pad.scale.set(1, 1, 0.6); arm.add(pad);
       const palm = new THREE.Mesh(new THREE.SphereGeometry(0.052, 18, 14), glove); palm.scale.set(1, 0.75, 1.25); palm.position.z = -0.39; arm.add(palm);
-      const fingers = new THREE.Mesh(capsule(0.034, 0.03, 0.05, 12), glove); fingers.rotation.x = -Math.PI / 2 - 0.35; fingers.scale.set(1.25, 1, 0.8); fingers.position.set(0, -0.012, -0.44); arm.add(fingers);
-      const thumb = new THREE.Mesh(capsule(0.018, 0.015, 0.04, 10), glove); thumb.rotation.set(-Math.PI / 2, 0, side * 0.9); thumb.position.set(-side * 0.045, 0.01, -0.39); arm.add(thumb);
+      const fingers = new THREE.Mesh(capsule(0.034, 0.03, 0.05, 12), glove); fingers.rotation.x = Math.PI / 2 - 0.35; fingers.scale.set(1.25, 1, 0.8); fingers.position.set(0, -0.012, -0.44); arm.add(fingers);
+      const thumb = new THREE.Mesh(capsule(0.018, 0.015, 0.04, 10), glove); thumb.rotation.set(Math.PI / 2, 0, side * 0.9); thumb.position.set(-side * 0.045, 0.01, -0.39); arm.add(thumb);
       arm.traverse(o => { if (o.isMesh) { o.castShadow = false; o.renderOrder = 10; } });
       group.add(arm);
       return arm;

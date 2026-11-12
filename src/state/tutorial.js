@@ -5,9 +5,9 @@ import { bus } from './bus.js';
 import { Sound } from '../audio/sound.js';
 
 export const TUTORIAL = [
-  { title: 'Walk', text: 'Use W A S D or the arrow keys to walk. Hold Shift to run.', keys: ['W', 'A', 'S', 'D'], done: f => f.moved, wait: 'Walk a few steps' },
+  { title: 'Walk', text: 'W and S walk forward and back; hold A or D to turn smoothly. Hold Shift to run. (With the Free camera, WASD walks relative to the camera.)', keys: ['W', 'A', 'S', 'D'], done: f => f.moved, wait: 'Walk a few steps' },
   { title: 'Look around', text: 'Drag with the mouse to turn the camera. Press V any time to switch to first person.', keys: ['Drag', 'V'], done: f => f.looked, wait: 'Drag the mouse on the hangar' },
-  { title: 'Jump', text: 'Press Space to jump. Hold Space in the air to fire your thrusters and fly; press F for flight mode. Heavy parts keep you lower.', keys: ['Space'], done: f => f.jumped, wait: 'Press Space' },
+  { title: 'Jump', text: 'Press Space to jump. In third person, hold Space in the air to fly, or press F for flight mode.', keys: ['Space'], done: f => f.jumped, wait: 'Press Space' },
   { title: 'Follow the arrow', text: 'The gold arrow floats over the place you need to go; when it is off screen, an arrow at the edge of the screen points the way. Walk to Mission Control until the “E Mission Control” prompt appears at the bottom, then press E.', keys: ['E'], target: 'control', done: (f, s) => s.panel === 'control' || s.stage > 1, wait: 'Open Mission Control' },
   { title: 'Accept the mission', text: 'Read the goal, budget and trip time, then press Accept mission.', target: 'control', done: (f, s) => s.stage > 1, wait: 'Press Accept mission' },
   { title: 'Pick up an instrument', text: 'Go to the Payload Bay, press E, and pick up any instrument. Each card shows what it costs before you choose.', keys: ['E'], target: 'payload', done: (f, s) => !!s.carrying || s.installed.length > 0, wait: 'Pick up an instrument' },

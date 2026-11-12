@@ -3,7 +3,7 @@ import { A } from '../state/actions.js';
 import GLOSSARY from '../data/glossary.json';
 import { restartTutorial } from '../state/tutorial.js';
 
-const CONTROLS = [['W A S D / arrows', 'Walk'], ['Shift', 'Run'], ['Space', 'Jump; hold it in the air to fly with the thrusters'], ['F', 'Flight mode: hover low above the floor (Space up, Q down, F again to land)'], ['Mouse drag', 'Look around (in Auto camera, it swings back behind you when you walk)'], ['C', 'Auto camera or free camera'], ['E', 'Use a station, pick up'], ['Hold E', 'Install a part, pump propellant'], ['X', 'Put a part back'], ['V', 'Change view: third person, first person, hands view'], ['L', 'Show or hide the decision log'], ['Esc', 'Close a panel']];
+const CONTROLS = [['W / S', 'Walk forward and back'], ['A / D (hold)', 'Turn left and right (Auto camera); step sideways with the Free camera'], ['Shift', 'Run'], ['Space', 'Jump; in third person, hold it in the air to fly'], ['F', 'Flight mode, third person only: hover low (Space up, Q down, F to land)'], ['Mouse drag', 'Look around (in Auto camera, it swings back behind you when you walk)'], ['C', 'Auto camera or free camera'], ['E', 'Use a station, pick up'], ['Hold E', 'Install a part, pump propellant'], ['X', 'Put a part back'], ['V', 'Change view: third person, first person, hands view'], ['L', 'Show or hide the decision log'], ['Esc', 'Close a panel']];
 
 export function Glossary() {
   return (
