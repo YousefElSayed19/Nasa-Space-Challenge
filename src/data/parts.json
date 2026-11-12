@@ -569,6 +569,239 @@
    "missions": [
     "europa"
    ]
+  },
+  {
+   "id": "lander-seis",
+   "slot": "instrument",
+   "name": "Seismometer (SEIS-style)",
+   "mass": 8,
+   "power": 8,
+   "data": 20,
+   "cost": 40,
+   "science": 5,
+   "color": "#6EA8FF",
+   "note": "Listens for marsquakes to map the planet’s interior.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-hp3",
+   "slot": "instrument",
+   "name": "Heat-Flow Probe (HP3-style)",
+   "mass": 5,
+   "power": 6,
+   "data": 6,
+   "cost": 30,
+   "science": 4,
+   "color": "#FFC24B",
+   "note": "Hammers into the ground to measure heat escaping from inside Mars.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-rise",
+   "slot": "instrument",
+   "name": "Radio Science (RISE-style)",
+   "mass": 2,
+   "power": 4,
+   "data": 3,
+   "cost": 15,
+   "science": 3,
+   "color": "#3EE0A0",
+   "note": "Tracks the radio signal to measure how Mars wobbles.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-arm",
+   "slot": "instrument",
+   "name": "Robotic Arm and Cameras",
+   "mass": 6,
+   "power": 10,
+   "data": 25,
+   "cost": 35,
+   "science": 3,
+   "color": "#B48CFF",
+   "note": "Places instruments on the ground and images the site.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-weather",
+   "slot": "instrument",
+   "name": "Weather Station (TWINS-style)",
+   "mass": 2,
+   "power": 3,
+   "data": 4,
+   "cost": 10,
+   "science": 2,
+   "color": "#8FD3FF",
+   "note": "Measures wind and temperature, so quakes can be told apart from wind.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-mag",
+   "slot": "instrument",
+   "name": "Magnetometer",
+   "mass": 1,
+   "power": 2,
+   "data": 2,
+   "cost": 10,
+   "science": 1,
+   "color": "#FF9A6E",
+   "note": "Measures the magnetic field at the surface.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-array-s",
+   "slot": "array",
+   "name": "Round Solar Arrays, 1.8 m",
+   "mass": 4,
+   "supply": 70,
+   "cost": 20,
+   "area": 5,
+   "round": true,
+   "note": "Light, but dust can leave too little power.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-array-m",
+   "slot": "array",
+   "name": "Round Solar Arrays, 2.15 m",
+   "mass": 6,
+   "supply": 100,
+   "cost": 30,
+   "area": 7.3,
+   "round": true,
+   "note": "The same size as InSight’s two arrays.",
+   "approximate": false,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-array-l",
+   "slot": "array",
+   "name": "Round Solar Arrays, 2.5 m",
+   "mass": 8,
+   "supply": 130,
+   "cost": 40,
+   "area": 10,
+   "round": true,
+   "note": "More margin for dusty days. Heavier.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-ant-uhf",
+   "slot": "antenna",
+   "name": "UHF Relay Antenna",
+   "mass": 1,
+   "downlink": 70,
+   "cost": 8,
+   "dish": 1,
+   "note": "Sends data up to orbiters passing overhead. Light, but slower.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-ant-x",
+   "slot": "antenna",
+   "name": "X-band and UHF Antennas",
+   "mass": 2,
+   "downlink": 100,
+   "cost": 14,
+   "dish": 1.4,
+   "note": "Talks to Earth directly and through orbiters.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-battery",
+   "slot": "battery",
+   "name": "Lithium-ion Battery",
+   "mass": 4,
+   "cost": 10,
+   "note": "Keeps the lander alive through the cold Martian night.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-heat-l",
+   "slot": "aeroshell",
+   "name": "Light Heat Shield",
+   "mass": 14,
+   "cost": 25,
+   "maxEntry": 185,
+   "note": "Lighter and cheaper, but it can only protect a lighter spacecraft.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-heat-h",
+   "slot": "aeroshell",
+   "name": "Thick Heat Shield",
+   "mass": 20,
+   "cost": 35,
+   "maxEntry": 260,
+   "note": "Thicker, like InSight’s. Protects a heavier spacecraft.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-chute-s",
+   "slot": "parachute",
+   "name": "Small Parachute",
+   "mass": 3,
+   "cost": 8,
+   "dvSave": 380,
+   "note": "Lighter, but the engines must do more of the braking.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
+  },
+  {
+   "id": "lander-chute-l",
+   "slot": "parachute",
+   "name": "Large Parachute",
+   "mass": 5,
+   "cost": 12,
+   "dvSave": 470,
+   "note": "Slows the lander more, so less descent propellant is needed.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ]
   }
  ],
  "realBySlot": {
@@ -592,6 +825,14 @@
    "antenna": "The real high-gain antenna is a 3 m dish, with seven smaller antennas as backup (JPL Europa Clipper pages).",
    "battery": "Jupiter’s shadow cuts sunlight; mass is approximate.",
    "shield": "The real vault has aluminum-zinc walls up to 9.2 mm thick to protect the electronics (JPL Europa Clipper quick facts). Mass is approximate."
+  },
+  "lander": {
+   "instrument": "InSight carried a seismometer (SEIS), a heat-flow probe (HP3), radio science (RISE), a robotic arm with cameras, and weather sensors (JPL InSight press kit). Mass, power and data values here are approximate game values.",
+   "array": "InSight’s two round arrays, each about 2.15 m across, give about 600–700 W on a clear day and 200–300 W when dusty (JPL InSight press kit).",
+   "antenna": "InSight talked to Earth directly and relayed data through orbiters. Values here are game values.",
+   "battery": "InSight used lithium-ion batteries (JPL InSight press kit). Mass is approximate.",
+   "aeroshell": "InSight’s aeroshell was 2.64 m across, and its heat shield was slightly thicker than Phoenix’s (JPL InSight press kit). Masses and limits are game values.",
+   "parachute": "Parachutes slow a lander in the thin Martian air before the engines take over. Masses and savings are game values."
   }
  }
 }

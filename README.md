@@ -14,7 +14,7 @@ Opens in Chrome or Edge on a laptop. No installation, no login.
 
 ## What is in the game
 
-- **Three missions** that unlock in order: Lunar Orbiter (inspired by LRO), Mars Orbiter (MRO) and Europa Flyby Explorer (Europa Clipper).
+- **Four missions** that unlock in order: Lunar Orbiter (inspired by LRO), Mars Orbiter (MRO), Mars Lander (InSight, with heat shield, parachute and a landing) and Europa Flyby Explorer (Europa Clipper).
 - **Three modes:** Campaign, Sandbox (no locks, no budget limit) and Replay a real mission (start from the real NASA design).
 - **1 to 4 players on one screen.** The four roles (Systems Engineer, Science Lead, Launch and Orbit Lead, Budget and Risk Manager)
   are shared between players, and every stage needs all four roles to approve before it locks. Solo players get an advisor instead.
@@ -26,6 +26,10 @@ Opens in Chrome or Edge on a laptop. No installation, no login.
 - **Opening story** with short quizzes, then an interactive tour.
 - **Part and rocket cards** with a rendered picture, price, real-world values, strengths and weaknesses, and how each choice changes your budget.
 - **Jump, launch countdown, and a 3D flight** for each mission: liftoff from Earth, cruise with a chase camera, orbit insertion and science orbits.
+- **Budget in dollars everywhere:** money left in the top bar, cost and budget-after on every card.
+- **Optional extra funding** (a loan with interest: if the mission fails while you hold it, the program is cancelled).
+- **Cause tracing** that also names a decision that fixed one thing and broke another.
+- **Leaderboard on this device** for campaign flights.
 - **Badges** in the debrief, a **Help** page with controls, and a **glossary** of the twelve engineering ideas the game teaches.
 
 ## Run it

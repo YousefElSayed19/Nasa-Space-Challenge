@@ -212,11 +212,14 @@ export function buildWorld(scene) {
     box(5.4, 0.1, 1.2, metal, x, 0.9, z); box(5.4, 0.1, 1.2, metal, x, 0.05, z);
     box(5.6, 3.6, 0.1, std('#20295A'), x, 1.8, z + 0.6);
     box(5.6, 0.06, 0.06, std('#3EE0A0', { emissive: '#3EE0A0', emissiveIntensity: 1.5 }), x, 3.62, z + 0.55);
-    const sysIndex = {};
+    const sysIndex = {}, sysCount = {};
+    ALL_PARTS.filter(p => p.slot !== 'instrument').forEach(p => { sysCount[p.missions[0]] = (sysCount[p.missions[0]] || 0) + 1; });
     ALL_PARTS.filter(p => p.slot !== 'instrument').forEach(p => {
       const i = sysIndex[p.missions[0]] = (sysIndex[p.missions[0]] ?? -1) + 1;
-      const m = partMesh(p, true); const px = x - 2.3 + i * 0.66;
-      if (p.slot === 'array') { m.rotation.y = Math.PI / 2; m.rotation.z = 0.15; m.position.set(px, 1.6, z + 0.1); m.scale.setScalar(0.8 + Math.min(0.5, Math.sqrt(p.area) * 0.06)); }
+      const n = sysCount[p.missions[0]];
+      const m = partMesh(p, true); const px = x - 2.4 + i * (4.8 / Math.max(1, n - 1));
+      if (p.slot === 'array' && p.round) { m.rotation.x = Math.PI / 2.4; m.position.set(px, 1.6, z + 0.1); }
+      else if (p.slot === 'array') { m.rotation.y = Math.PI / 2; m.rotation.z = 0.15; m.position.set(px, 1.6, z + 0.1); m.scale.setScalar(0.8 + Math.min(0.5, Math.sqrt(p.area) * 0.06)); }
       else if (p.slot === 'antenna') { m.position.set(px, 1.0, z); m.scale.setScalar(Math.min(0.85, 0.35 + p.dish * 0.15)); }
       else m.position.set(px, 1.15, z);
       scene.add(m); refs.shelf[p.id] = m;

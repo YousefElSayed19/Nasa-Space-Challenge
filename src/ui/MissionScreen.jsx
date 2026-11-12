@@ -28,12 +28,12 @@ export function MissionScreen({ s }) {
       <section className="mission glass" aria-live="polite">
         <div className="label">Mission timeline</div>
         <h2 style={{ margin: '2px 0 0', fontSize: 24 }}>{MISSION.name} in flight</h2>
-        <div className="phases">{PHASES.map(p => <div key={p} className={'phase' + (reached.has(p) ? ' on' : '')}><div className="pb"><i></i></div>{p}</div>)}</div>
+        <div className="phases">{PHASES.map(p => <div key={p} className={'phase' + (reached.has(p) ? ' on' : '')}><div className="pb"><i></i></div>{p === 'Orbit insertion' ? MISSION.insertionLabel : p}</div>)}</div>
         <div className="feed" ref={feedRef}>
           {r.timeline.slice(0, shown).map((e, i) => (
             <div key={i} className={'ev ' + e.kind}>
               <span className="ic">{e.kind === 'ok' ? '✓' : e.kind === 'warn' ? '!' : '✕'}</span>
-              <div><div className="ph">{e.phase}</div>{e.text}</div>
+              <div><div className="ph">{e.phase === 'Orbit insertion' ? MISSION.insertionLabel : e.phase}</div>{e.text}</div>
             </div>
           ))}
         </div>

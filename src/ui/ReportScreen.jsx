@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { A, unlockedMissions } from '../state/actions.js';
 import { loadJSON } from '../state/store.js';
 import { useAnimatedNumber } from './hooks.js';
+import { topScores } from '../state/leaderboard.js';
 import { MISSION, MISSIONS, STAGE_NAMES, partById, causeTrace, badgesFor, pct, fmt, money, isFree } from '../engine/index.js';
 
 const END = {
@@ -52,7 +53,8 @@ function Compare({ s, r }) {
 export function ReportScreen({ s }) {
   const r = s.result, T = r.T;
   const score = useAnimatedNumber(r.score, 1100);
-  const title = { ok: 'Mission success', warn: 'Mission degraded', fail: 'Mission lost' }[r.outcome];
+  const cancelled = r.outcome === 'fail' && !!s.loan;
+  const title = cancelled ? 'Program cancelled' : { ok: MISSION.lands ? 'Landed and working' : 'Mission success', warn: 'Mission degraded', fail: 'Mission lost' }[r.outcome];
   const trace = r.primary ? causeTrace(s, r.primary, T, r) : null;
   const endText = r.fail ? r.fail.text : END[r.primary] || '';
   const successWhy = !r.fail && r.outcome === 'ok'
@@ -64,7 +66,7 @@ export function ReportScreen({ s }) {
     ['Launch mass', `${fmt(T.wet * MISSION.u.mass)} kg`, MISSION.real.launch],
     ['Power at destination', `${fmt(T.supply * MISSION.u.power)} W`, MISSION.real.power],
     ['Downlink', MISSION.u.data ? `${(T.downlink * MISSION.u.data).toFixed(MISSION.u.data < 1 ? 1 : 0)} ${MISSION.u.dataUnit}` : `${fmt(T.downlink)} game units`, MISSION.real.downlink],
-    ['Total cost', s.mode === 'sandbox' ? `${money(T.cost)} (sandbox)` : money(T.cost), MISSION.real.cost],
+    ['Total cost', s.mode === 'sandbox' ? `${money(T.cost)} (sandbox)` : `${money(T.cost)} of ${money(T.budget)}`, MISSION.real.cost],
     ['Instruments', `${s.installed.filter(id => partById(id).slot === 'instrument').length}`, MISSION.real.instruments],
   ];
   const sc = [['Science value', r.parts.science, 40], ['Efficiency', r.parts.efficiency, 20], ['Decision quality', r.parts.decisions, 25], ['Risk handling', r.parts.risk, 15]];
@@ -78,7 +80,7 @@ export function ReportScreen({ s }) {
           <div>
             <div className="label">Debrief: {MISSION.name}{isFree(s) ? ` (${s.mode}, not ranked)` : ''}</div>
             <h2 className={'verdict-big ' + r.outcome}>{title}</h2>
-            <p style={{ margin: '6px 0 0', color: '#c3cbef', maxWidth: 560 }}>{r.fail ? r.fail.text : successWhy || `${pct(r.sciFactor)} of planned science reached Earth.`}</p>
+            <p style={{ margin: '6px 0 0', color: '#c3cbef', maxWidth: 560 }}>{r.fail ? r.fail.text : successWhy || `${pct(r.sciFactor)} of planned science reached Earth.`}{cancelled ? ' Because you held extra funding, the agency cancelled the program.' : ''}</p>
           </div>
           <div className="score">{Math.round(score)}<small>of 100</small></div>
         </div>
@@ -115,6 +117,12 @@ export function ReportScreen({ s }) {
             <table><thead><tr><th></th><th>Yours</th><th>Real</th></tr></thead>
               <tbody>{comp.map(c => <tr key={c[0]}><td>{c[0]}</td><td>{c[1]}</td><td>{c[2]}</td></tr>)}</tbody></table>
             <p className="approx">Real values from NASA and JPL sources; see the info markers and the source register.</p>
+          </div>
+          <div className="sec"><h3>Leaderboard on this device: {MISSION.name}</h3>
+            {topScores(s.missionId, 6).length ? (
+              <table><thead><tr><th>#</th><th>Crew</th><th>Score</th><th>Result</th><th>Date</th></tr></thead>
+                <tbody>{topScores(s.missionId, 6).map((e, i) => <tr key={e.id} className={e.id === s.scoreId ? 'me' : ''}><td>{i + 1}</td><td>{e.name}</td><td>{e.score}</td><td>{e.outcome}</td><td>{e.date}</td></tr>)}</tbody></table>
+            ) : <p className="tag">Campaign flights are ranked here. Sandbox and replay flights are not ranked.</p>}
           </div>
           <div className="sec wide-sec"><h3>Badges</h3>
             <div className="badges">{badgesFor(s, r).map(b => (

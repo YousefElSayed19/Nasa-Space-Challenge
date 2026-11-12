@@ -8,7 +8,7 @@ import { TasksCard, Pointer, LaunchOverlay } from './Guide.jsx';
 import { stepOf } from '../state/tutorial.js';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
-import { partById, isFree } from '../engine/index.js';
+import { partById, isFree, money } from '../engine/index.js';
 
 function objectiveText(s) {
   if (s.carrying) return 'Carry the part to the Assembly Cradle, then hold E to install it.';
@@ -23,7 +23,7 @@ function objectiveText(s) {
   })[s.stage] || '';
 }
 
-const GOOD_UP = k => k === 'power supply' || k === 'downlink' || k.startsWith('capacity');
+const GOOD_UP = k => k === 'power supply' || k === 'downlink' || k === 'budget' || k.startsWith('capacity');
 
 function LogPanel({ s }) {
   if (!s.showLog) return null;
@@ -38,9 +38,9 @@ function LogPanel({ s }) {
             {(e.effects || e.fee) ? (
               <div className="fx">
                 {Object.entries(e.effects || {}).map(([k, v]) => (
-                  <span key={k} className={GOOD_UP(k) ? (v > 0 ? 'neg' : 'pos') : (v > 0 ? 'pos' : 'neg')}>{v > 0 ? '+' : ''}{v} {k}</span>
+                  <span key={k} className={GOOD_UP(k) ? (v > 0 ? 'neg' : 'pos') : (v > 0 ? 'pos' : 'neg')}>{k === 'cost' || k === 'budget' ? `${v > 0 ? '+' : '−'}${money(Math.abs(v))} ${k}` : `${v > 0 ? '+' : ''}${v} ${k}`}</span>
                 ))}
-                {e.fee ? <span className="pos">change request {e.fee}</span> : null}
+                {e.fee ? <span className="pos">change request {money(e.fee)}</span> : null}
               </div>
             ) : null}
           </div>

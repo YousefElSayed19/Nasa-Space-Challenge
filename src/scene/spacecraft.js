@@ -63,6 +63,14 @@ export function partMesh(p, forHands) {
       add(new THREE.CircleGeometry(0.08, 18), black, 0, 0, 0.375);
     }
     for (const x of [-0.16, 0.16]) add(new THREE.BoxGeometry(0.03, 0.05, 0.2), black, x, -0.2, 0);
+  } else if (p.slot === 'array' && p.round) {
+    // round, fan-folded arrays like InSight's (10-sided)
+    const r = forHands ? 0.45 : 0.5 + Math.sqrt(p.area) * 0.32;
+    const tex = cells().clone(); tex.needsUpdate = true; tex.repeat.set(3, 3);
+    const pm = new THREE.MeshStandardMaterial({ map: tex, metalness: 0.6, roughness: 0.25, emissive: lin('#0a1a55'), emissiveIntensity: 0.6, side: THREE.DoubleSide });
+    const disk = (x) => { const d = new THREE.Mesh(new THREE.CircleGeometry(r, 10), pm); d.rotation.x = -Math.PI / 2; d.position.set(x, 0, 0); g.add(d);
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(r, 0.02, 6, 10), std('#9AA6D8', { metalness: 0.8 })); rim.rotation.x = Math.PI / 2; rim.position.set(x, 0, 0); g.add(rim); };
+    if (forHands) disk(0); else { disk(1.15 + r); disk(-1.15 - r); }
   } else if (p.slot === 'array') {
     const w = forHands ? 1.0 : 0.8 + Math.sqrt(p.area) * 0.6;
     const tex = cells().clone(); tex.needsUpdate = true; tex.repeat.set(Math.max(1, Math.round(w)), 1);
@@ -95,6 +103,17 @@ export function partMesh(p, forHands) {
       cell.position.set(-0.18 + i * 0.12, 0.2, -0.12 + j * 0.12); g.add(cell);
     }
     const s = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.04, 0.02), std('#3EE0A0', { emissive: '#3EE0A0', emissiveIntensity: 1.5 })); s.position.set(0, 0.06, 0.22); g.add(s);
+  } else if (p.slot === 'aeroshell') {
+    const thick = p.maxEntry > 200;
+    const shield = new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(0, 0.42), new THREE.Vector2(0.5, 0.2), new THREE.Vector2(1.25, 0), new THREE.Vector2(1.3, thick ? 0.12 : 0.07), new THREE.Vector2(0, thick ? 0.55 : 0.48)].reverse(), 40),
+      std(thick ? '#6B3E1E' : '#8A5A30', { roughness: 0.85, metalness: 0.1, side: THREE.DoubleSide }));
+    shield.rotation.x = Math.PI; g.add(shield);
+    if (forHands) g.scale.setScalar(0.45);
+  } else if (p.slot === 'parachute') {
+    const can = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, p.dvSave > 400 ? 0.34 : 0.26, 24), std('#EEF1FF', { roughness: 0.4 }));
+    g.add(can);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.225, 0.225, 0.06, 24), std('#FF7A3D', { roughness: 0.5 })); g.add(band);
+    const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.06, 24), std('#9AA6D8', { metalness: 0.8 })); lid.position.y = 0.2; g.add(lid);
   } else if (p.id === 'eu-vault') {
     const v = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.34, 0.8), std('#8A93B8', { metalness: 0.9, roughness: 0.35 }));
     g.add(v);
@@ -114,6 +133,8 @@ function placeOn(p, i) {
   if (p.slot === 'array') return [0, BUS_Y, 0];
   if (p.slot === 'antenna') return [0, BUS_Y + 1.35, 0.2];
   if (p.slot === 'battery') return [-0.55, BUS_Y + 1.16, -0.5];
+  if (p.slot === 'aeroshell') return [0, BUS_Y - 1.32, 0];
+  if (p.slot === 'parachute') return [0, BUS_Y + 1.2, -0.45];
   return [0.55, BUS_Y + 1.08, -0.5];
 }
 

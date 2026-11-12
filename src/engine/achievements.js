@@ -11,6 +11,8 @@ export function badgesFor(s, r) {
     { id: 'team-voice', icon: '🗣️', title: 'Team voice', desc: 'Raised an objection at a team sign-off.', earned: (s.objections || 0) > 0 },
     { id: 'featherweight', icon: '🪶', title: 'Featherweight', desc: 'Launched with 30% or more mass headroom.', earned: ok && R.mass.h >= 0.3 },
     { id: 'flawless', icon: '⭐', title: 'Flawless', desc: 'Scored 95 or more.', earned: r.score >= 95 },
+    { id: 'bold-bet', icon: '💰', title: 'Bold bet', desc: 'Took extra funding and succeeded.', earned: !!s.loan && r.outcome !== 'fail' },
+    { id: 'touchdown', icon: '🛬', title: 'Touchdown', desc: 'Landed safely on Mars.', earned: MISSION.id === 'lander' && r.outcome !== 'fail' },
     { id: 'jupiter', icon: '🪐', title: 'Survived Jupiter', desc: 'Completed the Europa mission.', earned: MISSION.id === 'europa' && r.outcome === 'ok' },
   ];
   return list;

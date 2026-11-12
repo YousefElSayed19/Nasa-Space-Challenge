@@ -61,6 +61,7 @@ export function createSpaceView() {
   const textures = {};
   const tex = k => textures[k] || (textures[k] = planetTexture(k));
   let curve, earth, earthR, dest, destR, orbitR, craft, rocket, engineGlow, trail, progress = 0, t = 0, missionId = 'mars';
+  let capsule = null, heatGlow = null, chute = null, landSite = null, landUp = null;
   const camPos = new THREE.Vector3(0, 10, 30), camLook = new THREE.Vector3();
 
   function planet(kind, r, x, z, opts = {}) {
@@ -103,6 +104,13 @@ export function createSpaceView() {
       earthR = 3; earth = planet('earth', earthR, 0, 0, { atmo: '#8FD3FF' });
       dest = planet('moon', 0.85, 22, 0); destR = 0.85; orbitR = 1.25;
       pts = [V(0, 3.2, 0.5), V(5, 7, 1.5), V(12, 6, 1.4), V(18, 3, 0.6), V(22 - orbitR, 0.2)];
+    } else if (id === 'lander') {
+      sun.position.set(0, 0, 0); planet('sun', 2.4, 0, 0);
+      ring(14); ring(22);
+      earthR = 0.9; earth = planet('earth', earthR, -14, 0, { atmo: '#8FD3FF' });
+      dest = planet('mars', 2.2, 22, 0, { atmo: '#E0A080' }); destR = 2.2; orbitR = 3.4;
+      pts = []; for (let i = 0; i <= 16; i++) { const a = Math.PI - i / 16 * Math.PI, r = 14 + 8 * (i / 16); pts.push(V(Math.cos(a) * r, -Math.sin(a) * r * 0.92, 0.6 * Math.sin(i / 16 * Math.PI))); }
+      pts[0] = V(-14 + earthR * 1.05, 0.3, 0.2); pts[pts.length - 1] = V(22 - orbitR, 0.8, 0.6);
     } else if (id === 'mars') {
       sun.position.set(0, 0, 0); planet('sun', 2.4, 0, 0);
       ring(14); ring(22);
@@ -125,6 +133,18 @@ export function createSpaceView() {
     line.computeLineDistances(); world.add(line);
     trail = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: lin('#FFC24B'), transparent: true, opacity: 0.9 })); world.add(trail);
     craft = buildCraft(installed); craft.visible = false; world.add(craft);
+    if (id === 'lander') {
+      // cruise inside an aeroshell capsule; heat glow on entry; parachute; touchdown on the surface
+      capsule = new THREE.Group();
+      const shield = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.09, 32), std('#6B3E1E', { roughness: 0.8 })); shield.rotation.x = Math.PI; shield.position.y = -0.03; capsule.add(shield);
+      const back = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.16, 32), std('#EEF1FF', { roughness: 0.5 })); back.position.y = 0.09; capsule.add(back);
+      heatGlow = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 14), glow('#FF8A3D', 0)); heatGlow.position.y = -0.05; capsule.add(heatGlow);
+      world.add(capsule); capsule.visible = false;
+      chute = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2.4), new THREE.MeshStandardMaterial({ color: lin('#F2F4FA'), side: THREE.DoubleSide, roughness: 0.6 }));
+      world.add(chute); chute.visible = false;
+      landUp = new THREE.Vector3(-0.55, 0.62, 0.55).normalize();
+      landSite = dest.position.clone().add(landUp.clone().multiplyScalar(destR));
+    } else { capsule = chute = landSite = landUp = null; }
     const r = ALL_ROCKETS.find(x => x.id === rocketId) || ALL_ROCKETS[0];
     rocket = buildRocket(r, 1.2); rocket.flames.forEach(f => { f.visible = true; });
     world.add(rocket.group);
@@ -157,7 +177,9 @@ export function createSpaceView() {
       look.copy(rocket.group.position);
       want.copy(rocket.group.position).add(new THREE.Vector3(1.4, 0.6, 2.4).multiplyScalar(1 + k * 1.5));
     } else {
-      rocket.group.visible = false; craft.visible = true;
+      rocket.group.visible = false; craft.visible = !capsule;
+      if (capsule && progress >= 0.84) { landing(dt, kind, look, want); camPos.lerp(want, damp(2.2, dt)); camLook.lerp(look, damp(3, dt)); camera.position.copy(camPos); camera.lookAt(camLook); return; }
+      if (capsule) { capsule.visible = true; }
       const travel = Math.min(1, (progress - 0.07) / (0.84 - 0.07));
       let p, tan;
       if (progress < 0.84) { p = curve.getPoint(travel); tan = curve.getTangent(Math.min(0.999, travel)); }
@@ -168,6 +190,7 @@ export function createSpaceView() {
       }
       craft.position.copy(p);
       craft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tan.clone().negate());
+      if (capsule) { capsule.position.copy(p); capsule.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), tan); }
       const burning = progress > 0.78 && progress < 0.88;
       engineGlow.material.opacity = burning ? 0.85 : 0;
       engineGlow.material.color = lin(kind === 'fail' ? '#FF5D6C' : '#8FD3FF');
@@ -187,6 +210,29 @@ export function createSpaceView() {
     }
     camPos.lerp(want, damp(2.2, dt)); camLook.lerp(look, damp(3, dt));
     camera.position.copy(camPos); camera.lookAt(camLook);
+  }
+
+  function landing(dt, kind, look, want) {
+    // 0.84 → 0.95: entry (glowing heat shield), parachute, powered descent, touchdown
+    const k = Math.min(1, (progress - 0.84) / 0.11);
+    const start = curve.getPoint(1);
+    const top = landSite.clone().add(landUp.clone().multiplyScalar(0.9));
+    let p;
+    if (k < 0.45) p = start.clone().lerp(top, k / 0.45);
+    else p = top.clone().lerp(landSite.clone().add(landUp.clone().multiplyScalar(0.035)), Math.min(1, (k - 0.45) / 0.55) ** 0.7);
+    const entry = k < 0.45, chuteOn = k >= 0.4 && k < 0.8, powered = k >= 0.75 && k < 1, down = k >= 1;
+    capsule.visible = k < 0.55;
+    capsule.position.copy(p); capsule.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), landUp.clone().negate());
+    heatGlow.material.opacity = entry ? 0.35 + 0.4 * Math.sin(k / 0.45 * Math.PI) + Math.random() * 0.1 : 0;
+    chute.visible = chuteOn && kind !== 'fail';
+    chute.position.copy(p).add(landUp.clone().multiplyScalar(0.45)); chute.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), landUp);
+    craft.visible = k >= 0.5 && !(kind === 'fail' && k > 0.98);
+    craft.position.copy(p); craft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), landUp);
+    craft.scale.setScalar(0.035);
+    engineGlow.material.opacity = powered && kind !== 'fail' ? 0.9 : 0;
+    engineGlow.material.color = lin('#FFB04B');
+    if (down) { const a = t * 0.15; want.copy(landSite).add(landUp.clone().multiplyScalar(0.35)).add(new THREE.Vector3(Math.cos(a) * 0.45, 0, Math.sin(a) * 0.45)); look.copy(landSite); }
+    else { want.copy(p).add(landUp.clone().multiplyScalar(0.5)).add(new THREE.Vector3(0.6, 0.1, 0.6)); look.copy(p); }
   }
 
   function setSize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); }

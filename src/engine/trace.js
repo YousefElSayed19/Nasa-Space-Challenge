@@ -67,11 +67,49 @@ export function causeTrace(s, res, T, result) {
     skipNote(id);
     summary = `A skipped ${c.name.toLowerCase()} caused a fault in flight.`;
     fix = `${c.teaches} The check takes a few seconds in the hangar.`;
+  } else if (res === 'entry' || res === 'entry-heavy') {
+    if (res === 'entry') items.push({ idx: confirmIdx(3), text: 'You confirmed the systems without a heat shield.' });
+    else {
+      const sh = inst.find(p => p.slot === 'aeroshell');
+      if (sh) items.push({ idx: step(sh.id), text: `You chose the ${sh.name}, which protects up to ${sh.maxEntry} units.` });
+      inst.slice().sort((a, b) => b.mass - a.mass).slice(0, 2).forEach(p => items.push({ idx: step(p.id), text: `You installed the ${p.name} (+${p.mass} mass).` }));
+    }
+    summary = res === 'entry' ? 'Nothing protected the lander from the heat of entry.' : 'The lander was heavier than its heat shield could protect.';
+    fix = 'A thicker heat shield protects more mass, but weighs more itself. Keep entry mass under the shield’s limit.';
+  } else if (res === 'parachute') {
+    items.push({ idx: confirmIdx(3), text: 'You confirmed the systems without a parachute.' });
+    summary = 'Mars’ air is thin, but a parachute still removes most of the speed left after entry.';
+    fix = 'Fit a parachute. A larger one also cuts the propellant needed for the final descent.';
+  } else if (res === 'dust') {
+    const arr = inst.find(p => p.slot === 'array');
+    if (arr) items.push({ idx: step(arr.id), text: `You chose the ${arr.name}, which makes ${arr.supply} units on a clear day.` });
+    inst.filter(p => p.power).sort((a, b) => b.power - a.power).slice(0, 2).forEach(p => items.push({ idx: step(p.id), text: `You installed the ${p.name} (+${p.power} power use).` }));
+    summary = 'Dust on the arrays cut power, and there was not enough margin to keep working.';
+    fix = 'Surface missions need extra power margin: InSight’s arrays made 600–700 W on clear days but only 200–300 W when dusty.';
   } else if (res === 'fault') {
     summary = 'A random instrument fault. No single decision caused it.';
     fix = 'Real missions plan for faults with spare capacity and backup hardware. Extra science value gives you room to lose an instrument.';
   }
+  // a decision that fixed one thing and broke another (GDD 4.3 step 4)
+  const helps = { mass: e => (e.effects?.['power supply'] > 0 || e.effects?.downlink > 0) && e.effects?.mass > 0,
+    'entry-heavy': e => (e.effects?.['power supply'] > 0 || e.effects?.downlink > 0) && e.effects?.mass > 0,
+    power: e => e.effects?.['power supply'] < 0 && e.effects?.mass < 0, dust: e => e.effects?.['power supply'] < 0 && e.effects?.mass < 0,
+    data: e => e.effects?.downlink < 0 && e.effects?.mass < 0, pointing: e => e.effects?.downlink < 0 && e.effects?.mass < 0 };
+  if (helps[res]) {
+    const k = lastIndex(s.log, e => e.kind === 'install' && helps[res](e));
+    if (k >= 0) {
+      const e = s.log[k], fx = e.effects;
+      const gain = fx['power supply'] > 0 ? `+${fx['power supply']} power` : fx.downlink > 0 ? `+${fx.downlink} downlink` : `${fx.mass} mass`;
+      const loss = fx.mass > 0 ? `+${fx.mass} mass` : fx['power supply'] < 0 ? `${fx['power supply']} power` : `${fx.downlink} downlink`;
+      items = items.filter(i => i.idx !== k);
+      items.push({ idx: k, tradeoff: true, text: `This fixed one thing and broke another: “${e.text}” gave ${gain}, but cost ${loss}, and that is the resource that failed.` });
+    }
+  }
+  if (result && result.fail && s.loan) {
+    const li = lastIndex(s.log, e => e.kind === 'loan');
+    if (li >= 0) items.push({ idx: li, text: 'You took extra funding, so this failure cancelled the program.' });
+  }
   items = items.filter(i => i.idx >= 0).sort((a, b) => a.idx - b.idx);
-  items.forEach(i => { i.label = `Decision ${i.idx + 1}, ${STAGE_NAMES[s.log[i.idx].stage - 1]} stage`; });
+  items.forEach(i => { i.label = `${i.tradeoff ? 'Fixed one thing, broke another · ' : ''}Decision ${i.idx + 1}, ${STAGE_NAMES[s.log[i.idx].stage - 1]} stage`; });
   return { items, summary, fix };
 }

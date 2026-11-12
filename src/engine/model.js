@@ -18,6 +18,9 @@ export const SKIP_RISK = 0.35;    // [Design] chance that a skipped check causes
 export const FAULT_CHANCE = 0.12; // [Design] chance of a random instrument fault
 export const CHANGE_BASE = 8;     // [Design] change-request fee per stage of distance
 export const SANDBOX_BUDGET = 99999;
+export const LOAN_SHARE = 0.2;    // [Design] extra funding: 20% of the budget (GDD 4.6)
+export const LOAN_RATE = 0.15;    // [Design] interest added to cost
+export const DUST_NEED = 0.3;     // [Design] power headroom needed to ride out a dust storm
 export const G0 = 9.80665;
 
 // The current mission. These are live bindings: importers always see the latest values.
@@ -43,20 +46,21 @@ export const rocketById = id => ROCKETS.find(r => r.id === id);
 export const stationById = id => STATIONS.find(s => s.id === id);
 export const homeOf = p => (p.slot === 'instrument' ? 'payload' : 'systems');
 export const partStage = p => (p.slot === 'instrument' ? 2 : 3);
+export const missionSlots = () => [...new Set(PARTS.map(p => p.slot))];
 /** Sandbox and replay have no stage locks, fees or order. */
 export const isFree = s => s.mode === 'sandbox' || s.mode === 'replay';
 
 /** Tsiolkovsky: m_prop = m_f (e^(dv / (Isp g0)) - 1), plus the attitude-control allowance. Returns tank units. */
-export function propNeededUnits(dryUnits) {
+export function propNeededUnits(dryUnits, dvSave = 0) {
   const mf = dryUnits * MISSION.u.mass;
-  const dv = MISSION.dvMOI + MISSION.dvOther;
+  const dv = Math.max(0, MISSION.dvMOI + MISSION.dvOther - dvSave);
   const kg = mf * (Math.exp(dv / (MISSION.isp * G0)) - 1) * (1 + MISSION.acs);
   return kg / MISSION.u.prop;
 }
 
 /** Sum every installed part into one picture of the spacecraft. */
 export function totals(s) {
-  let dry = MISSION.busMass, demand = MISSION.busPower, supply = 0, prod = 0, downlink = 0, sci = 0;
+  let dry = MISSION.busMass, demand = MISSION.busPower, supply = 0, prod = 0, downlink = 0, sci = 0, dvSave = 0, entryLimit = 0;
   let cost = MISSION.opsCost + MISSION.busCost;
   for (const id of s.installed) {
     const p = partById(id);
@@ -66,17 +70,21 @@ export function totals(s) {
     if (p.data) prod += p.data;
     if (p.downlink) downlink += p.downlink;
     if (p.science) sci += p.science;
+    if (p.dvSave) dvSave += p.dvSave;
+    if (p.maxEntry) entryLimit = p.maxEntry;
   }
+  const loan = s.loan || 0, loanInterest = Math.round(loan * LOAN_RATE);
+  cost += loanInterest;
   const rocket = s.rocket ? rocketById(s.rocket) : null;
   if (rocket) cost += rocket.cost;
   cost += s.changeFees || 0;
-  const need = propNeededUnits(dry);
+  const need = propNeededUnits(dry, dvSave);
   const prop = s.propLoaded > 0 ? s.propLoaded : need;
   const wet = dry + prop * MISSION.u.prop / MISSION.u.mass;
   const cap = rocket ? rocket.cap : rocketById(MISSION.defaultRocket).cap;
   const has = slot => s.installed.some(id => partById(id).slot === slot);
-  const budget = s.mode === 'sandbox' ? SANDBOX_BUDGET : MISSION.budget;
-  return { dry, wet, cap, demand, supply, prod, downlink, cost, budget, need, loaded: s.propLoaded, sci, rocket, has };
+  const budget = s.mode === 'sandbox' ? SANDBOX_BUDGET : MISSION.budget + loan;
+  return { dry, wet, cap, demand, supply, prod, downlink, cost, budget, need, loaded: s.propLoaded, sci, rocket, has, entryLimit, loan, loanInterest };
 }
 
 export const headroom = (limit, used) => (limit <= 0 ? -1 : (limit - used) / limit);

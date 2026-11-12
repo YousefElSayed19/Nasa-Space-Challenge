@@ -1,6 +1,7 @@
 import React from 'react';
 import { A, unlockedMissions } from '../state/actions.js';
 import { MISSIONS } from '../engine/index.js';
+import { topScores } from '../state/leaderboard.js';
 import { loadJSON } from '../state/store.js';
 import OPTIONS from '../data/character.json';
 
@@ -85,7 +86,7 @@ function NameStep({ s }) {
             return (
               <button key={m.id} className={'mode' + (s.missionId === m.id ? ' sel' : '')} disabled={locked} onClick={() => A.setMissionId(m.id)}>
                 <span>{m.order}. {m.name}<small>{locked ? `Finish the ${MISSIONS.find(x => x.id === m.unlockAfter).name} to unlock` : `Inspired by ${m.inspired}. ${m.trip}.`}</small></span>
-                <span className="tag">{['Easier', 'Medium', 'Hard'][m.order - 1]}</span>
+                <span className="tag">{['Easier', 'Medium', 'Medium-hard', 'Hard'][m.order - 1]}{topScores(m.id, 1)[0] ? ` · best ${topScores(m.id, 1)[0].score}` : ''}</span>
               </button>
             );
           })}

@@ -89,5 +89,12 @@
   "type": "NASA",
   "url": "",
   "supports": "92 kg of scientific payload"
+ },
+ {
+  "id": "insight-kit",
+  "title": "JPL InSight launch and landing press kits",
+  "type": "NASA",
+  "url": "https://www.jpl.nasa.gov/news/press_kits/insight/launch/facts",
+  "supports": "694 kg at launch, 2.64 m aeroshell, 600–700 W clear and 200–300 W dusty, lithium-ion batteries, thicker heat shield than Phoenix"
  }
 ]

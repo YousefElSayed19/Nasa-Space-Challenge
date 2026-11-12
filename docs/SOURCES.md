@@ -67,6 +67,7 @@ NTRS papers can be opened at `https://ntrs.nasa.gov/citations/<number>`.
 | clipper-instruments | NASA Science, Europa Clipper spacecraft instruments (science.nasa.gov/mission/europa-clipper/spacecraft-instruments/) | NASA | Names and roles of the nine instruments | No mass, power or data rate per instrument |
 | clipper-europa-site | europa.nasa.gov/spacecraft | NASA | About 6,000 kg at launch, about 2,750 kg propellant | Rounded figures |
 | lro-gsfc-paper | Houghton and Tooley, Mission design and operations considerations for LRO (NASA GSFC, IAC-07-C1.7.06) | NASA | LRO total mass about 1,845 kg | Pre-launch design value |
+| insight-kit | JPL InSight launch and landing press kits (jpl.nasa.gov/news/press_kits/insight/launch/facts) | NASA | 694 kg at launch; 2.64 m aeroshell; 600–700 W clear day, 200–300 W dusty; lithium-ion batteries; heat shield slightly thicker than Phoenix | Instrument masses, descent Δv, parachute values and cost are game values |
 | lro-nssdc | NASA NSSDC Master Catalog, LRO (archived) | NASA | 92 kg of scientific payload | Archived page |
 
 ## 6. Pages that could not be opened
@@ -81,7 +82,8 @@ NTRS papers can be opened at `https://ntrs.nasa.gov/citations/<number>`.
 - Rocket capacity to Mars and prices for Vulcan Centaur and Falcon Heavy.
 - The extra Δv for other burns on Mars (400 m/s) and all Δv values for Europa.
 - LRO cost, Europa Clipper data rate, and per-instrument values on every mission (names on the Moon say "-style" for this reason).
-- Scoring weights, event chances and change-request fees.
+- Scoring weights, event chances, change-request fees, extra-funding size and interest.
+- Mars Lander: descent Δv, parachute savings, heat-shield mass limits, per-instrument values and the budget.
 
 ## 8. Sources still needed (GDD 15.1)
 

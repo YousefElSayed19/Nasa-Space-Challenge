@@ -1,5 +1,5 @@
 // The task list for the current stage, and which station the arrow should point at.
-import { MISSION, CHECKS, partById, totals, isFree, skippedChecks } from '../engine/index.js';
+import { MISSION, CHECKS, partById, totals, isFree, skippedChecks, missionSlots } from '../engine/index.js';
 
 export function tasksFor(s) {
   const T = totals(s);
@@ -26,13 +26,13 @@ export function tasksFor(s) {
         { text: `Reach science value ${Math.ceil(MISSION.sciTarget * 0.67)} or more`, done: T.sci >= MISSION.sciTarget * 0.67, station: 'payload', optional: true },
         { text: 'Confirm the payload at the Payload Bay', done: false, station: 'payload' },
       ]; break;
-      case 3: title = 'Stage 3: Systems'; items = [
-        { text: 'Fit a solar array', done: T.has('array'), station: 'systems' },
-        { text: 'Fit an antenna', done: T.has('antenna'), station: 'systems' },
-        { text: 'Fit a battery', done: T.has('battery'), station: 'systems' },
-        { text: MISSION.events.includes('radiation') ? 'Fit the radiation vault' : 'Fit shielding', done: T.has('shield'), station: 'systems' },
-        { text: 'Confirm the systems at the Systems Rack', done: false, station: 'systems' },
-      ]; break;
+      case 3: {
+        title = 'Stage 3: Systems';
+        const names = { array: 'Fit a solar array', antenna: 'Fit an antenna', battery: 'Fit a battery', shield: MISSION.events.includes('radiation') ? 'Fit the radiation vault' : 'Fit shielding', aeroshell: 'Fit a heat shield', parachute: 'Fit a parachute' };
+        items = missionSlots().filter(k => k !== 'instrument').map(k => ({ text: names[k] || `Fit a ${k}`, done: T.has(k), station: 'systems' }));
+        items.push({ text: 'Confirm the systems at the Systems Rack', done: false, station: 'systems' });
+        break;
+      }
       case 4: title = 'Stage 4: Launch vehicle'; items = [
         { text: 'Choose a rocket that can lift your spacecraft', done: !!s.rocket, station: 'board' },
         { text: 'Confirm the rocket', done: false, station: 'board' },

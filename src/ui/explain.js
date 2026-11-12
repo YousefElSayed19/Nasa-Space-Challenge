@@ -7,6 +7,8 @@ export const HOWTO = {
   antenna: 'Only one high-gain antenna fits. It must be able to send all the data your instruments make, or that science is lost.',
   battery: 'Needed to survive when the planet blocks the Sun. Without it the spacecraft dies in the first shadow.',
   shield: 'Protects the computer. Near Jupiter it is not optional: without the vault the radiation destroys the electronics.',
+  aeroshell: 'Protects the lander from the heat of entering the atmosphere. Each shield has a mass limit: if your spacecraft is heavier, it overheats.',
+  parachute: 'Slows the lander in the thin air after entry. A bigger one means the engines need less propellant for the last part of the descent.',
 };
 export const WHAT = {
   instrument: 'A science instrument: the reason the mission exists.',
@@ -14,6 +16,8 @@ export const WHAT = {
   antenna: 'The dish that sends data home to Earth.',
   battery: 'Stores energy for the time the spacecraft spends in shadow.',
   shield: 'Protection for the electronics against space weather.',
+  aeroshell: 'A heat shield that takes the heat of entering the atmosphere at high speed.',
+  parachute: 'A supersonic parachute that slows the lander before the engines take over.',
 };
 
 const rank = (list, key, p) => {
@@ -49,6 +53,10 @@ export function prosCons(p) {
   } else if (p.slot === 'antenna') {
     const d = R('downlink');
     if (d.v === d.max) pros.push('Fastest downlink'); else cons.push('Slower downlink: watch your data bar');
+  } else if (p.slot === 'aeroshell') {
+    const e = R('maxEntry'); if (e.v === e.max) pros.push(`Protects up to ${p.maxEntry} units`); else cons.push(`Only protects up to ${p.maxEntry} units`);
+  } else if (p.slot === 'parachute') {
+    const d = R('dvSave'); if (d.v === d.max) pros.push('Brakes the most: less descent propellant'); else cons.push('Engines must brake more: more propellant');
   } else if (p.slot === 'battery') {
     pros.push('Keeps the craft alive in shadow'); cons.push('Adds mass and cost, no science');
   } else {
@@ -62,11 +70,13 @@ export function prosCons(p) {
 export function statsOf(p) {
   const u = MISSION.u, rows = [];
   rows.push(['Mass', `${p.mass} u`, `≈ ${fmt(p.mass * u.mass)} kg`, 'up']);
+  if (p.maxEntry) rows.push(['Entry mass limit', `${p.maxEntry} u`, `≈ ${fmt(p.maxEntry * u.mass)} kg`, 'good']);
+  if (p.dvSave) rows.push(['Braking', `${p.dvSave} m/s`, 'less engine work', 'good']);
   if (p.power) rows.push(['Power use', `${p.power} u`, `≈ ${fmt(p.power * u.power)} W`, 'up']);
   if (p.supply) rows.push(['Power made', `${p.supply} u`, `≈ ${fmt(p.supply * u.power)} W`, 'good']);
   if (p.data) rows.push(['Data', `${p.data} u`, u.data ? `≈ ${(p.data * u.data).toFixed(u.data < 1 ? 1 : 0)} ${u.dataUnit}` : 'game units', 'up']);
   if (p.downlink) rows.push(['Downlink', `${p.downlink} u`, u.data ? `≈ ${(p.downlink * u.data).toFixed(u.data < 1 ? 1 : 0)} ${u.dataUnit}` : 'game units', 'good']);
-  rows.push(['Cost', `${p.cost}`, money(p.cost), 'up']);
+  rows.push(['Cost', money(p.cost), 'from your budget', 'up']);
   return rows;
 }
 

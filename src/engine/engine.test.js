@@ -60,4 +60,28 @@ describe('every mission', () => {
     const s = fueled({ ...base, installed: m.realDesign.installed, rocket: 'atlas' });
     expect(simulate(s, 3).primary).toBe('mass');
   });
+
+  it('Lander without a heat shield burns up, without a parachute crashes', () => {
+    setMission('lander');
+    const m = MISSIONS.find(x => x.id === 'lander');
+    const noShield = fueled({ ...base, installed: m.realDesign.installed.filter(id => id !== 'lander-heat-h') });
+    expect(simulate(noShield, 2).primary).toBe('entry');
+    const noChute = fueled({ ...base, installed: m.realDesign.installed.filter(id => id !== 'lander-chute-l') });
+    expect(simulate(noChute, 2).primary).toBe('parachute');
+  });
+  it('A bigger parachute means less descent propellant', () => {
+    setMission('lander');
+    const m = MISSIONS.find(x => x.id === 'lander');
+    const big = totals({ ...base, installed: m.realDesign.installed }).need;
+    const small = totals({ ...base, installed: m.realDesign.installed.map(id => id === 'lander-chute-l' ? 'lander-chute-s' : id) }).need;
+    expect(small).toBeGreaterThan(big);
+  });
+  it('cause trace names a decision that fixed one thing and broke another', () => {
+    setMission('mars');
+    const s = fueled({ ...marsFull, installed: marsFull.installed.map(id => id === 'array-m' ? 'array-s' : id), log: [
+      { kind: 'install', partId: 'array-m', stage: 3, effects: { mass: 10, 'power supply': 100 } },
+      { kind: 'install', partId: 'array-s', stage: 3, text: 'Replaced 20 m² Solar Array with 12 m² Solar Array', effects: { mass: -4, 'power supply': -40 } }] });
+    const t = causeTrace(s, 'power', totals(s));
+    expect(t.items.some(i => i.tradeoff)).toBe(true);
+  });
 });

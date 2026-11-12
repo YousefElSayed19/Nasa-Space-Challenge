@@ -5,21 +5,28 @@ import { A } from '../state/actions.js';
 
 /** The current stage's tasks, with an arrow on the one to do now. */
 export function TasksCard({ s, focus }) {
+  const [open, setOpen] = useState(false);
   const t = tasksFor(s);
+  const done = t.items.filter(i => i.done).length;
   return (
-    <section className={'tasks glass' + (focus ? ' tut-focus' : '')} aria-label="Tasks">
-      <div className="tasks-title">{t.title}</div>
-      <ol>
-        {t.items.map((it, k) => {
-          const cur = it === t.current;
-          return (
-            <li key={k} className={it.done ? 'done' : cur ? 'cur' : ''}>
-              <span className="mark" aria-hidden="true">{it.done ? '✓' : cur ? '➜' : '○'}</span>
-              <span>{it.text}{it.optional && <em> optional</em>}</span>
-            </li>
-          );
-        })}
-      </ol>
+    <section className={'tasks glass' + (focus ? ' tut-focus' : '') + (open ? ' open' : '')} aria-label="Tasks">
+      <button className="tasks-head" onClick={() => setOpen(o => !o)} aria-expanded={open}>
+        <span className="tasks-title">{t.title}</span><span className="tag">{done}/{t.items.length} done {open ? '▴' : '▾'}</span>
+      </button>
+      {!open && t.current && <div className="tasks-cur"><span className="mark">➜</span>{t.current.text}</div>}
+      {open && (
+        <ol>
+          {t.items.map((it, k) => {
+            const cur = it === t.current;
+            return (
+              <li key={k} className={it.done ? 'done' : cur ? 'cur' : ''}>
+                <span className="mark" aria-hidden="true">{it.done ? '✓' : cur ? '➜' : '○'}</span>
+                <span>{it.text}{it.optional && <em> optional</em>}</span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
     </section>
   );
 }

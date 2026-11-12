@@ -1,11 +1,12 @@
 import React from 'react';
 import { InfoDot } from './InfoDot.jsx';
 import { useAnimatedNumber } from './hooks.js';
-import { MISSION, RES_INFO, MARGIN, totals, resources, status, pct, fmt, rocketById } from '../engine/index.js';
+import { MISSION, RES_INFO, MARGIN, totals, resources, status, pct, fmt, money, rocketById } from '../engine/index.js';
 
 function hintFor(key, r, T, s) {
   if (key === 'mass' && !T.rocket) return `Measured against ${rocketById(MISSION.defaultRocket).name} until you pick a rocket.`;
   if (key === 'budget' && s.mode === 'sandbox') return 'Sandbox: no budget limit.';
+  if (key === 'budget') return r.h < 0 ? `Over budget by ${money(r.used - r.limit)}.` : `${money(r.limit - r.used)} left to spend (${pct(r.h)}).`;
   if (key === 'power' && T.supply === 0) return 'No solar array installed yet.';
   if (key === 'data' && T.downlink === 0) return T.prod ? 'No antenna: no data can reach Earth.' : 'No antenna installed yet.';
   if (key === 'prop') return s.propLoaded > 0 ? `Loaded ${fmt(s.propLoaded)} of ${fmt(T.need)} needed.` : `Orbit insertion needs about ${fmt(T.need)} units.`;
@@ -25,8 +26,8 @@ function Row({ r, T, s }) {
   return (
     <div className={'row' + (st === 'crit' ? ' pulse' : '')}>
       <div className="row-top">
-        <span>{RES_INFO[r.key].label}<InfoDot title={RES_INFO[r.key].label} info={RES_INFO[r.key]} /></span>
-        <span className="val">{fmt(used)} / {none ? '—' : r.limit >= 99999 ? '∞' : fmt(r.limit)}</span>
+        <span>{r.key === 'budget' ? 'Budget ($)' : RES_INFO[r.key].label}<InfoDot title={RES_INFO[r.key].label} info={RES_INFO[r.key]} /></span>
+        <span className="val">{r.key === 'budget' ? (r.limit >= 99999 ? `${money(used)} / ∞` : `${money(used)} spent of ${money(r.limit)}`) : `${fmt(used)} / ${none ? '—' : fmt(r.limit)}`}</span>
       </div>
       <div className="bar">
         <div className="fill" style={{ width: (ratio / 1.08) * 100 + '%', background: COLORS[st] }}></div>

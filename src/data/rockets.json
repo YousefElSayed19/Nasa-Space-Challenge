@@ -5,23 +5,26 @@
   "cap": {
    "moon": 230,
    "mars": 200,
-   "europa": 110
+   "europa": 110,
+   "lander": 300
   },
   "cost": {
    "moon": 90,
    "mars": 90,
-   "europa": 9
+   "europa": 9,
+   "lander": 90
   },
   "approx": {
    "moon": true,
    "mars": false,
-   "europa": true
+   "europa": true,
+   "lander": false
   },
   "h": 4.2,
   "cores": 1,
   "body": "#D9823B",
   "note": "Launched the real orbiter. A tight fit for a heavy design.",
-  "real": "Launched both LRO and MRO (JPL MRO press kit: about $90M launch cost for MRO). Capacities and prices for other destinations are simplified game values."
+  "real": "Launched LRO, MRO and InSight (JPL press kits; MRO launch cost about $90M). Capacities and prices for other destinations are simplified game values."
  },
  {
   "id": "vulcan",
@@ -29,17 +32,20 @@
   "cap": {
    "moon": 300,
    "mars": 280,
-   "europa": 160
+   "europa": 160,
+   "lander": 380
   },
   "cost": {
    "moon": 120,
    "mars": 120,
-   "europa": 12
+   "europa": 12,
+   "lander": 120
   },
   "approx": {
    "moon": true,
    "mars": true,
-   "europa": true
+   "europa": true,
+   "lander": true
   },
   "h": 5.0,
   "cores": 1,
@@ -53,17 +59,20 @@
   "cap": {
    "moon": 600,
    "mars": 520,
-   "europa": 215
+   "europa": 215,
+   "lander": 700
   },
   "cost": {
    "moon": 150,
    "mars": 150,
-   "europa": 15
+   "europa": 15,
+   "lander": 150
   },
   "approx": {
    "moon": true,
    "mars": true,
-   "europa": true
+   "europa": true,
+   "lander": true
   },
   "h": 5.6,
   "cores": 3,

@@ -8,7 +8,7 @@ import { hud } from '../state/store.js';
 import { Sound } from '../audio/sound.js';
 import {
   MISSION, PARTS, PART_REAL, ROCKETS, ROLES, STAGE_NAMES, MARGIN, CHECKS, partById, rocketById, stationById,
-  totals, headroom, changeFee, reviewVerdicts, stageChecks, isFree, pct, fmt, money,
+  totals, headroom, changeFee, reviewVerdicts, stageChecks, isFree, pct, fmt, money, missionSlots, LOAN_SHARE, LOAN_RATE,
 } from '../engine/index.js';
 
 const lvl = (v, max) => { if (!v) return ''; const r = v / max; return r <= 0.34 ? '▲' : r <= 0.67 ? '▲▲' : '▲▲▲'; };
@@ -53,7 +53,7 @@ function HoldButton({ ms = 1200, onDone, children, disabled }) {
 function BudgetLine({ s, T, cost, replacing = 0 }) {
   if (s.mode === 'sandbox') return <span className="tag">Sandbox: no budget limit</span>;
   const left = T.budget - T.cost, after = left - cost + replacing;
-  return <span className={'tag' + (after < 0 ? ' fee' : '')}>Budget left {fmt(left)} → after this {fmt(after)}{after < 0 ? ' (over budget)' : ''}</span>;
+  return <span className={'tag' + (after < 0 ? ' fee' : '')}>$ Budget left {money(left)} → after this {money(after)}{after < 0 ? ' (over budget)' : ''}</span>;
 }
 
 function PartCard({ p, s, T }) {
@@ -99,7 +99,7 @@ function PartCard({ p, s, T }) {
       <div className="card-act">
         <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {installed ? <span className="tag">Installed on the spacecraft</span> : carrying ? <span className="tag">In your hands</span>
-            : fee ? <span className="tag fee">Change request: {fee}</span> : <BudgetLine s={s} T={T} cost={p.cost} replacing={current ? current.cost : 0} />}
+            : fee ? <span className="tag fee">Change request: {money(fee)}</span> : <BudgetLine s={s} T={T} cost={p.cost} replacing={current ? current.cost : 0} />}
           <button className="linkbtn" style={{ alignSelf: 'flex-start' }} onClick={() => setOpen(o => !o)}>{open ? 'Less' : 'How to use it'}</button>
         </span>
         {!installed && !carrying && !frozen && <button className="btn small primary" onClick={() => A.pickUp(p.id)}>{current ? 'Pick up to swap' : 'Pick up'}</button>}
@@ -115,11 +115,22 @@ function Briefing({ s }) {
       <div className="label">Objectives</div>
       <ul className="objlist">{MISSION.objectives.map(o => <li key={o}>{o}</li>)}</ul>
       <div className="kv">
-        <span>Budget</span><span>{s.mode === 'sandbox' ? 'Unlimited (sandbox)' : `${MISSION.budget} units (operations ${MISSION.opsCost} and spacecraft bus ${MISSION.busCost} already committed)`}</span>
+        <span>Budget</span><span>{s.mode === 'sandbox' ? 'Unlimited (sandbox)' : `${money(MISSION.budget)} total. ${money(MISSION.opsCost)} for operations and ${money(MISSION.busCost)} for the spacecraft body are already committed, so you start with ${money(MISSION.budget - MISSION.opsCost - MISSION.busCost)} to spend.`}</span>
         <span>Trip</span><span>{MISSION.trip}</span>
         <span>Sunlight there</span><span>{MISSION.sunlight}</span>
       </div>
       <div className="note-box">{MISSION.brief}</div>
+      {s.mode === 'campaign' && s.stage <= 5 && (
+        <div className="loan">
+          <div className="label">Extra funding (optional)</div>
+          {s.loan ? <p className="tag">Approved: +{money(s.loan)}, interest {money(Math.round(s.loan * LOAN_RATE))}. If this mission fails, the program is cancelled.</p> : (
+            <>
+              <p className="tag">Ask for +{money(Math.round(MISSION.budget * LOAN_SHARE))}. It costs {money(Math.round(MISSION.budget * LOAN_SHARE * LOAN_RATE))} in interest, and if the mission fails while you hold it, the whole program is cancelled. Science missions do not earn money back, so this is a bet on success.</p>
+              <button className="btn small danger" onClick={A.takeLoan}>Request extra funding</button>
+            </>
+          )}
+        </div>
+      )}
       {s.team.length > 1 && (
         <div className="kv">{ROLES.map((r, i) => <React.Fragment key={r}><span>{r}</span><span>{roleOwner(s, i)}</span></React.Fragment>)}</div>
       )}
@@ -137,7 +148,7 @@ function Payload({ s, T }) {
     <PanelShell title="Payload Bay" sub="Pick up an instrument, then carry it to the Assembly Cradle.">
       <div className="cards">{PARTS.filter(p => p.slot === 'instrument').map(p => <PartCard key={p.id} p={p} s={s} T={T} />)}</div>
       <div className="foot">
-        <span className="tag">{n} instrument{n === 1 ? '' : 's'} installed. Science value {T.sci} of target {MISSION.sciTarget}.</span>
+        <span className="tag">{n} instrument{n === 1 ? '' : 's'}. Science {T.sci} of target {MISSION.sciTarget}. {s.mode !== 'sandbox' && `$ left ${money(T.budget - T.cost)}`}</span>
         {s.stage === 2 && !isFree(s) && <button className="btn primary" disabled={n === 0} onClick={() => A.requestLock('stage', 2)}>Confirm payload</button>}
       </div>
     </PanelShell>
@@ -145,7 +156,8 @@ function Payload({ s, T }) {
 }
 
 function Systems({ s, T }) {
-  const groups = [['array', 'Solar array'], ['antenna', 'Antenna'], ['battery', 'Battery'], ['shield', MISSION.events.includes('radiation') ? 'Radiation protection' : 'Shielding']];
+  const NAMES = { array: 'Solar array', antenna: 'Antenna', battery: 'Battery', shield: MISSION.events.includes('radiation') ? 'Radiation protection' : 'Shielding', aeroshell: 'Heat shield (entry)', parachute: 'Parachute (descent)' };
+  const groups = missionSlots().filter(k => k !== 'instrument').map(k => [k, NAMES[k] || k]);
   const ready = T.has('array') && T.has('antenna');
   return (
     <PanelShell title="Systems Rack" sub="Power, communication and protection. One of each.">
@@ -199,7 +211,7 @@ function Cradle({ s, T }) {
           return (
             <div className="card" key={pid}>
               <div className="card-top"><span className="card-name">{p.name}</span>
-                {canEdit && <button className={'btn small' + (fee ? ' danger' : '')} onClick={() => A.remove(pid)}>{fee ? `Remove (change request ${fee})` : 'Remove'}</button>}
+                {canEdit && <button className={'btn small' + (fee ? ' danger' : '')} onClick={() => A.remove(pid)}>{fee ? `Remove (change request ${money(fee)})` : 'Remove'}</button>}
               </div>
             </div>
           );

@@ -1,7 +1,7 @@
 // Mission timeline, events and scoring (GDD 4.7, 4.8, 8.4).
 import {
   MISSION, partById, totals, resources, byKey, pct, fmt, headroom, skippedChecks,
-  STORM_LOAD, POINTING_NEED, SKIP_RISK, FAULT_CHANCE,
+  STORM_LOAD, POINTING_NEED, SKIP_RISK, FAULT_CHANCE, DUST_NEED,
 } from './model.js';
 
 export function mulberry32(a) {
@@ -51,12 +51,24 @@ export function simulate(s, seed) {
         } else P('Cruise', `The ${pct(powerH)} power headroom absorbed the storm recovery.`, 'ok');
       }
     }
-    if (loaded < T.need * 0.98) {
+    if (!fail && ev.includes('entry')) {
+      if (!T.has('aeroshell')) {
+        fail = { phase: 'Orbit insertion', res: 'entry', text: 'With no heat shield, the spacecraft burned up as it hit the Martian atmosphere.' };
+        P('Orbit insertion', fail.text, 'fail');
+      } else if (T.wet > T.entryLimit) {
+        fail = { phase: 'Orbit insertion', res: 'entry-heavy', text: `At ${fmt(T.wet)} units the spacecraft was too heavy for its heat shield (limit ${T.entryLimit}). It overheated during entry.` };
+        P('Orbit insertion', fail.text, 'fail');
+      } else if (!T.has('parachute')) {
+        fail = { phase: 'Orbit insertion', res: 'parachute', text: 'The heat shield worked, but with no parachute the lander was still falling far too fast for its engines to stop it.' };
+        P('Orbit insertion', fail.text, 'fail');
+      } else P('Orbit insertion', 'The heat shield survives entry and the parachute opens high above the ground.', 'ok');
+    }
+    if (!fail && loaded < T.need * 0.98) {
       const frac = loaded / T.need;
       fail = { phase: 'Orbit insertion', res: leak && s.propLoaded >= T.need * 0.98 ? 'check-leak' : 'prop',
-        text: `The tank ran dry ${pct(frac)} of the way through the orbit-insertion burn. The spacecraft could not slow down and flew past ${MISSION.destination}.` };
+        text: MISSION.texts.propFail || `The tank ran dry ${pct(frac)} of the way through the orbit-insertion burn. The spacecraft could not slow down and flew past ${MISSION.destination}.` };
       P('Orbit insertion', fail.text, 'fail');
-    } else P('Orbit insertion', MISSION.texts.insertion, 'ok');
+    } else if (!fail) P('Orbit insertion', MISSION.texts.insertion, 'ok');
   }
   if (!fail && ev.includes('radiation')) {
     if (!T.has('shield')) {
@@ -73,6 +85,12 @@ export function simulate(s, seed) {
       const f = Math.max(0.2, supply / T.demand);
       sciFactor *= f; issues.push({ res: 'power', loss: 1 - f });
       P('Science operations', `Instruments need more power than the arrays make, so they take turns. Science drops to ${pct(f)}.`, 'warn');
+    }
+    if (ev.includes('dust')) {
+      if (powerH < DUST_NEED) {
+        sciFactor *= 0.75; issues.push({ res: 'dust', loss: 0.25 });
+        P('Science operations', `A dust storm coated the arrays and cut power to well under half. With only ${pct(Math.max(0, powerH))} power headroom, instruments were switched off for weeks.`, 'warn');
+      } else P('Science operations', `A dust storm coated the arrays. The ${pct(powerH)} power headroom kept the key instruments running.`, 'ok');
     }
     if (T.prod > T.downlink) {
       const f = T.downlink / T.prod;

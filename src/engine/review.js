@@ -1,5 +1,5 @@
 // Role checks: the Go/No-Go review before launch (GDD 4.5) and team sign-off at each stage (GDD 4.9).
-import { MISSION, ROLES, totals, resources, byKey, pct, fmt, MARGIN, skippedChecks } from './model.js';
+import { MISSION, ROLES, totals, resources, byKey, pct, fmt, money, MARGIN, skippedChecks } from './model.js';
 
 export function reviewVerdicts(s) {
   const T = totals(s), R = byKey(resources(T));
@@ -24,7 +24,12 @@ export function reviewVerdicts(s) {
   {
     const issues = [];
     if (T.wet > T.cap) issues.push(`${fmt(T.wet)} units is more than the rocket can send to ${MISSION.destination} (${T.cap}).`);
-    if (s.propLoaded < T.need * 0.98) issues.push(`Propellant ${fmt(s.propLoaded)} of ${fmt(T.need)} needed for orbit insertion.`);
+    if (s.propLoaded < T.need * 0.98) issues.push(`Propellant ${fmt(s.propLoaded)} of ${fmt(T.need)} needed for ${MISSION.lands ? 'the landing' : 'orbit insertion'}.`);
+    if (MISSION.events.includes('entry')) {
+      if (!T.has('aeroshell')) issues.push('No heat shield: the lander will burn up on entry.');
+      else if (T.wet > T.entryLimit) issues.push(`${fmt(T.wet)} units is more than the heat shield can protect (${T.entryLimit}).`);
+      if (!T.has('parachute')) issues.push('No parachute: nothing slows us in the thin air.');
+    }
     const over = s.propLoaded > T.need * 1.15;
     out.push({ role: ROLES[2], go: issues.length === 0, risk: issues.length ? 'High' : R.mass.h < 0.1 ? 'Medium' : 'Low',
       reason: issues.length ? issues.join(' ') : over ? 'We can reach orbit, but the extra propellant is wasted mass.' : `Mass headroom ${pct(R.mass.h)}; propellant on target.` });
@@ -32,10 +37,11 @@ export function reviewVerdicts(s) {
   {
     const overB = T.cost > T.budget;
     const radiation = MISSION.events.includes('radiation');
-    const noShield = !T.has('shield');
+    const noShield = !MISSION.lands && !T.has('shield');
     out.push({ role: ROLES[3], go: !overB && !(radiation && noShield), risk: overB || (radiation && noShield) ? 'High' : noShield ? 'Medium' : 'Low',
-      reason: overB ? `We are ${fmt(T.cost - T.budget)} over budget.`
+      reason: overB ? `We are ${money(T.cost - T.budget)} over budget.`
         : radiation && noShield ? 'No radiation vault: Jupiter’s belts will destroy the electronics.'
+          : MISSION.lands ? (T.loan ? `Budget headroom ${pct(R.budget.h)}, including extra funding. A failure now cancels the program.` : `Budget headroom ${pct(R.budget.h)}. Dust storms are the main risk on the surface.`)
           : noShield ? `Budget headroom ${pct(R.budget.h)}. No shielding, so a solar storm may cost observing time.`
             : s.mode === 'sandbox' ? 'Sandbox: no budget limit.' : `Budget headroom ${pct(R.budget.h)}. Space-weather risk covered.` });
   }

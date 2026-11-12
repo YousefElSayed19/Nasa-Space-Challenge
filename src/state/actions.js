@@ -1,10 +1,11 @@
 // Every player decision goes through here, so it is logged with its effects (GDD 4.3).
 import { store, saveJSON, loadJSON, freshState } from './store.js';
 import { bus } from './bus.js';
+import { addScore } from './leaderboard.js';
 import { Sound } from '../audio/sound.js';
 import {
   MISSION, MISSIONS, RES_INFO, ROLES, STAGE_NAMES, MARGIN, CHECKS, setMission, missionById, partById, rocketById,
-  totals, resources, byKey, pct, fmt, changeFee, effectsOf, reviewVerdicts, stageChecks, simulate, isFree,
+  totals, resources, byKey, pct, fmt, money, changeFee, effectsOf, reviewVerdicts, stageChecks, simulate, isFree, LOAN_SHARE, LOAN_RATE,
 } from '../engine/index.js';
 
 export const unlockedMissions = () => {
@@ -42,7 +43,7 @@ export const A = {
     const team = [s.profile.nick, ...s.teamNames.map(n => n.trim()).filter(Boolean)].slice(0, 4);
     // every run starts empty: the player decides everything (Replay alone starts from the real design, and says so)
     let patch = { screen: 'game', team, stage: 1, locked: {}, installed: [], carrying: null, rocket: null, propLoaded: 0, changeFees: 0, changeCount: 0,
-      overruled: 0, objections: 0, verdicts: null, checks: {}, log: [], panel: null, result: null, signoff: null, replayNotice: s.mode === 'replay' };
+      overruled: 0, objections: 0, verdicts: null, checks: {}, log: [], panel: null, result: null, signoff: null, replayNotice: s.mode === 'replay', loan: 0, scoreId: null };
     if (s.mode === 'replay') patch = { ...patch, ...preloadReal(s), stage: 6, locked: { 1: true, 2: true, 3: true, 4: true, 5: true } };
     if (s.mode === 'sandbox') patch = { ...patch, stage: 6 };
     store.set(patch);
@@ -79,6 +80,13 @@ export const A = {
   toggleGlossary() { Sound.click(); store.set(s => ({ showGlossary: !s.showGlossary })); },
 
   // ---------- hangar ----------
+  takeLoan() {
+    const s = store.get(); if (s.mode !== 'campaign' || s.loan || s.stage > 5) return;
+    const amount = Math.round(MISSION.budget * LOAN_SHARE), interest = Math.round(amount * LOAN_RATE);
+    A.log({ kind: 'loan', text: `Took extra funding of ${money(amount)} (interest ${money(interest)})`, effects: { budget: amount, cost: interest } });
+    store.set({ loan: amount });
+    Sound.chime(); A.toast(`Extra funding approved: +${money(amount)}. If this mission fails, the program is cancelled.`, 'warn');
+  },
   acceptBriefing() {
     const s = store.get(); if (s.stage !== 1) return;
     A.log({ kind: 'confirm', confirmed: 1, text: `Accepted the ${MISSION.name} briefing.` });
@@ -90,7 +98,7 @@ export const A = {
     store.set({ carrying: id, panel: null }); Sound.click();
     const p = partById(id);
     if (!s.installed.length && !s.tutorial) A.toast('Carry it to the Assembly Cradle in the middle of the hangar, then hold E to install.');
-    else if (changeFee(s, p)) A.toast(`This stage is locked. Installing it files a change request costing ${changeFee(s, p)}.`, 'warn');
+    else if (changeFee(s, p)) A.toast(`This stage is locked. Installing it files a change request costing ${money(changeFee(s, p))}.`, 'warn');
   },
   putBack() { if (store.get().carrying) { store.set({ carrying: null }); Sound.click(); } },
   install() {
@@ -119,7 +127,7 @@ export const A = {
     A.log({ kind: 'remove', partId: id, text: `Removed ${p.name}`, effects: effectsOf(p, null, -1), fee });
     store.set(st => ({ installed: st.installed.filter(x => x !== id), changeFees: st.changeFees + fee, changeCount: st.changeCount + (fee ? 1 : 0), checks: {} }));
     Sound.click();
-    if (fee) A.toast(`Change request filed: ${fee} added to cost.`, 'warn');
+    if (fee) A.toast(`Change request filed: ${money(fee)} added to cost.`, 'warn');
   },
   runCheck(id) {
     const c = CHECKS.find(x => x.id === id);
@@ -209,6 +217,10 @@ export const A = {
       const next = MISSIONS.find(m => m.unlockAfter === s.missionId);
       const u = unlockedMissions();
       if (next && !u.includes(next.id)) { saveJSON('mf-unlocked', [...u, next.id]); A.toast(`${next.name} unlocked.`, 'good'); }
+    }
+    if (s.mode === 'campaign') {
+      const id = addScore({ name: s.team.join(' & '), mission: s.missionId, score: s.result.score, outcome: s.result.outcome });
+      store.set({ scoreId: id });
     }
     if (s.result.outcome === 'fail') Sound.bad(); else Sound.good();
   },
