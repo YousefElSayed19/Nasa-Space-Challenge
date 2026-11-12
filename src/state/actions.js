@@ -94,7 +94,8 @@ export const A = {
   toggleCamera() {
     const m = store.get().camMode === 'auto' ? 'free' : 'auto';
     A.setPrefs({ camMode: m });
-    A.toast(m === 'auto' ? '🎥 Auto camera: follows behind you. Drag to look around.' : '🎥 Free camera: moves only when you drag.');
+    const fp = store.get().firstPerson;
+    A.toast(m === 'auto' ? (fp ? '🎥 Auto camera: the view turns toward where you walk. Drag to look around.' : '🎥 Auto camera: follows behind you. Drag to look around.') : '🎥 Free camera: the view moves only when you drag.');
   },
   toggleGlossary() { Sound.click(); store.set(s => ({ showGlossary: !s.showGlossary })); },
 

@@ -75,7 +75,7 @@ export function Settings({ s }) {
     <div className="settings">
       <button className="btn" aria-pressed={s.muted} onClick={() => { Sound.hum(false); A.setPrefs({ muted: !s.muted }); }}>{s.muted ? 'Sound off' : 'Sound on'}</button>
       {s.screen === 'game' && <button className="btn" onClick={A.cycleView} title="V: third person, first person, hands view">👁 {{ third: '3rd person', first: '1st person', hands: 'Hands view' }[s.view || 'third']}</button>}
-      {s.screen === 'game' && s.view === 'third' && <button key={s.camMode} className={'btn cam-btn flash ' + s.camMode} onClick={A.toggleCamera} title="C: switch between a camera that follows behind you and a free camera">🎥 {s.camMode === 'auto' ? 'Auto camera' : 'Free camera'}</button>}
+      {s.screen === 'game' && <button key={s.camMode} className={'btn cam-btn flash ' + s.camMode} onClick={A.toggleCamera} title="C: switch between a camera that follows behind you and a free camera">🎥 {s.camMode === 'auto' ? 'Auto camera' : 'Free camera'}</button>}
       <button className="btn" onClick={() => A.setPrefs({ graphics: s.graphics === 'low' ? 'high' : 'low' })}>{s.graphics === 'low' ? 'Low graphics' : 'High graphics'}</button>
       {isTouch && <button className="btn" onClick={goFullscreen}>Fullscreen</button>}
       <button className="btn" onClick={A.toggleGlossary}>Help</button>

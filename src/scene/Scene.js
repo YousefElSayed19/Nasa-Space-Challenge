@@ -8,7 +8,7 @@ import { MISSION, PARTS, STATIONS, partById, rocketById, homeOf, stationById, re
 import { buildWorld, buildEnvironment } from './hangar.js';
 import { partMesh, slotPos, rebuildCraft } from './spacecraft.js';
 let flying = null;
-import { createCharacter } from './character.js';
+import { createCharacter, createHands } from './character.js';
 import { createPostFX } from './postfx.js';
 import { createSpaceView } from './space.js';
 import { buildRocket, smokeMaterial } from './rocket.js';
@@ -22,7 +22,7 @@ const V3 = THREE.Vector3;
 const damp = (cur, target, k, dt) => cur + (target - cur) * (1 - Math.exp(-k * dt));
 const START_POS = new V3(0, 0, 11);
 
-let renderer, scene, camera, clock, fx = null, world, refs, colliders, hero, space;
+let renderer, scene, camera, clock, fx = null, world, refs, colliders, hero, space, hands;
 let launchRocket = null, smoke = [], dust = [], guideTarget = null, lastPtr = '';
 let time = 0, holdT = 0, ratchetT = 0, pumpAcc = 0, launchT = -1, launched = false;
 const keys = {};
@@ -47,13 +47,16 @@ export function initScene(container) {
   scene = new THREE.Scene();
   bgRaw = new THREE.Color('#050816'); bgLin = bgRaw.clone().convertSRGBToLinear();
   scene.fog = new THREE.Fog(bgLin, 36, 80);
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 220);
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 220);
   clock = new THREE.Clock();
 
   scene.environment = buildEnvironment(renderer);
   world = buildWorld(scene); refs = world.refs; colliders = world.colliders;
   hero = createCharacter(store.get().profile);
   scene.add(hero.root);
+  // first-person hands ride on the camera
+  hands = createHands(store.get().profile);
+  camera.add(hands.group); scene.add(camera); hands.group.visible = false;
   space = createSpaceView();
   space.setMission(store.get().missionId);
   setTimeout(() => renderThumbs(renderer, scene.environment, () => { store.set(s => ({ thumbsTick: (s.thumbsTick || 0) + 1 })); setTimeout(warmPreview, 400); }), 300);
@@ -136,7 +139,7 @@ function onStore() {
   if (s.profile !== last.profile) {
     const p = s.profile, lp = last.profile;
     // nickname only changes the pack name plate; rebuild after typing pauses
-    if (!lp || Object.keys(p).some(k => k !== 'nick' && p[k] !== lp[k])) hero.setProfile(p);
+    if (!lp || Object.keys(p).some(k => k !== 'nick' && p[k] !== lp[k])) { hero.setProfile(p); hands.setProfile(p); }
     else { clearTimeout(onStore.nickT); onStore.nickT = setTimeout(() => hero.setProfile(store.get().profile), 400); }
   }
   const here = new Set(PARTS.map(p => p.id));
@@ -273,7 +276,7 @@ function updatePlayer(dt, s) {
   const stick = tj ? Math.min(1, Math.hypot(tj.x, tj.y)) : 1;
   // Auto camera: hold the input direction steady while keys are held, so the camera can swing behind
   // the engineer without changing what "forward" means mid-step (no spinning in circles).
-  const auto = s.camMode === 'auto' && !s.firstPerson;
+  const auto = s.camMode === 'auto';
   const anyInput = Math.abs(f) > 0.02 || Math.abs(r) > 0.02;
   if (!anyInput) inputYaw = null; else if (inputYaw === null) inputYaw = cam.yaw;
   const refYaw = auto && inputYaw !== null ? inputYaw : cam.yaw;
@@ -302,7 +305,9 @@ function updatePlayer(dt, s) {
   }
   // swing the camera behind the engineer while walking, unless the player has just looked around with the mouse
   if (auto && player.speed > 0.6 && performance.now() - lastDrag > 900) {
-    let dy = (player.facing + Math.PI) - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    // third person: swing behind the engineer; first person and hands view: turn the view toward the direction of travel
+    const travel = Math.atan2(player.vel.x, player.vel.z);
+    let dy = (s.firstPerson ? travel : player.facing) + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
     cam.yaw += dy * (1 - Math.exp(-(1.6 + player.speed * 0.25) * dt));
   }
   // flight: hold Space in the air to fire the thrusters; F keeps you airborne; Q descends
@@ -474,10 +479,9 @@ function updateCamera(dt, s) {
     look = new V3(0, 4.6 + Math.max(0, ry - 0.42) * 0.9, 0); desired = new V3(-7.5, 1.9, 9.5); fov = 58;
     if (launchT < 0.45) { cam.pos.copy(desired); cam.look.copy(look); }
   } else if (s.firstPerson) {
-    // first person sits at the eyes; the hands view sits a little back and higher so both arms fit in the frame
-    const hv = s.view === 'hands';
-    desired = new V3(player.pos.x + (hv ? Math.sin(cam.yaw) * 0.12 : 0), (hv ? 1.86 : 1.72) + player.y, player.pos.z + (hv ? Math.cos(cam.yaw) * 0.12 : 0));
-    const a = cam.pitch - 0.38 + (hv ? 0.12 : 0);
+    // first person and hands view: camera at the eyes (the hands are drawn on the camera itself)
+    desired = new V3(player.pos.x, 1.72 + player.y, player.pos.z);
+    const a = cam.pitch - 0.38;
     look = desired.clone().add(new V3(-Math.sin(cam.yaw) * Math.cos(a), -Math.sin(a), -Math.cos(cam.yaw) * Math.cos(a)));
     fov = 70;
   } else {
@@ -544,7 +548,9 @@ function tick() {
   }
   hero.root.position.set(player.pos.x, player.y, player.pos.z);
   hero.root.rotation.y = s.firstPerson && s.screen === 'game' ? cam.yaw + Math.PI : player.facing;
-  hero.setView(s.screen === 'game' && s.view === 'first' ? 'none' : s.screen === 'game' && s.view === 'hands' ? 'hands' : 'full');
+  const fp = s.screen === 'game' && (s.view === 'first' || s.view === 'hands');
+  hero.setView(fp ? 'none' : 'full');
+  hands.group.visible = s.screen === 'game' && s.view === 'hands';
   const ev = hero.update(dt, {
     speed: player.speed, run: player.running, carrying: !!s.carrying,
     fly: player.air && (player.boosted || player.flyMode), thrust: player.air ? player.thrust : 0,
@@ -588,6 +594,7 @@ function tick() {
   });
   updateWorld(dt, s, acts);
   updateCamera(dt, s);
+  if (hands.group.visible) hands.update(dt, { speed: player.speed, carrying: !!s.carrying, crouch: acts.installing, pump: acts.pumping, fly: player.air && (player.boosted || player.flyMode) }, cam.yaw);
   updatePointer(s);
   adapt(dt, s);
   if (s.screen === 'mission') {

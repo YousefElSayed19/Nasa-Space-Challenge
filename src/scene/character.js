@@ -317,3 +317,71 @@ export function createCharacter(profile) {
     setView(mode) { if (mode !== viewMode) { viewMode = mode; applyView(); } },
   };
 }
+
+/**
+ * First-person hands, attached to the camera like in most first-person games: two forearms and gloves in the
+ * lower corners, sized for the screen, with walk bob, turn sway, and poses for carrying, installing and pumping.
+ */
+export function createHands(profile) {
+  const group = new THREE.Group();
+  let parts = build(profile);
+  const st = { t: 0, phase: 0, sway: 0, swayY: 0, lastYaw: null, carry: 0, crouch: 0, pump: 0, fly: 0, walk: 0 };
+
+  function build(p) {
+    const suit = std(new THREE.Color(p.suit).multiplyScalar(0.82).getStyle(), { roughness: 0.78, metalness: 0 });
+    const accent = std(p.accent, { roughness: 0.5, metalness: 0.2 });
+    const glove = p.gloves === 'accent' ? std(p.accent, { roughness: 0.6 }) : p.gloves === 'white' ? std('#D9DEEE', { roughness: 0.6 }) : std('#1A2048', { roughness: 0.6, metalness: 0.2 });
+    const stripM = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }); stripM.color = lin(p.accent);
+    const make = side => {
+      const arm = new THREE.Group();
+      // forearm along -z (into the screen), cuff ring, glove with fingers and thumb
+      const fore = new THREE.Mesh(capsule(0.05, 0.043, 0.34, 18), suit); fore.rotation.x = -Math.PI / 2; arm.add(fore);
+      const strip = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.26, 6), stripM); strip.rotation.x = Math.PI / 2; strip.position.set(side * 0.046, 0.012, -0.17); arm.add(strip);
+      const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.047, 0.012, 8, 24), accent); cuff.position.z = -0.31; arm.add(cuff);
+      const palm = new THREE.Mesh(new THREE.SphereGeometry(0.052, 18, 14), glove); palm.scale.set(1, 0.75, 1.25); palm.position.z = -0.39; arm.add(palm);
+      const fingers = new THREE.Mesh(capsule(0.034, 0.03, 0.05, 12), glove); fingers.rotation.x = -Math.PI / 2 - 0.35; fingers.scale.set(1.25, 1, 0.8); fingers.position.set(0, -0.012, -0.44); arm.add(fingers);
+      const thumb = new THREE.Mesh(capsule(0.018, 0.015, 0.04, 10), glove); thumb.rotation.set(-Math.PI / 2, 0, side * 0.9); thumb.position.set(-side * 0.045, 0.01, -0.39); arm.add(thumb);
+      arm.traverse(o => { if (o.isMesh) { o.castShadow = false; o.renderOrder = 10; } });
+      group.add(arm);
+      return arm;
+    };
+    return { L: make(1), R: make(-1), mats: [suit, accent, glove, stripM] };
+  }
+
+  function update(dt, inp, camYaw) {
+    st.t += dt;
+    const d = (a, b, k) => a + (b - a) * (1 - Math.exp(-k * dt));
+    st.walk = d(st.walk, Math.min(1, inp.speed / 4.4), 8);
+    st.carry = d(st.carry, inp.carrying ? 1 : 0, 9); st.crouch = d(st.crouch, inp.crouch ? 1 : 0, 9);
+    st.pump = d(st.pump, inp.pump ? 1 : 0, 8); st.fly = d(st.fly, inp.fly ? 1 : 0, 5);
+    st.phase += dt * inp.speed * 1.75;
+    // sway: the hands lag a little when you turn
+    if (st.lastYaw !== null) { let dy = camYaw - st.lastYaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); st.sway = d(st.sway, Math.max(-0.08, Math.min(0.08, -dy * 1.6)), 10); }
+    st.lastYaw = camYaw;
+    st.sway = d(st.sway, 0, 4);
+    const bx = Math.sin(st.phase) * 0.014 * st.walk, by = Math.abs(Math.cos(st.phase)) * 0.016 * st.walk + Math.sin(st.t * 1.6) * 0.003;
+    group.position.set(bx + st.sway * 0.4, -by - st.fly * 0.02, 0);
+    group.rotation.set(0, st.sway, 0);
+    const tw = Math.sin(st.t * 14) * 0.02, pumpY = Math.sin(st.t * 6) * 0.03;
+    for (const [arm, side] of [[parts.L, 1], [parts.R, -1]]) {
+      // rest: low in the corners, angled slightly inward
+      let x = side * 0.25, y = -0.27, z = -0.42, rx = 0.18, ry = side * 0.16, rz = side * -0.1;
+      // walking: the hands swing gently opposite each other
+      z += Math.sin(st.phase + (side > 0 ? 0 : Math.PI)) * 0.025 * st.walk;
+      // carrying: both hands come in and up to hold the part
+      x = x + (side * 0.15 - x) * st.carry; y = y + (-0.2 - y) * st.carry; ry = ry + (side * 0.5 - ry) * st.carry; rz = rz + (side * -0.6 - rz) * st.carry;
+      // installing: reach forward and tighten
+      z -= 0.08 * st.crouch; y += (0.03 + (side > 0 ? tw : -tw)) * st.crouch;
+      // pumping: the right hand works the handle
+      if (side < 0) { y += pumpY * st.pump; rx += 0.3 * st.pump; }
+      // flying: hands drop and tilt back a little
+      y -= 0.04 * st.fly; rx -= 0.25 * st.fly;
+      arm.position.set(x, y, z); arm.rotation.set(rx, ry, rz);
+    }
+  }
+
+  return {
+    group, update,
+    setProfile(p) { group.remove(parts.L, parts.R); parts.mats.forEach(m => m.dispose()); parts = build(p); },
+  };
+}
