@@ -138,7 +138,8 @@ export function Picker({ s, station }) {
     );
     actions = (s.stage === 4 || isFree(s))
       ? <button className="btn primary big" onClick={() => A.chooseRocket(r.id)} disabled={sel}>{sel ? 'Selected ✓' : 'Select this rocket'}</button>
-      : <span className="tag">{s.stage < 4 ? 'Rockets are chosen at stage 4.' : 'Rocket locked.'}</span>;
+      : s.stage < 4 ? <span className="tag">Rockets are chosen at stage 4.</span>
+        : <button className="btn primary" onClick={() => A.askReopen(4)}>↩ Go back to Launch vehicle to change it ({money(A.reopenFee(4))})</button>;
   } else {
     const p = item, installed = s.installed.includes(p.id), carrying = s.carrying === p.id, fee = changeFee(s, p);
     const current = p.slot !== 'instrument' ? s.installed.map(partById).find(x => x.slot === p.slot && x.id !== p.id) : null;
@@ -172,7 +173,12 @@ export function Picker({ s, station }) {
     );
     actions = installed ? <span className="pill ok">Installed on the spacecraft ✓</span>
       : carrying ? <span className="pill">In your hands: hold E at the cradle</span>
-        : frozen ? <span className="tag">Design frozen for launch</span>
+        : frozen ? (
+            <span className="pk-frozen">
+              <span className="tag">The design is locked for launch.</span>
+              <button className="btn primary" onClick={() => A.askReopen(p.slot === 'instrument' ? 2 : 3)}>↩ Go back to {p.slot === 'instrument' ? 'Payload' : 'Systems'} to change it ({money(A.reopenFee(p.slot === 'instrument' ? 2 : 3))})</button>
+            </span>
+          )
           : (
             <>
               <button className="btn" onClick={() => A.pickUp(p.id)} title="Carry it to the Assembly Cradle yourself">Carry it</button>

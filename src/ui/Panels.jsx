@@ -201,10 +201,23 @@ function Checks({ s }) {
   );
 }
 
+function GoBack({ s }) {
+  if (isFree(s) || s.stage < 3) return null;
+  const opts = [[2, 'Payload'], [3, 'Systems'], [4, 'Launch vehicle'], [5, 'Fueling']].filter(([n]) => n < s.stage);
+  return (
+    <div className="goback">
+      <div className="label">Forgot something?</div>
+      <p className="tag">Go back to an earlier stage to change it. Like a NASA change request, it costs money, more the later you are. You can also click a completed stage in the top bar.</p>
+      <div className="goback-btns">{opts.map(([n, l]) => <button key={n} className="btn small" onClick={() => A.askReopen(n)}>↩ {l} <em>{money(A.reopenFee(n))}</em></button>)}</div>
+    </div>
+  );
+}
+
 function Cradle({ s, T }) {
   const canEdit = isFree(s) || s.stage <= 5;
   return (
     <PanelShell title="Your spacecraft" sub={`Dry mass ${fmt(T.dry)} units, about ${fmt(T.dry * MISSION.u.mass)} kg`}>
+      <GoBack s={s} />
       {s.installed.length === 0 && <div className="lockmsg">Nothing installed yet. Bring parts from the Payload Bay and the Systems Rack.</div>}
       <div className="cards">
         {s.installed.map(pid => {
@@ -328,6 +341,7 @@ function Review({ s }) {
   const can = A.canLaunch(s);
   return (
     <PanelShell title="Go/No-Go review" sub="Each role checks the margins before launch. The call is yours.">
+      <GoBack s={s} />
       {v.map((r, i) => (
         <div className="role" key={r.role}>
           <span className="rn">{r.role}{s.team.length > 1 && <span className="owner"> {roleOwner(s, i)}</span>}</span>

@@ -857,3 +857,12 @@ button{touch-action:manipulation}
 .tour ul{margin:8px 0 4px;padding-left:18px;font-size:13px;color:#dfe4ff;line-height:1.45}
 .tour-src{font-size:11px;color:var(--muted)}
 @media (max-height:620px){.tour{width:min(300px,calc(100vw - 24px));padding:8px 10px}.tour ul{font-size:12px}.tour-head b{font-size:14px}}
+
+.pk-frozen{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.goback{border:1px dashed rgba(255,194,75,.5);border-radius:12px;padding:10px 12px;margin:8px 0}
+.goback p{margin:4px 0 8px}
+.goback-btns{display:flex;flex-wrap:wrap;gap:6px}
+.goback-btns em{font-style:normal;color:var(--amber);margin-left:4px}
+/* make completed stages in the top bar look clickable */
+.chip.back{position:relative}
+.chip.back::after{content:"↩";font-size:10px;margin-left:4px;color:var(--amber);opacity:.8}
