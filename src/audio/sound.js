@@ -38,6 +38,30 @@ export const Sound = {
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 1.2); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.8);
     src.connect(lp).connect(g).connect(c.destination); src.start(t);
   },
+  /** An original, synthesised funk loop for the moonwalk. Not based on any existing song. */
+  groove(on) {
+    if (!on || !this.ok()) { if (this.grooveOn) { this.grooveOn = false; clearInterval(this.grooveTimer); } return; }
+    if (this.grooveOn) return;
+    this.grooveOn = true;
+    const c = this.ctx, bpm = 112, step = 60 / bpm / 2; // eighth notes
+    // bass line (Hz) and drum pattern written for this game
+    const bass = [82.4, 0, 98, 82.4, 110, 0, 98, 73.4, 82.4, 0, 123.5, 110, 98, 0, 82.4, 0];
+    const kick = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0], snare = [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0];
+    let i = 0, next = c.currentTime + 0.05;
+    const note = (f, t, len, type, vol) => { const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0008, t + len); o.connect(g).connect(c.destination); o.start(t); o.stop(t + len + 0.02); };
+    const hit = (t, freq, len, vol) => { const n = c.createBufferSource(), b = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = b.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = (Math.random() * 2 - 1) * (1 - k / d.length); n.buffer = b; const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; const g = c.createGain(); g.gain.value = vol; n.connect(f).connect(g).connect(c.destination); n.start(t); };
+    const schedule = () => {
+      while (next < c.currentTime + 0.25) {
+        const k = i % 16;
+        if (bass[k]) note(bass[k], next, step * 0.9, 'square', 0.035);
+        if (kick[k]) { const o = c.createOscillator(), g = c.createGain(); o.frequency.setValueAtTime(120, next); o.frequency.exponentialRampToValueAtTime(40, next + 0.12); g.gain.setValueAtTime(0.12, next); g.gain.exponentialRampToValueAtTime(0.001, next + 0.15); o.connect(g).connect(c.destination); o.start(next); o.stop(next + 0.16); }
+        if (snare[k]) hit(next, 1800, 0.12, 0.08);
+        hit(next, 7000, 0.03, 0.025); // hi-hat on every eighth
+        next += step; i++;
+      }
+    };
+    schedule(); this.grooveTimer = setInterval(schedule, 60);
+  },
   jet(level) {
     if (!this.ok()) { if (this.jetNodes) { this.jetNodes.g.gain.value = 0; } return; }
     const c = this.ctx;

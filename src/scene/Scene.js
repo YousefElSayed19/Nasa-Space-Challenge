@@ -649,8 +649,11 @@ function tick() {
   const fp = s.screen === 'game' && (s.view === 'first' || s.view === 'hands');
   hero.setView(fp ? 'none' : 'full');
   hands.group.visible = s.screen === 'game' && s.view === 'hands';
+  // walking backwards with the Auto camera turns into a moonwalk, with an original funk groove
+  const moonwalking = s.screen === 'game' && s.camMode === 'auto' && !s.firstPerson && !!player.backward && player.speed > 0.4 && !player.air;
+  Sound.groove(moonwalking);
   const ev = hero.update(dt, {
-    speed: player.speed, turn: s.screen === "game" ? Math.abs(player.turnVel || 0) : 0, run: player.running, carrying: !!s.carrying,
+    speed: player.speed, turn: s.screen === "game" ? Math.abs(player.turnVel || 0) : 0, moon: moonwalking, run: player.running, carrying: !!s.carrying,
     fly: player.air && (player.boosted || player.flyMode), thrust: player.air ? player.thrust : 0,
     back: !!player.backward,
     crouch: acts.installing || player.land > 0.15, pump: acts.pumping, wave: s.screen === 'launching' || (s.screen === 'intro' && (s.introBeat === 0 || s.introBeat === 5)), air: player.air, vy: player.vy,

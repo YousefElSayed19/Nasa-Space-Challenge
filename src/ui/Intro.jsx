@@ -41,8 +41,15 @@ function Overlay({ kind }) {
   return null;
 }
 
-function speak(text, on) {
-  try { window.speechSynthesis.cancel(); if (!on || !text) return; const u = new SpeechSynthesisUtterance(text); u.rate = 1; u.pitch = 1; u.lang = 'en-US'; window.speechSynthesis.speak(u); } catch (e) { /* no speech on this browser */ }
+const canSpeak = () => { try { return 'speechSynthesis' in window && window.speechSynthesis.getVoices().length > 0; } catch (e) { return false; } };
+function speak(text, on, onWord, onEnd) {
+  try {
+    window.speechSynthesis.cancel(); if (!on || !text) return false;
+    const u = new SpeechSynthesisUtterance(text); u.rate = 1; u.pitch = 1; u.lang = 'en-US';
+    if (onWord) u.onboundary = e => { if (e.name === 'word' || e.charIndex != null) onWord(e.charIndex); };
+    if (onEnd) u.onend = onEnd;
+    window.speechSynthesis.speak(u); return true;
+  } catch (e) { return false; }
 }
 
 export function Intro({ s }) {
@@ -62,45 +69,47 @@ function RecordedVideo() {
 }
 
 function Cinematic({ s }) {
-  const shots = SHOTS().map(x => {
-    const words = (x.say + ' ' + x.sub).split(/\s+/).length * 0.55 + x.say.split(/\s+/).length * 0.45;
-    return { ...x, t: Math.max(x.t + 2, words / 2.4 + 3.5) };
-  });
-  const total = shots.reduce((a, x) => a + x.t, 0);
-  const [time, setTime] = useState(0);
+  // with the narrator on, a shot ends as soon as the narration ends; with it off, after reading time
+  const shots = SHOTS().map(x => ({ ...x, t: Math.max(4, x.say.split(/\s+/).length / 2.6 + 1.5) }));
+  const [idx, setIdx] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [voice, setVoice] = useState(true);
-  const voiceRef = useRef(true); voiceRef.current = voice;
-  const last = useRef(-1);
-  // which shot is on screen
-  let acc = 0, idx = 0;
-  for (let i = 0; i < shots.length; i++) { if (time >= acc && time < acc + shots[i].t) { idx = i; break; } acc += shots[i].t; idx = i; }
-  const shotStart = shots.slice(0, idx).reduce((a, x) => a + x.t, 0);
+  const [word, setWord] = useState(0);
+  const spokeRef = useRef(false), endedRef = useRef(false);
+  const go = i => { if (i >= shots.length) { A.finishIntro(); return; } endedRef.current = false; setIdx(i); setElapsed(0); setWord(0); };
+  // start the narration for each shot
+  useEffect(() => {
+    A.setIntroBeat(idx, shots[idx].t);
+    spokeRef.current = playing && voice && speak(shots[idx].say, true, ci => setWord(ci), () => { endedRef.current = true; });
+  }, [idx, voice]);
+  // clock: move on when the narration has ended (plus a short beat), or after reading time without narration
   useEffect(() => {
     if (!playing) return;
-    let raf, prev = performance.now();
+    let raf, prev = performance.now(), endAt = null;
     const tick = now => {
-      setTime(t => {
-        let n = t + (now - prev) / 1000; prev = now;
-        // hold at the end of a shot until the narration for it has finished
-        let end = 0; for (const x of shots) { end += x.t; if (t < end) break; }
-        const speaking = voiceRef.current && (() => { try { return window.speechSynthesis.speaking; } catch (e) { return false; } })();
-        if (n >= end - 0.05 && speaking) n = end - 0.05;
-        if (n >= total) { if (!speaking) A.finishIntro(); return total; }
+      const dt = (now - prev) / 1000; prev = now;
+      setElapsed(e => {
+        const n = e + dt;
+        if (spokeRef.current) {
+          if (endedRef.current && endAt === null) endAt = n + 0.6;
+          if (endAt !== null && n >= endAt) { endAt = null; setTimeout(() => go(idx + 1), 0); }
+          if (!endedRef.current && n > shots[idx].t * 2.2) { endedRef.current = true; } // safety if a voice never reports its end
+        } else if (n >= shots[idx].t) setTimeout(() => go(idx + 1), 0);
         return n;
       });
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing]);
-  useEffect(() => {
-    if (idx !== last.current) { last.current = idx; A.setIntroBeat(idx, shots[idx].t); speak(shots[idx].say, voice && playing); }
-  }, [idx]);
-  useEffect(() => { if (!playing) { try { window.speechSynthesis.pause(); } catch (e) {} } else { try { window.speechSynthesis.resume(); } catch (e) {} } }, [playing]);
+  }, [playing, idx]);
+  useEffect(() => { try { playing ? window.speechSynthesis.resume() : window.speechSynthesis.pause(); } catch (e) {} }, [playing]);
   useEffect(() => () => speak('', false), []);
-  const jump = i => { setTime(shots.slice(0, i).reduce((a, x) => a + x.t, 0) + 0.01); };
   const sh = shots[idx];
+  const est = spokeRef.current ? Math.max(shots[idx].t, elapsed + 0.01) : shots[idx].t;
+  const pctNow = Math.min(100, (elapsed / est) * 100);
+  // subtitle: the words already spoken are bright, the rest dim
+  const said = sh.say.slice(0, word), rest = sh.say.slice(word);
   return (
     <div className="vi" onClick={() => setPlaying(p => !p)}>
       <div className="vi-bars-top"></div><div className="vi-bars-bottom"></div>
@@ -110,19 +119,23 @@ function Cinematic({ s }) {
         <p>{sh.sub}</p>
         <Overlay kind={sh.overlay} />
       </div>
+      <div className="vi-subtitle" aria-live="polite" key={'sub' + idx}>
+        {voice && spokeRef.current ? <><span className="said">{said}</span><span className="rest">{rest}</span></> : sh.say}
+      </div>
       {!playing && <div className="vi-paused">❚❚ Paused · click to play</div>}
       <div className="vi-controls" onClick={e => e.stopPropagation()}>
         <button onClick={() => setPlaying(p => !p)} aria-label={playing ? 'Pause' : 'Play'}>{playing ? '❚❚' : '▶'}</button>
-        <button onClick={() => { jump(0); setPlaying(true); }} aria-label="Restart">⟲</button>
-        <button onClick={() => { const v = !voice; setVoice(v); speak(v ? sh.say : '', v); }} aria-label="Narration">{voice ? '🔊' : '🔈'}</button>
+        <button onClick={() => { go(0); setPlaying(true); }} aria-label="Restart">⟲</button>
+        <button onClick={() => { const v = !voice; setVoice(v); if (!v) speak('', false); }} aria-label="Narration">{voice ? '🔊' : '🔈'}</button>
+        <button onClick={() => go(idx + 1)} aria-label="Next shot">⏭</button>
         <div className="vi-progress">
           {shots.map((x, i) => (
-            <button key={i} className="vi-seg" style={{ flex: x.t }} onClick={() => jump(i)} aria-label={x.title}>
-              <i style={{ width: (i < idx ? 100 : i > idx ? 0 : Math.min(100, (time - shotStart) / x.t * 100)) + '%' }}></i>
+            <button key={i} className="vi-seg" style={{ flex: x.t }} onClick={() => go(i)} aria-label={x.title}>
+              <i style={{ width: (i < idx ? 100 : i > idx ? 0 : pctNow) + '%' }}></i>
             </button>
           ))}
         </div>
-        <button className="vi-skip-btn" onClick={A.finishIntro}>Skip intro ⏭</button>
+        <button className="vi-skip-btn" onClick={A.finishIntro}>Skip intro</button>
       </div>
     </div>
   );

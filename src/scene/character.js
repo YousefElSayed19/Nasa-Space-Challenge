@@ -36,7 +36,7 @@ function stripTexture(color) {
 export function createCharacter(profile) {
   const root = new THREE.Group();
   const carryHolder = new THREE.Group(); root.add(carryHolder);
-  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0, hands: 0, turn: 0 }, look: 0 };
+  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0, hands: 0, turn: 0, moon: 0 }, look: 0 };
   let viewMode = 'full';
   let rig = build(profile);
   root.add(rig.body);
@@ -213,6 +213,7 @@ export function createCharacter(profile) {
     W.wave = damp(W.wave, inp.wave ? 1 : 0, 5, dt);
     W.air = damp(W.air, inp.air ? 1 : 0, 14, dt);
     W.fly = damp(W.fly, inp.fly ? 1 : 0, 4, dt);
+    W.moon = damp(W.moon, inp.moon && inp.speed > 0.4 ? 1 : 0, 8, dt);
     // turning on the spot: small stepping feet, only when not already walking
     W.turn = damp(W.turn, Math.min(1, (inp.turn || 0) / 1.6) * (1 - Math.min(1, inp.speed / 1.2)), 10, dt);
     W.hands = damp(W.hands, viewMode === 'hands' ? 1 : 0, 10, dt);
@@ -289,6 +290,25 @@ export function createCharacter(profile) {
       lx = lerp(lx, fx + sw + br, W.hands); rx = lerp(rx, fx - sw + br, W.hands);
       lz = lerp(lz, -0.32, W.hands); rz = lerp(rz, 0.32, W.hands);
       le = lerp(le, -0.75, W.hands); re = lerp(re, -0.75, W.hands);
+    }
+    // moonwalk: one foot flat and sliding back while the other bends with the heel up, switching in rhythm
+    if (W.moon > 0.01) {
+      const M = W.moon, beat = st.t * 3.9;
+      const side = (Math.sin(beat) + 1) / 2; // 0..1 which leg is on its toes
+      const legs = [[r.legL, side], [r.legR, 1 - side]];
+      for (const [L, toe] of legs) {
+        L.hip.rotation.x = lerp(L.hip.rotation.x, -0.22 * toe + 0.08 * (1 - toe), M);
+        L.knee.rotation.x = lerp(L.knee.rotation.x, 0.62 * toe + 0.03, M);
+        L.ankle.rotation.x = lerp(L.ankle.rotation.x, 0.75 * toe - 0.05, M);
+      }
+      r.body.position.y = lerp(r.body.position.y, -0.02 + Math.abs(Math.sin(beat)) * 0.015, M);
+      r.hips.rotation.y = lerp(r.hips.rotation.y, 0, M); r.spine.rotation.y = lerp(r.spine.rotation.y, 0, M);
+      r.spine.rotation.x = lerp(r.spine.rotation.x, 0.06, M);
+      r.head.rotation.x = lerp(r.head.rotation.x, -0.05 + Math.sin(beat * 2) * 0.06, M);
+      if (!inp.carrying) {
+        lx = lerp(lx, -0.15 + Math.sin(beat) * 0.15, M); rx = lerp(rx, -0.15 - Math.sin(beat) * 0.15, M);
+        le = lerp(le, -0.9, M); re = lerp(re, -0.9, M); lz = lerp(lz, 0.2, M); rz = lerp(rz, -0.2, M);
+      }
     }
     r.armL.sh.rotation.set(lx, 0, lz); r.armR.sh.rotation.set(rx, 0, rz);
     r.armL.el.rotation.set(le, 0, 0);

@@ -899,3 +899,11 @@ button{touch-action:manipulation}
 .vi-video{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain}
 .vi-skip{position:absolute;right:20px;top:20px}
 @media (max-height:440px){.vi-caption{bottom:calc(9vh + 54px)}.vi-caption p{font-size:12.5px}.vi-bars,.vi-chain{display:none}}
+
+/* v0.23: subtitles under the intro */
+.vi-subtitle{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(9vh + 22px);width:min(900px,90vw);text-align:center;font-size:clamp(14px,1.45vw,19px);line-height:1.45;
+  padding:8px 14px;border-radius:10px;background:rgba(2,4,14,.72);color:#fff;text-shadow:0 1px 3px #000;animation:pk-fade .4s ease}
+.vi-subtitle .said{color:#fff}
+.vi-subtitle .rest{color:rgba(255,255,255,.55)}
+.vi-caption{bottom:calc(9vh + 110px)}
+@media (max-height:440px){.vi-subtitle{font-size:12px;bottom:calc(9vh + 18px)}.vi-caption{bottom:calc(9vh + 76px)}}
