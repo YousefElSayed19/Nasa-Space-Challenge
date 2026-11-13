@@ -557,7 +557,7 @@ function updateCamera(dt, s) {
     const i = Math.min(s.introBeat || 0, SH.length - 1);
     if (introShot !== i) { introShot = i; introClock = 0; }
     introClock += dt;
-    const k = Math.min(1, introClock / 7), e = k * k * (3 - 2 * k);
+    const k = Math.min(1, introClock / (s.introDur || 7)), e = k * k * (3 - 2 * k); // the dolly lasts as long as the shot
     desired = new V3(...SH[i][0]).lerp(new V3(...SH[i][1]), e); look = new V3(...SH[i][2]); fov = 52;
     if (introClock < dt * 1.5) { cam.pos.copy(desired); cam.look.copy(look); }
   } else if (s.screen === 'start' && s.startStep === 'look') {
@@ -650,7 +650,7 @@ function tick() {
   hero.setView(fp ? 'none' : 'full');
   hands.group.visible = s.screen === 'game' && s.view === 'hands';
   const ev = hero.update(dt, {
-    speed: player.speed, run: player.running, carrying: !!s.carrying,
+    speed: player.speed, turn: s.screen === "game" ? Math.abs(player.turnVel || 0) : 0, run: player.running, carrying: !!s.carrying,
     fly: player.air && (player.boosted || player.flyMode), thrust: player.air ? player.thrust : 0,
     back: !!player.backward,
     crouch: acts.installing || player.land > 0.15, pump: acts.pumping, wave: s.screen === 'launching' || (s.screen === 'intro' && (s.introBeat === 0 || s.introBeat === 5)), air: player.air, vy: player.vy,

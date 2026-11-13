@@ -72,7 +72,7 @@ export const A = {
     if (s.mode === 'campaign') { store.set({ screen: 'intro', introBeat: 0 }); bus.emit('mission', s.missionId); } // the intro can always be skipped
     else A.start();
   },
-  setIntroBeat(i) { store.set({ introBeat: i }); },
+  setIntroBeat(i, dur) { store.set({ introBeat: i, introDur: dur || 7 }); },
   finishIntro() { try { window.speechSynthesis.cancel(); } catch (e) {} saveJSON('mf-intro-done', true); A.start(); },
   clearDesign() {
     store.set({ installed: [], rocket: null, propLoaded: 0, checks: {}, replayNotice: false, mode: 'sandbox', stage: 6, locked: {} });

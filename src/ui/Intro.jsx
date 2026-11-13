@@ -62,11 +62,15 @@ function RecordedVideo() {
 }
 
 function Cinematic({ s }) {
-  const shots = SHOTS();
+  const shots = SHOTS().map(x => {
+    const words = (x.say + ' ' + x.sub).split(/\s+/).length * 0.55 + x.say.split(/\s+/).length * 0.45;
+    return { ...x, t: Math.max(x.t + 2, words / 2.4 + 3.5) };
+  });
   const total = shots.reduce((a, x) => a + x.t, 0);
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [voice, setVoice] = useState(true);
+  const voiceRef = useRef(true); voiceRef.current = voice;
   const last = useRef(-1);
   // which shot is on screen
   let acc = 0, idx = 0;
@@ -75,12 +79,23 @@ function Cinematic({ s }) {
   useEffect(() => {
     if (!playing) return;
     let raf, prev = performance.now();
-    const tick = now => { setTime(t => { const n = t + (now - prev) / 1000; prev = now; if (n >= total) { A.finishIntro(); return total; } return n; }); raf = requestAnimationFrame(tick); };
+    const tick = now => {
+      setTime(t => {
+        let n = t + (now - prev) / 1000; prev = now;
+        // hold at the end of a shot until the narration for it has finished
+        let end = 0; for (const x of shots) { end += x.t; if (t < end) break; }
+        const speaking = voiceRef.current && (() => { try { return window.speechSynthesis.speaking; } catch (e) { return false; } })();
+        if (n >= end - 0.05 && speaking) n = end - 0.05;
+        if (n >= total) { if (!speaking) A.finishIntro(); return total; }
+        return n;
+      });
+      raf = requestAnimationFrame(tick);
+    };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [playing]);
   useEffect(() => {
-    if (idx !== last.current) { last.current = idx; A.setIntroBeat(idx); speak(shots[idx].say, voice && playing); }
+    if (idx !== last.current) { last.current = idx; A.setIntroBeat(idx, shots[idx].t); speak(shots[idx].say, voice && playing); }
   }, [idx]);
   useEffect(() => { if (!playing) { try { window.speechSynthesis.pause(); } catch (e) {} } else { try { window.speechSynthesis.resume(); } catch (e) {} } }, [playing]);
   useEffect(() => () => speak('', false), []);

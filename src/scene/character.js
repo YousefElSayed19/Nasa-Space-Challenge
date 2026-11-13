@@ -36,7 +36,7 @@ function stripTexture(color) {
 export function createCharacter(profile) {
   const root = new THREE.Group();
   const carryHolder = new THREE.Group(); root.add(carryHolder);
-  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0, hands: 0 }, look: 0 };
+  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0, hands: 0, turn: 0 }, look: 0 };
   let viewMode = 'full';
   let rig = build(profile);
   root.add(rig.body);
@@ -213,17 +213,19 @@ export function createCharacter(profile) {
     W.wave = damp(W.wave, inp.wave ? 1 : 0, 5, dt);
     W.air = damp(W.air, inp.air ? 1 : 0, 14, dt);
     W.fly = damp(W.fly, inp.fly ? 1 : 0, 4, dt);
+    // turning on the spot: small stepping feet, only when not already walking
+    W.turn = damp(W.turn, Math.min(1, (inp.turn || 0) / 1.6) * (1 - Math.min(1, inp.speed / 1.2)), 10, dt);
     W.hands = damp(W.hands, viewMode === 'hands' ? 1 : 0, 10, dt);
     W.thrust = damp(W.thrust, inp.thrust || 0, 10, dt);
-    st.phase += dt * (inp.speed * (1.55 + W.run * 0.25)) * (inp.back ? -1 : 1);
+    st.phase += dt * (inp.speed * (1.55 + W.run * 0.25)) * (inp.back ? -1 : 1) + dt * W.turn * 9;
     const ph = st.phase, t = st.t, idle = 1 - W.walk, ground = 1 - W.air;
-    const a = W.walk * (0.48 + 0.3 * W.run) * ground;
+    const a = Math.max(W.walk * (0.48 + 0.3 * W.run), W.turn * 0.2) * ground;
 
     // legs: swing, knee bend in the swing phase, a small bend on contact, and the foot rolls with the ankle
     const legPose = (L, s) => {
       const sw = Math.sin(ph + s);
       let hip = -sw * a;
-      let knee = a * (0.18 + 1.15 * Math.max(0, Math.sin(ph + s + 1.7))) + W.walk * 0.06;
+      let knee = a * (0.18 + 1.15 * Math.max(0, Math.sin(ph + s + 1.7))) + W.walk * 0.06 + W.turn * 0.55 * Math.max(0, Math.sin(ph + s));
       hip = lerp(hip, s ? -0.38 : -0.95, W.crouch); knee = lerp(knee, s ? 1.05 : 1.6, W.crouch);
       const rising = inp.vy > 0 ? 1 : 0;
       hip = lerp(hip, rising ? (s ? -0.35 : -0.75) : (s ? -0.15 : -0.3), W.air);
@@ -235,10 +237,10 @@ export function createCharacter(profile) {
     legPose(r.legL, 0); legPose(r.legR, Math.PI);
 
     // body: double-frequency bob, side sway, pelvis twist and roll, spine counter-twist, breathing and weight shift
-    const bob = (Math.abs(Math.sin(ph)) - 0.35) * 0.055 * W.walk * (1 + W.run * 0.6) * ground;
+    const bob = (Math.abs(Math.sin(ph)) - 0.35) * 0.055 * Math.max(W.walk * (1 + W.run * 0.6), W.turn * 0.6) * ground;
     r.body.position.y = bob - 0.26 * W.crouch * r.hs;
     r.body.position.x = Math.sin(ph) * 0.025 * W.walk * ground;
-    r.hips.rotation.y = Math.sin(ph) * 0.14 * W.walk;
+    r.hips.rotation.y = Math.sin(ph) * 0.14 * W.walk + Math.sin(ph) * 0.12 * W.turn;
     r.hips.rotation.z = Math.sin(ph) * 0.045 * W.walk + Math.sin(t * 0.55) * 0.025 * idle;
     r.spine.rotation.y = -Math.sin(ph) * 0.22 * W.walk;
     r.spine.rotation.x = 0.05 * W.walk + 0.17 * W.run * W.walk + 0.32 * W.crouch + Math.sin(t * 1.6) * 0.014 * idle - 0.08 * W.air;
@@ -304,7 +306,7 @@ export function createCharacter(profile) {
     carryHolder.position.set(0, (1.2 - 0.26 * W.crouch) * r.hs + bob, (0.55 + 0.12 * W.crouch) * r.hs);
 
     const sgn = Math.sin(ph) >= 0 ? 1 : -1;
-    if (W.walk > 0.35 && ground > 0.5 && sgn !== st.lastStep) { st.lastStep = sgn; return sgn > 0 ? 'stepR' : 'stepL'; }
+    if ((W.walk > 0.35 || W.turn > 0.4) && ground > 0.5 && sgn !== st.lastStep) { st.lastStep = sgn; return sgn > 0 ? 'stepR' : 'stepL'; }
     st.lastStep = sgn;
     return null;
   }
