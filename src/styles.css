@@ -923,3 +923,15 @@ button{touch-action:manipulation}
 .edl-read em{font-size:10.5px;color:var(--muted);font-style:normal}
 .tour-foot{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:8px}
 .tour-auto{font-size:12px;color:var(--muted);display:flex;gap:5px;align-items:center}
+
+/* v0.25: online play */
+.online{margin:12px 0;display:grid;gap:8px}
+.online-tabs{flex-wrap:wrap}
+.online-box{border:1px solid var(--edge);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+.room-code{font-size:13px;color:var(--muted)} .room-code b{font-size:26px;letter-spacing:.18em;color:var(--amber);margin-left:8px}
+.invite{display:flex;gap:6px}.invite input{flex:1;min-width:0;font-size:12px}
+.join-row{display:flex;gap:8px}.code-input{width:120px;font-size:22px;letter-spacing:.25em;text-transform:uppercase;text-align:center}
+.players-list{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.players-list li{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.03);color:var(--muted)}
+.players-list li.on{color:var(--text);background:rgba(62,224,160,.08)}
+.net-status{font-size:12px;color:var(--amber);margin:0}

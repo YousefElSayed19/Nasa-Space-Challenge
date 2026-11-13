@@ -2,6 +2,7 @@
 import { store, saveJSON, loadJSON, freshState } from './store.js';
 import { bus } from './bus.js';
 import { addScore } from './leaderboard.js';
+import { net, sendAct } from './net.js';
 import { Sound } from '../audio/sound.js';
 import {
   MISSION, MISSIONS, RES_INFO, ROLES, STAGE_NAMES, MARGIN, CHECKS, setMission, missionById, partById, rocketById,
@@ -73,7 +74,13 @@ export const A = {
     else A.start();
   },
   setIntroBeat(i, dur) { store.set({ introBeat: i, introDur: dur || 7 }); },
-  finishIntro() { try { window.speechSynthesis.cancel(); } catch (e) {} saveJSON('mf-intro-done', true); A.start(); },
+  finishIntro() {
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    saveJSON('mf-intro-done', true);
+    if (store.get().introReturn) { store.set({ screen: 'game', introReturn: false }); return; } // online: the game already started underneath
+    A.start();
+  },
+  watchIntroThenPlay() { if (store.get().mode === 'campaign') store.set({ screen: 'intro', introBeat: 0, introReturn: true }); },
   clearDesign() {
     store.set({ installed: [], rocket: null, propLoaded: 0, checks: {}, replayNotice: false, mode: 'sandbox', stage: 6, locked: {} });
     A.toast('Cleared. You are now in sandbox with an empty spacecraft.');
@@ -189,7 +196,7 @@ export const A = {
   requestLock(kind, n) {
     const s = store.get();
     const stage = kind === 'stage' ? n : kind === 'rocket' ? 4 : 5;
-    if (s.team.length > 1) { Sound.click(); store.set({ signoff: { kind, n, stage, approvals: {} }, panel: null }); return; }
+    if (s.team.length > 1 || net.role !== 'solo') { Sound.click(); store.set({ signoff: { kind, n, stage, approvals: {} }, panel: null }); return; }
     const concerns = stageChecks(s, stage).filter(c => !c.ok);
     if (concerns.length) A.toast(`Advisor, ${concerns[0].role}: ${concerns[0].note}`, 'warn');
     A.doLock(kind, n);
@@ -304,3 +311,33 @@ export const A = {
   openInSandbox(design) { A.reset({ mode: 'sandbox', missionId: design.mission, design }); },
   backToMenu() { const s = store.get(); store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden, mode: s.mode, missionId: s.missionId, teamNames: s.teamNames }) }); bus.emit('reset'); },
 };
+
+// ---------- online play: guests send design actions to the host, who runs them for everyone ----------
+const SHARED_ACTIONS = ['acceptBriefing', 'installDirect', 'remove', 'runCheck', 'requestLock', 'approve', 'object', 'cancelSignoff', 'confirmStage',
+  'chooseRocket', 'confirmRocket', 'pump', 'finishFueling', 'goLaunch', 'takeLoan', 'reopenStage', 'finishChange'];
+const HOST_ONLY = ['startMission', 'openReport'];
+for (const name of SHARED_ACTIONS) {
+  const run = A[name];
+  A[name] = (...args) => {
+    const freeRole = net.role === 'host' && !net.players.some(p => p.role === args[0]); // roles nobody took: the host signs for them
+    if ((name === 'approve' || name === 'object') && net.role !== 'solo' && args[0] !== net.myRole && !freeRole) {
+      A.toast(`Only the ${ROLES[args[0]]} can ${name} this. You are the ${ROLES[net.myRole]}.`, 'warn'); return;
+    }
+    if (net.role === 'guest') { sendAct(name, args); return; }
+    return run(...args);
+  };
+}
+for (const name of HOST_ONLY) { const run = A[name]; A[name] = (...args) => (net.role === 'guest' ? undefined : run(...args)); }
+// holding E at the cradle: a guest asks the host to install the part in its hands
+const localInstall = A.install;
+A.install = () => { const s = store.get(); if (net.role === 'guest') { if (s.carrying) { sendAct('installDirect', [s.carrying]); store.set({ carrying: null }); } return; } return localInstall(); };
+bus.on('net-act', msg => { if (net.role === 'host' && SHARED_ACTIONS.includes(msg.name)) {
+  if (msg.name === 'approve' || msg.name === 'object') { const run = A[msg.name]; const r = net.myRole; net.myRole = msg.args[0]; run(...msg.args); net.myRole = r; }
+  else A[msg.name](...(msg.args || []));
+} });
+bus.on('net-toast', t => A.toast(t));
+bus.on('net-start', m => {
+  // a guest follows the host into the mission
+  setMission(m.missionId); store.set({ missionId: m.missionId, mode: m.mode, teamNames: m.team }); bus.emit('mission', m.missionId);
+  A.start(); A.watchIntroThenPlay();
+});

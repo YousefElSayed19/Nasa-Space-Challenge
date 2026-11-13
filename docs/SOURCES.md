@@ -109,6 +109,8 @@ All four missions in the game are one-way robotic missions: none of the real spa
 | Three.js | https://threejs.org | MIT | The 3D hangar, spacecraft and mission flights |
 | Vite | https://vitejs.dev | MIT | Building the website |
 | Vitest | https://vitest.dev | MIT | Testing the simulation engine |
+| PeerJS 1.5.4 | https://peerjs.com | MIT | Online multiplayer connections (loaded only when hosting or joining) |
+| Open Relay Project | https://www.metered.ca/tools/openrelay/ | Free public TURN relay | Backup relay for online multiplayer |
 
 All 3D models, textures and sounds are generated in code. No third-party models, images or sound files are used.
 

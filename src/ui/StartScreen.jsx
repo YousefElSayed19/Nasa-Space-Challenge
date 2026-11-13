@@ -2,6 +2,8 @@ import React from 'react';
 import { A, unlockedMissions } from '../state/actions.js';
 import { MISSIONS } from '../engine/index.js';
 import { topScores } from '../state/leaderboard.js';
+import { net, onNet, hostRoom, joinRoom, leaveRoom, startGame, inviteLink } from '../state/net.js';
+import { ROLES } from '../engine/index.js';
 import { loadJSON } from '../state/store.js';
 import OPTIONS from '../data/character.json';
 
@@ -39,10 +41,82 @@ function randomLook() {
 }
 
 const MODES = [
-  { id: 'campaign', name: 'Campaign', note: 'Three missions that unlock in order. Stages lock as you go.' },
+  { id: 'campaign', name: 'Campaign', note: 'Four missions that unlock in order. Stages lock as you go.' },
   { id: 'sandbox', name: 'Sandbox', note: 'Any mission, no budget limit, no locks. Experiment freely.' },
   { id: 'replay', name: 'Replay a real mission', note: 'Start from the real NASA design, change it, and compare.' },
 ];
+
+/** Play solo, host an online room (code + invite link), or join one. */
+function OnlinePanel({ s, ok }) {
+  const [, force] = React.useState(0);
+  React.useEffect(() => onNet(() => force(x => x + 1)), []);
+  const urlRoom = new URLSearchParams(location.search).get('room') || '';
+  const [tab, setTab] = React.useState(urlRoom ? 'join' : net.role === 'host' ? 'host' : 'solo');
+  const [code, setCode] = React.useState(urlRoom.toUpperCase());
+  const [busy, setBusy] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+  const name = s.profile.nick.trim();
+  const doHost = async () => { setBusy(true); try { await hostRoom(name, s.profile); } catch (e) {} setBusy(false); };
+  const doJoin = async () => { setBusy(true); try { await joinRoom(code, name, s.profile); } catch (e) {} setBusy(false); };
+  const startOnline = () => {
+    const byRole = [...net.players].sort((a, b) => a.role - b.role);
+    const team = byRole.filter(p => p.role !== 0).map(p => p.name);
+    A.setTeamNames(team);
+    startGame({ missionId: s.missionId, mode: s.mode, team });
+    A.start(); A.watchIntroThenPlay();
+  };
+  const choose = t => { if (t === 'solo' && net.role !== 'solo') leaveRoom(); setTab(t); };
+  return (
+    <div className="online">
+      <div className="label">How do you want to play?</div>
+      <div className="seg online-tabs">
+        <button className={tab === 'solo' ? 'on' : ''} onClick={() => choose('solo')}>🧑‍🚀 Solo or same screen</button>
+        <button className={tab === 'host' ? 'on' : ''} onClick={() => choose('host')}>📡 Host online</button>
+        <button className={tab === 'join' ? 'on' : ''} onClick={() => choose('join')}>🔗 Join online</button>
+      </div>
+      {tab === 'host' && (
+        net.role !== 'host' ? (
+          <div className="online-box">
+            <p className="tag">Create a room. Friends join with the code or the invite link. Each player takes one of the four roles.</p>
+            <button className="btn primary" disabled={!ok || busy} onClick={doHost}>{busy ? 'Creating…' : 'Create room'}</button>
+            {!ok && <span className="tag"> Enter your name first.</span>}
+          </div>
+        ) : (
+          <div className="online-box">
+            <div className="room-code">Room code <b>{net.code}</b></div>
+            <div className="invite">
+              <input readOnly value={inviteLink(net.code)} onFocus={e => e.target.select()} />
+              <button className="btn small" onClick={() => { navigator.clipboard && navigator.clipboard.writeText(inviteLink(net.code)); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? 'Copied ✓' : 'Copy link'}</button>
+            </div>
+            <PlayerList />
+            <button className="btn primary wide" disabled={!ok} onClick={startOnline}>Start the mission for everyone ({net.players.length} player{net.players.length > 1 ? 's' : ''})</button>
+          </div>
+        )
+      )}
+      {tab === 'join' && (
+        net.role !== 'guest' ? (
+          <div className="online-box">
+            <div className="join-row">
+              <input className="code-input" maxLength={4} placeholder="CODE" value={code} onChange={e => setCode(e.target.value.toUpperCase())} />
+              <button className="btn primary" disabled={!ok || code.length !== 4 || busy} onClick={doJoin}>{busy ? 'Joining…' : 'Join'}</button>
+            </div>
+            {!ok && <span className="tag">Enter your name first.</span>}
+          </div>
+        ) : (
+          <div className="online-box"><div className="room-code">Joined room <b>{net.code}</b></div><PlayerList /><p className="tag">Waiting for the host to start the mission…</p></div>
+        )
+      )}
+      {net.status && tab !== 'solo' && <p className="net-status">{net.status}</p>}
+    </div>
+  );
+}
+function PlayerList() {
+  return (
+    <ul className="players-list">
+      {[0, 1, 2, 3].map(r => { const p = net.players.find(x => x.role === r); return <li key={r} className={p ? 'on' : ''}><span>{ROLES[r]}</span><b>{p ? p.name + (p.id === net.myId ? ' (you)' : '') : r === 0 ? '' : 'open: the host signs'}</b></li>; })}
+    </ul>
+  );
+}
 
 function NameStep({ s }) {
   const p = s.profile;
@@ -91,7 +165,8 @@ function NameStep({ s }) {
             );
           })}
         </div>
-        <button className="btn primary wide" disabled={!ok || !missionOk} onClick={() => A.setStartStep('look')}>Design your engineer</button>
+        <OnlinePanel s={s} ok={ok} />
+        {net.role !== 'guest' && <button className="btn primary wide" disabled={!ok || !missionOk} onClick={() => A.setStartStep('look')}>{net.role === 'host' ? 'Design your engineer first (optional)' : 'Design your engineer'}</button>}
         <p className="fine">{best ? `Your best score: ${best}. ` : ''}Profiles and saved designs stay in this browser. Built for NASA Space Apps Cairo 2026; not reviewed or endorsed by NASA. Numbers are simplified game units; each “?” shows the real value and its source.</p>
       </div>
     </div>

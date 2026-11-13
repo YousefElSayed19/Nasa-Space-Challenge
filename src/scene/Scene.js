@@ -16,6 +16,9 @@ import { tasksFor } from '../state/tasks.js';
 import { stepOf } from '../state/tutorial.js';
 import { lin } from './materials.js';
 import { renderThumbs } from './thumbs.js';
+import { net, sendPos } from '../state/net.js';
+import { label as nameLabel } from './textures.js';
+const remotes = {}; let posT = 0;
 import TOURS from '../data/tours.json';
 let flightT = 0, tourReleased = -1, tourView = null;
 import { warmPreview } from './preview.js';
@@ -85,6 +88,19 @@ export function initScene(container) {
   bus.on('reset', reset);
   bus.on('enter', () => { player.pos.copy(START_POS); player.facing = Math.PI; player.heading = Math.PI; player.turnVel = 0; cam.yaw = 0; cam.pitch = 0.38; });
   bus.on('installed', () => { refs.craftLight.intensity = 6; });
+  // other players' engineers
+  bus.on('net-pos', m => {
+    if (!m.id || m.id === net.myId) return;
+    let r = remotes[m.id];
+    if (!r) {
+      const pl = net.players.find(p => p.id === m.id) || {};
+      const hero2 = createCharacter({ ...store.get().profile, ...(pl.profile || {}), nick: pl.name || 'Engineer' });
+      const tag = nameLabel(pl.name || 'Engineer', (pl.profile && pl.profile.accent) || '#FFC24B'); tag.scale.set(2.2, 0.55, 1); tag.position.y = 2.6; hero2.root.add(tag);
+      scene.add(hero2.root); r = remotes[m.id] = { hero: hero2, x: m.x, z: m.z, y: 0, f: m.f, tx: m.x, tz: m.z, ty: 0, tf: m.f, sp: 0 };
+    }
+    Object.assign(r, { tx: m.x, tz: m.z, ty: m.y || 0, tf: m.f, sp: m.sp || 0 });
+  });
+  bus.on('net-left', id => { for (const k in remotes) if (id === '*' || k === id) { scene.remove(remotes[k].hero.root); delete remotes[k]; } });
   bus.on('tourNext', () => { tourReleased += 1; tourView = null; });
   bus.on('tourView', i => { tourView = i; });
   bus.on('travel', roomId => {
@@ -330,7 +346,7 @@ function updatePlayer(dt, s) {
   player.vel.z = damp(player.vel.z, target.z, k, dt);
   player.pos.addScaledVector(player.vel, dt);
   player.walked = (player.walked || 0) + player.vel.length() * dt;
-  if ((player.walked > 3 || Math.abs(player.turnVel || 0) > 1) && !player.movedSent) { player.movedSent = true; bus.emit('moved'); }
+  if (player.walked - (player.movedAt || 0) > 2.5 || (Math.abs(player.turnVel || 0) > 1 && time - (player.turnSig || 0) > 0.5)) { player.movedAt = player.walked; player.turnSig = time; bus.emit('moved'); }
   collide(player.pos); // at hover height the engineer still goes around desks, racks and tanks
   player.speed = Math.hypot(player.vel.x, player.vel.z);
   player.running = running;
@@ -448,6 +464,15 @@ function updateWorld(dt, s, acts) {
     if (T.done && T.t < 1.5) player.pos.lerpVectors(T.outFrom, T.dest, ease((T.t - 0.95) / 0.55));
     if (T.done) B1.scale.setScalar(Math.max(0.01, T.t > 1.5 ? 1 - ease((T.t - 1.5) / 0.35) : 1));
     if (T.t > 1.9) { A1.visible = B1.visible = false; traveling = null; }
+  }
+  // online: send my position ten times a second, and move the other engineers smoothly
+  if (net.role !== 'solo' && s.screen === 'game') { posT += dt; if (posT > 0.1) { posT = 0; sendPos({ x: +player.pos.x.toFixed(2), z: +player.pos.z.toFixed(2), y: +player.y.toFixed(2), f: +player.facing.toFixed(2), sp: +player.speed.toFixed(1) }); } }
+  for (const k in remotes) {
+    const r = remotes[k], kk = 1 - Math.exp(-10 * dt);
+    r.x += (r.tx - r.x) * kk; r.z += (r.tz - r.z) * kk; r.y += (r.ty - r.y) * kk;
+    let df = r.tf - r.f; df = Math.atan2(Math.sin(df), Math.cos(df)); r.f += df * kk;
+    r.hero.root.position.set(r.x, r.y, r.z); r.hero.root.rotation.y = r.f; r.hero.root.visible = s.screen === 'game';
+    r.hero.update(dt, { speed: r.sp, air: r.y > 0.05 });
   }
   // tell the map where the player is (a few times a second)
   meT += dt;
