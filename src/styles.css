@@ -866,3 +866,36 @@ button{touch-action:manipulation}
 /* make completed stages in the top bar look clickable */
 .chip.back{position:relative}
 .chip.back::after{content:"↩";font-size:10px;margin-left:4px;color:var(--amber);opacity:.8}
+
+/* v0.22: intro video */
+.vi{position:absolute;inset:0;z-index:30;cursor:pointer;background:radial-gradient(ellipse at 50% 60%,transparent 40%,rgba(2,4,14,.6))}
+.vi-bars-top,.vi-bars-bottom{position:absolute;left:0;right:0;height:9vh;background:#02040C;animation:pk-fade .8s ease}
+.vi-bars-top{top:0}.vi-bars-bottom{bottom:0}
+.vi-caption{position:absolute;left:6vw;bottom:calc(9vh + 70px);max-width:min(720px,88vw);animation:vi-in .8s cubic-bezier(.16,1,.3,1);text-shadow:0 2px 18px rgba(0,0,0,.7)}
+@keyframes vi-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.vi-kicker{font-size:12px;letter-spacing:.2em;color:var(--amber)}
+.vi-caption h1{margin:6px 0 6px;font-size:clamp(28px,4.4vw,56px);line-height:1.05}
+.vi-caption p{margin:0;font-size:clamp(14px,1.5vw,19px);color:#dfe4ff;line-height:1.5}
+.vi-chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.vi-chain span{padding:6px 12px;border-radius:999px;background:rgba(18,24,52,.8);border:1px solid var(--edge);font-size:14px;opacity:0;animation:pop .5s ease forwards}
+.vi-chain b{color:var(--amber);opacity:0;animation:pop .4s ease forwards}
+.vi-bars{margin-top:14px;display:grid;gap:8px;max-width:420px}
+.vi-bars div{display:grid;grid-template-columns:70px 1fr;gap:10px;align-items:center;font-size:13px}
+.vi-bars i{height:9px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden}
+.vi-bars em{display:block;height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,var(--go),var(--amber));animation:vi-grow 2.4s ease forwards}
+@keyframes vi-grow{0%{width:10%}60%{width:var(--w)}80%{width:calc(var(--w) + 12%)}100%{width:var(--w)}}
+.vi-bars p{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+.vi-learn{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:6px;font-size:clamp(13px,1.3vw,16px)}
+.vi-learn li{opacity:0;animation:vi-in .6s ease forwards}
+.vi-paused{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 18px;border-radius:999px;background:rgba(18,24,52,.85);font-size:14px}
+.vi-controls{position:absolute;left:6vw;right:6vw;bottom:calc(9vh - 22px);display:flex;align-items:center;gap:8px;cursor:default}
+.vi-controls > button{width:38px;height:38px;border-radius:50%;border:1px solid var(--edge);background:rgba(18,24,52,.85);color:#fff;font-size:14px}
+.vi-controls > button:hover{background:rgba(110,168,255,.25)}
+.vi-progress{flex:1;display:flex;gap:4px}
+.vi-seg{height:6px;border-radius:3px;border:none;padding:0;background:rgba(255,255,255,.18);overflow:hidden;cursor:pointer}
+.vi-seg i{display:block;height:100%;background:var(--grad)}
+.vi-controls .vi-skip-btn{width:auto;border-radius:999px;padding:0 16px;font-weight:600}
+.vi.recorded{background:#02040C;display:grid;place-items:center;cursor:default}
+.vi-video{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain}
+.vi-skip{position:absolute;right:20px;top:20px}
+@media (max-height:440px){.vi-caption{bottom:calc(9vh + 54px)}.vi-caption p{font-size:12.5px}.vi-bars,.vi-chain{display:none}}

@@ -25,7 +25,7 @@ Opens in any modern browser on a laptop, tablet or phone (landscape). No install
 - **Debrief:** score, cause trace back to your decisions, comparison with the real mission, and saved designs you can compare.
 - **Interactive tour** on first play: each step waits for you to try it, then you press Next (or Skip).
 - **Task list and guide arrow:** the current stage's tasks with an arrow on the one to do now, a floating arrow over the station, and an edge arrow when it is off screen.
-- **Opening story** with short quizzes, then an interactive tour.
+- **Intro video** made live from the game's own scenes, with captions and an optional narrator: what the game is for, what to do, and why every component choice matters. A recorded gameplay video at `public/intro.mp4` plays instead if present (see `docs/INTRO_VIDEO.md`). Then an interactive tour.
 - **Educational flight:** liftoff, booster separation, fairing split and spacecraft separation, then a guided tour of everything on the way (the Moon, the Sun, Venus, gravity-assist flybys, the asteroid belt) with facts and sources, orbit insertion or landing, and the data coming home by radio.
 - **Recommended choices:** every room sorts its options with the best fit for your current design first, and says why.
 - **Go back to an earlier stage:** click a completed stage to reopen it (for example, to add a forgotten battery) for a change-request fee that grows the later you are.

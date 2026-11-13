@@ -25,6 +25,7 @@ const damp = (cur, target, k, dt) => cur + (target - cur) * (1 - Math.exp(-k * d
 const START_POS = new V3(0, 0, 7);
 
 let renderer, scene, camera, clock, fx = null, world, refs, colliders, hero, space, hands;
+let introShot = -1, introClock = 0;
 let traveling = null, meT = 0, guideRoomLast = null;
 const ray = new THREE.Raycaster();
 let launchRocket = null, smoke = [], dust = [], guideTarget = null, lastPtr = '';
@@ -542,15 +543,23 @@ function updateCamera(dt, s) {
   let desired, look, fov = 60;
   const target = new V3(player.pos.x, 1.6 + player.y * 0.85, player.pos.z);
   if (s.screen === 'intro') {
-    const K = [
-      [[Math.sin(time * 0.06) * 12, 8.5, Math.cos(time * 0.06) * 8], [0, 1.5, 0]],
-      [[-9.5, 3.2, -13.2], [-12.5, 1.9, -21]],
-      [[4.5, 3.6, 6.5], [0, 2.4, 0]],
-      [[3.5, 7, 8.5], [0, 2.4, 0]],
-      [[-5.5, 3.2, -12.8], [-7.5, 1, -18.5]],
-      [[1.6, 2.1, 10.2], [0, 1.3, START_POS.z]],
-    ][Math.min(s.introBeat || 0, 5)];
-    desired = new V3(...K[0]); look = new V3(...K[1]); fov = 50;
+    // cinematic shots through the real facility: each shot dollies from one point to another
+    const SH = [
+      [[16, 9, 9], [-16, 8, 9], [0, 1.5, 0]],
+      [[-6, 3.2, -12.6], [-10, 2.8, -13.2], [-12.5, 1.9, -21]],
+      [[-17, 3, -1.5], [-24, 2.6, -2.5], [-21, 1.1, -7.5]],
+      [[-6.5, 3, 13], [-13.5, 2.6, 13.5], [-10, 1.2, 19.5]],
+      [[5.5, 3.6, 7], [-5.5, 3.9, 6], [0, 2.4, 0]],
+      [[4, 2, -12.4], [-3.5, 6.5, -13], [0, 3.5, -21]],
+      [[-7, 3, -12.6], [-6, 2.6, -14], [-7.5, 1.2, -18.5]],
+      [[1.8, 2.3, 10.4], [0.7, 1.9, 9.7], [0, 1.3, START_POS.z]],
+    ];
+    const i = Math.min(s.introBeat || 0, SH.length - 1);
+    if (introShot !== i) { introShot = i; introClock = 0; }
+    introClock += dt;
+    const k = Math.min(1, introClock / 7), e = k * k * (3 - 2 * k);
+    desired = new V3(...SH[i][0]).lerp(new V3(...SH[i][1]), e); look = new V3(...SH[i][2]); fov = 52;
+    if (introClock < dt * 1.5) { cam.pos.copy(desired); cam.look.copy(look); }
   } else if (s.screen === 'start' && s.startStep === 'look') {
     // close-up turntable for the character creator; character sits right of centre
     desired = new V3(START_POS.x - 1.25, 1.55, START_POS.z + 3.4); look = new V3(START_POS.x - 0.95, 1.15, START_POS.z); fov = 42;
@@ -578,7 +587,7 @@ function updateCamera(dt, s) {
     look = target;
     fov = 60 + (player.running && player.speed > 5 ? 6 : 0);
   }
-  const k = s.screen === 'start' ? 3 : s.screen === 'intro' ? 1.6 : s.firstPerson ? 18 : 8;
+  const k = s.screen === 'start' ? 3 : s.screen === 'intro' ? 6 : s.firstPerson ? 18 : 8;
   cam.pos.lerp(desired, 1 - Math.exp(-k * dt)); cam.look.lerp(look, 1 - Math.exp(-(k + 2) * dt));
   cam.fov = damp(cam.fov, fov, 5, dt);
   if (Math.abs(camera.fov - cam.fov) > 0.01) { camera.fov = cam.fov; camera.updateProjectionMatrix(); }

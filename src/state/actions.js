@@ -69,11 +69,11 @@ export const A = {
     const s = store.get();
     setMission(s.missionId);
     saveJSON('mf-profile', s.profile);
-    if (s.mode === 'campaign') { store.set({ screen: 'intro', introBeat: 0 }); bus.emit('mission', s.missionId); }
+    if (s.mode === 'campaign') { store.set({ screen: 'intro', introBeat: 0 }); bus.emit('mission', s.missionId); } // the intro can always be skipped
     else A.start();
   },
-  setIntroBeat(i) { Sound.click(); store.set({ introBeat: i }); },
-  finishIntro() { saveJSON('mf-intro-done', true); A.start(); },
+  setIntroBeat(i) { store.set({ introBeat: i }); },
+  finishIntro() { try { window.speechSynthesis.cancel(); } catch (e) {} saveJSON('mf-intro-done', true); A.start(); },
   clearDesign() {
     store.set({ installed: [], rocket: null, propLoaded: 0, checks: {}, replayNotice: false, mode: 'sandbox', stage: 6, locked: {} });
     A.toast('Cleared. You are now in sandbox with an empty spacecraft.');
