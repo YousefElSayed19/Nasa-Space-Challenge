@@ -169,7 +169,7 @@ export function buildWorld(scene) {
     collider(x, z, 0.7, 0.7);
     return g;
   };
-  const roomOfPart = p => (p.slot === 'instrument' ? p.lab : p.slot === 'antenna' ? 'comms' : p.slot === 'array' || p.slot === 'battery' ? 'power' : 'protection');
+  const roomOfPart = p => (p.slot === 'instrument' ? p.lab : p.slot === 'antenna' ? 'comms' : p.slot === 'array' || p.slot === 'battery' ? 'power' : p.slot === 'engine' ? 'propulsion' : 'protection');
   const byRoomMission = {};
   for (const p of ALL_PARTS) {
     const key = roomOfPart(p) + '|' + p.missions[0];

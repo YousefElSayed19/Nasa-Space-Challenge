@@ -35,10 +35,10 @@ export function tasksFor(s) {
       }
       case 3: {
         title = 'Stage 3: Systems';
-        const names = { array: 'Fit a solar array', antenna: 'Fit an antenna', battery: 'Fit a battery', shield: MISSION.events.includes('radiation') ? 'Fit the radiation vault' : 'Fit shielding', aeroshell: 'Fit a heat shield', parachute: 'Fit a parachute' };
-        const roomOf = k => (k === 'antenna' ? 'comms' : k === 'array' || k === 'battery' ? 'power' : 'protection');
-        items = missionSlots().filter(k => k !== 'instrument').map(k => ({ text: names[k] || `Fit a ${k}`, done: T.has(k), station: roomOf(k) }));
-        const nextRoom = (items.find(i => !i.done) || { station: 'power' }).station;
+        const names = { array: 'Fit a solar array', antenna: 'Fit an antenna', battery: 'Fit a battery', shield: MISSION.events.includes('radiation') ? 'Fit the radiation vault' : 'Fit shielding', aeroshell: 'Fit a heat shield', parachute: 'Fit a parachute', engine: 'Consider an engine upgrade in the Engine Bay' };
+        const roomOf = k => (k === 'antenna' ? 'comms' : k === 'array' || k === 'battery' ? 'power' : k === 'engine' ? 'engines' : 'protection');
+        items = missionSlots().filter(k => k !== 'instrument').map(k => ({ text: names[k] || `Fit a ${k}`, done: T.has(k), station: roomOf(k), optional: k === 'engine' }));
+        const nextRoom = (items.find(i => !i.done && !i.optional) || { station: 'power' }).station;
         items.push({ text: 'Confirm the systems in any systems room', done: false, station: nextRoom });
         break;
       }

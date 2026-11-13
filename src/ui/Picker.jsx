@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { A } from '../state/actions.js';
 import { Stars } from './InfoDot.jsx';
 import { THUMBS } from '../state/thumbs.js';
+import SOURCES from '../data/sources.json';
 import { attachPreview, showInPreview, zoomBy, resetView } from '../scene/preview.js';
 import { HOWTO, WHAT, prosCons, statsOf, rocketProsCons } from './explain.js';
 import { MISSION, PARTS, PART_REAL, ROCKETS, MARGIN, partById, rocketById, stationById, totals, headroom, changeFee, isFree, missionSlots, pct, fmt, money } from '../engine/index.js';
 
-const SLOT_NAMES = () => ({ instrument: 'Instruments', array: 'Solar arrays', antenna: 'Antennas', battery: 'Battery', shield: MISSION.events.includes('radiation') ? 'Radiation vault' : 'Shielding', aeroshell: 'Heat shields', parachute: 'Parachutes' });
-const STAT_KEY = { 'Mass': 'mass', 'Power use': 'power', 'Power made': 'supply', 'Data': 'data', 'Downlink': 'downlink', 'Cost': 'cost', 'Entry mass limit': 'maxEntry', 'Braking': 'dvSave' };
+const SLOT_NAMES = () => ({ instrument: 'Instruments', array: 'Solar arrays', antenna: 'Antennas', battery: 'Battery', shield: MISSION.events.includes('radiation') ? 'Radiation vault' : 'Shielding', aeroshell: 'Heat shields', parachute: 'Parachutes', engine: 'Engines' });
+const STAT_KEY = { 'Mass': 'mass', 'Power use': 'power', 'Power made': 'supply', 'Data': 'data', 'Downlink': 'downlink', 'Cost': 'cost', 'Entry mass limit': 'maxEntry', 'Braking': 'dvSave', 'Efficiency (Isp)': 'isp' };
 
 /** The shared 3D viewer stays mounted while the picker is open; only the object inside changes. */
 function Viewer({ spec, label }) {
@@ -118,10 +119,16 @@ export function Picker({ s, station }) {
         <div className="pk-bars">
           {statsOf(p).filter(([k]) => k !== 'Cost').map(([k, v, real, d], n) => {
             const key = STAT_KEY[k];
-            return <Bar key={k} k={k} v={v} sub={real} ratio={(p[key] || 0) / maxOf(key)} good={d === 'good'} i={n} delta={current ? (p[key] || 0) - (current[key] || 0) : null} />;
+            return <Bar key={k} k={k} v={v} sub={real} ratio={(p[key] || 0) / maxOf(key)} good={d === 'good'} i={n} delta={current ? +((p[key] || 0) - (current[key] || 0)).toFixed(2) : null} />;
           })}
         </div>
         <div className="pk-chips">{pc.pros.map(x => <span key={x} className="pro">✓ {x}</span>)}{pc.cons.map(x => <span key={x} className="con">✕ {x}</span>)}</div>
+        {p.specs && p.specs.length > 0 && (
+          <table className="pk-specs"><tbody>{p.specs.map(([k, v]) => <tr key={k}><th>{k}</th><td>{v}</td></tr>)}</tbody></table>
+        )}
+        {(() => { const src = SOURCES.find(x => x.id === p.source); return src ? (
+          <p className="pk-src">{p.sourced && (p.sourced.mass || p.sourced.power) ? <span className="nasa">NASA figures</span> : <span className="approx">Approximate values</span>} Source: <a href={src.url} target="_blank" rel="noopener noreferrer">{src.title}</a></p>
+        ) : <p className="pk-src"><span className="approx">Approximate values</span> No NASA figure was found for this part; it is marked approximate.</p>; })()}
         <p className="pk-sec"><b>What it is.</b> {WHAT[p.slot]} <b>How to use it.</b> {HOWTO[p.slot]}</p>
         <button className="pk-acc" onClick={() => setShowReal(v => !v)}>{showReal ? '▾' : '▸'} Real world and sources</button>
         {showReal && <p className="pk-sec real">{PART_REAL[p.slot]}</p>}

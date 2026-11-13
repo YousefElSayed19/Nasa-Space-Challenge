@@ -3,43 +3,95 @@
   {
    "id": "cam-hires",
    "slot": "instrument",
-   "name": "High-Resolution Camera",
-   "mass": 6,
-   "power": 20,
+   "name": "HiRISE telescopic camera",
+   "mass": 5.96,
+   "power": 3.0,
    "data": 40,
    "cost": 45,
    "science": 5,
    "color": "#6EA8FF",
    "note": "Best surface detail. Heavy, power-hungry and makes a lot of data.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "mars"
    ],
-   "lab": "imaging"
+   "lab": "imaging",
+   "realMass": 65,
+   "realPower": 60,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-mro-instruments",
+   "specs": [
+    [
+     "Mirror",
+     "50 cm"
+    ],
+    [
+     "Resolution",
+     "about 30 cm per pixel from 300 km"
+    ],
+    [
+     "Swath",
+     "6 km wide"
+    ],
+    [
+     "Bands",
+     "blue-green, red, near-infrared"
+    ]
+   ],
+   "shape": "telescope"
   },
   {
    "id": "spectro",
    "slot": "instrument",
-   "name": "Imaging Spectrometer",
-   "mass": 3,
-   "power": 12,
+   "name": "CRISM imaging spectrometer",
+   "mass": 3.02,
+   "power": 2.3,
    "data": 25,
    "cost": 30,
    "science": 4,
    "color": "#B48CFF",
    "note": "Finds water-related minerals. Moderate power and data.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "mars"
    ],
-   "lab": "spectro"
+   "lab": "spectro",
+   "realMass": 32.92,
+   "realPower": 46,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-mro-instruments",
+   "specs": [
+    [
+     "Spectral range",
+     "362–3,920 nm, 6.55 nm channels"
+    ],
+    [
+     "Sampling",
+     "18.4 m per pixel"
+    ],
+    [
+     "Swath",
+     "about 10 km"
+    ],
+    [
+     "Mount",
+     "gimbal that tracks targets"
+    ]
+   ],
+   "shape": "gimbal-spectro"
   },
   {
    "id": "radar",
    "slot": "instrument",
-   "name": "Shallow Subsurface Radar",
-   "mass": 2,
-   "power": 10,
+   "name": "SHARAD shallow radar",
+   "mass": 1.38,
+   "power": 0.5,
    "data": 12,
    "cost": 25,
    "science": 3,
@@ -49,58 +101,158 @@
    "missions": [
     "mars"
    ],
-   "lab": "radar"
+   "lab": "radar",
+   "realMass": 15,
+   "realPower": 10,
+   "sourced": {
+    "mass": true,
+    "power": false
+   },
+   "source": "nasa-mro-instruments",
+   "specs": [
+    [
+     "Frequency",
+     "15–25 MHz"
+    ],
+    [
+     "Depth",
+     "up to about 1 km"
+    ],
+    [
+     "Antenna",
+     "10 m dipole (two 5 m tubes)"
+    ],
+    [
+     "Transmit power",
+     "10 W"
+    ]
+   ],
+   "shape": "dipole"
   },
   {
    "id": "ctx",
    "slot": "instrument",
-   "name": "Context Camera",
-   "mass": 1,
-   "power": 4,
+   "name": "CTX context camera",
+   "mass": 0.28,
+   "power": 0.35,
    "data": 10,
    "cost": 10,
    "science": 2,
    "color": "#8FD3FF",
    "note": "Wide views at lower detail. Light and cheap.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "mars"
    ],
-   "lab": "imaging"
+   "lab": "imaging",
+   "realMass": 3,
+   "realPower": 7,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-mro-instruments",
+   "specs": [
+    [
+     "Resolution",
+     "6 m per pixel"
+    ],
+    [
+     "Swath",
+     "30 km"
+    ],
+    [
+     "Focal length",
+     "350 mm"
+    ],
+    [
+     "Colour",
+     "black and white"
+    ]
+   ],
+   "shape": "camera"
   },
   {
    "id": "sounder",
    "slot": "instrument",
-   "name": "Climate Sounder",
-   "mass": 1,
-   "power": 3,
+   "name": "MCS climate sounder",
+   "mass": 0.83,
+   "power": 0.55,
    "data": 3,
    "cost": 10,
    "science": 2,
    "color": "#FFC24B",
    "note": "Profiles the atmosphere. Very little data.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "mars"
    ],
-   "lab": "radar"
+   "lab": "radar",
+   "realMass": 9,
+   "realPower": 11,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-mro-instruments",
+   "specs": [
+    [
+     "Channels",
+     "9, from 0.3 to 45 µm"
+    ],
+    [
+     "Profiles",
+     "every 5 km of altitude"
+    ],
+    [
+     "Mount",
+     "yoke that scans limb and surface"
+    ]
+   ],
+   "shape": "yoke"
   },
   {
    "id": "color",
    "slot": "instrument",
-   "name": "Color Imager",
-   "mass": 1,
-   "power": 3,
+   "name": "MARCI colour imager",
+   "mass": 0.04,
+   "power": 0.25,
    "data": 6,
    "cost": 8,
    "science": 1,
    "color": "#FF9A6E",
    "note": "Daily weather maps. Small science gain.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "mars"
    ],
-   "lab": "imaging"
+   "lab": "imaging",
+   "realMass": 0.481,
+   "realPower": 5,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-mro-instruments",
+   "specs": [
+    [
+     "Field of view",
+     "180° fisheye"
+    ],
+    [
+     "Filters",
+     "5 visible + 2 ultraviolet"
+    ],
+    [
+     "Resolution",
+     "1–10 km per pixel"
+    ],
+    [
+     "Size",
+     "9.2 × 7.2 × 14 cm"
+    ]
+   ],
+   "shape": "fisheye"
   },
   {
    "id": "array-s",
@@ -199,104 +351,196 @@
   {
    "id": "moon-lroc",
    "slot": "instrument",
-   "name": "Narrow-Angle Camera (LROC-style)",
-   "mass": 3,
-   "power": 14,
+   "name": "LROC camera system",
+   "mass": 2.08,
+   "power": 2.92,
    "data": 40,
    "cost": 35,
    "science": 5,
    "color": "#6EA8FF",
-   "note": "Sharpest images of landing sites. Heavy on data.",
-   "approximate": true,
+   "note": "Two narrow-angle cameras and a wide-angle camera: the sharpest maps of landing sites.",
+   "approximate": false,
    "missions": [
     "moon"
    ],
-   "lab": "imaging"
+   "lab": "imaging",
+   "realMass": 19.2,
+   "realPower": 24.0,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-lro-presskit",
+   "specs": [
+    [
+     "Cameras",
+     "two narrow-angle + one wide-angle"
+    ],
+    [
+     "Narrow-angle resolution",
+     "about 0.5 m per pixel"
+    ]
+   ],
+   "shape": "telescope"
   },
   {
    "id": "moon-lola",
    "slot": "instrument",
-   "name": "Laser Altimeter (LOLA-style)",
-   "mass": 2,
-   "power": 10,
+   "name": "LOLA laser altimeter",
+   "mass": 1.22,
+   "power": 4.06,
    "data": 15,
    "cost": 30,
    "science": 4,
    "color": "#3EE0A0",
    "note": "Maps heights and slopes for safe landings.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "moon"
    ],
-   "lab": "radar"
+   "lab": "radar",
+   "realMass": 11.3,
+   "realPower": 33.4,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-lro-presskit",
+   "specs": [
+    [
+     "Measures",
+     "height, slope, roughness"
+    ],
+    [
+     "Beams",
+     "5 laser spots per shot"
+    ]
+   ],
+   "shape": "laser"
   },
   {
    "id": "moon-diviner",
    "slot": "instrument",
-   "name": "Thermal Radiometer (Diviner-style)",
-   "mass": 2,
-   "power": 5,
+   "name": "Diviner radiometer",
+   "mass": 1.19,
+   "power": 3.0,
    "data": 8,
    "cost": 25,
    "science": 3,
    "color": "#FFC24B",
    "note": "Measures surface temperature, day and night.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "moon"
    ],
-   "lab": "spectro"
+   "lab": "spectro",
+   "realMass": 11.0,
+   "realPower": 24.7,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-lro-presskit",
+   "specs": [
+    [
+     "Measures",
+     "surface temperature, day and night"
+    ]
+   ],
+   "shape": "yoke"
   },
   {
    "id": "moon-lamp",
    "slot": "instrument",
-   "name": "Ultraviolet Mapper (LAMP-style)",
-   "mass": 1,
-   "power": 4,
+   "name": "LAMP ultraviolet spectrograph",
+   "mass": 0.66,
+   "power": 0.49,
    "data": 6,
    "cost": 20,
    "science": 2,
    "color": "#B48CFF",
    "note": "Looks for frost in shadowed craters using starlight.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "moon"
    ],
-   "lab": "spectro"
+   "lab": "spectro",
+   "realMass": 6.1,
+   "realPower": 4.0,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-lro-presskit",
+   "specs": [
+    [
+     "Sees",
+     "permanently shadowed craters by starlight"
+    ]
+   ],
+   "shape": "uv"
   },
   {
    "id": "moon-lend",
    "slot": "instrument",
-   "name": "Neutron Detector (LEND-style)",
-   "mass": 3,
-   "power": 6,
+   "name": "LEND neutron detector",
+   "mass": 2.8,
+   "power": 1.41,
    "data": 2,
    "cost": 20,
    "science": 2,
    "color": "#8FD3FF",
    "note": "Senses hydrogen that may mean water ice. Heavy, little data.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "moon"
    ],
-   "lab": "fields"
+   "lab": "fields",
+   "realMass": 25.8,
+   "realPower": 11.6,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-lro-presskit",
+   "specs": [
+    [
+     "Maps",
+     "hydrogen, a sign of water ice"
+    ]
+   ],
+   "shape": "neutron"
   },
   {
    "id": "moon-crater",
    "slot": "instrument",
-   "name": "Radiation Telescope (CRaTER-style)",
-   "mass": 1,
-   "power": 3,
+   "name": "CRaTER radiation telescope",
+   "mass": 0.59,
+   "power": 0.89,
    "data": 3,
    "cost": 15,
    "science": 2,
    "color": "#FF9A6E",
    "note": "Measures the radiation future astronauts would face.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "moon"
    ],
-   "lab": "fields"
+   "lab": "fields",
+   "realMass": 5.4,
+   "realPower": 7.3,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-lro-presskit",
+   "specs": [
+    [
+     "Measures",
+     "cosmic-ray dose, for future astronauts"
+    ]
+   ],
+   "shape": "cosmic"
   },
   {
    "id": "moon-array-s",
@@ -396,8 +640,8 @@
    "id": "eu-eis",
    "slot": "instrument",
    "name": "Europa Imaging System (EIS)",
-   "mass": 2,
-   "power": 12,
+   "mass": 1.33,
+   "power": 12.0,
    "data": 40,
    "cost": 30,
    "science": 5,
@@ -407,14 +651,28 @@
    "missions": [
     "europa"
    ],
-   "lab": "imaging"
+   "lab": "imaging",
+   "realMass": 40,
+   "realPower": 84,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "source": "jpl-clipper-mass",
+   "shape": "telescope",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
   },
   {
    "id": "eu-mise",
    "slot": "instrument",
    "name": "Mapping Imaging Spectrometer (MISE)",
-   "mass": 2,
-   "power": 8,
+   "mass": 1.5,
+   "power": 8.0,
    "data": 30,
    "cost": 28,
    "science": 4,
@@ -424,14 +682,28 @@
    "missions": [
     "europa"
    ],
-   "lab": "spectro"
+   "lab": "spectro",
+   "realMass": 45,
+   "realPower": 56,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "source": "jpl-clipper-mass",
+   "shape": "gimbal-spectro",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
   },
   {
    "id": "eu-reason",
    "slot": "instrument",
    "name": "Ice-Penetrating Radar (REASON)",
-   "mass": 3,
-   "power": 12,
+   "mass": 2.0,
+   "power": 12.0,
    "data": 25,
    "cost": 32,
    "science": 5,
@@ -441,14 +713,28 @@
    "missions": [
     "europa"
    ],
-   "lab": "radar"
+   "lab": "radar",
+   "realMass": 60,
+   "realPower": 84,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "source": "jpl-clipper-mass",
+   "shape": "dipole",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
   },
   {
    "id": "eu-themis",
    "slot": "instrument",
    "name": "Thermal Imager (E-THEMIS)",
-   "mass": 1,
-   "power": 4,
+   "mass": 0.5,
+   "power": 4.0,
    "data": 10,
    "cost": 15,
    "science": 3,
@@ -458,14 +744,28 @@
    "missions": [
     "europa"
    ],
-   "lab": "imaging"
+   "lab": "imaging",
+   "realMass": 15,
+   "realPower": 28,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "source": "jpl-clipper-mass",
+   "shape": "camera",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
   },
   {
    "id": "eu-ecm",
    "slot": "instrument",
    "name": "Magnetometer (ECM)",
-   "mass": 1,
-   "power": 2,
+   "mass": 0.5,
+   "power": 2.0,
    "data": 2,
    "cost": 10,
    "science": 3,
@@ -475,14 +775,28 @@
    "missions": [
     "europa"
    ],
-   "lab": "fields"
+   "lab": "fields",
+   "realMass": 15,
+   "realPower": 14,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "source": "jpl-clipper-mass",
+   "shape": "mag",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
   },
   {
    "id": "eu-maspex",
    "slot": "instrument",
    "name": "Mass Spectrometer (MASPEX)",
-   "mass": 2,
-   "power": 8,
+   "mass": 0.83,
+   "power": 8.0,
    "data": 6,
    "cost": 22,
    "science": 3,
@@ -492,7 +806,21 @@
    "missions": [
     "europa"
    ],
-   "lab": "fields"
+   "lab": "fields",
+   "realMass": 25,
+   "realPower": 56,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "source": "jpl-clipper-mass",
+   "shape": "massspec",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
   },
   {
    "id": "eu-array-s",
@@ -591,9 +919,9 @@
   {
    "id": "lander-seis",
    "slot": "instrument",
-   "name": "Seismometer (SEIS-style)",
-   "mass": 8,
-   "power": 8,
+   "name": "SEIS seismometer",
+   "mass": 5.0,
+   "power": 1.31,
    "data": 20,
    "cost": 40,
    "science": 5,
@@ -603,48 +931,102 @@
    "missions": [
     "lander"
    ],
-   "lab": "fields"
+   "lab": "fields",
+   "realMass": 20,
+   "realPower": 8.5,
+   "sourced": {
+    "mass": false,
+    "power": true
+   },
+   "source": "nasa-insight-instruments",
+   "specs": [
+    [
+     "Data",
+     "38 megabits per day"
+    ],
+    [
+     "Placed",
+     "on the ground by the arm, under a wind shield"
+    ]
+   ],
+   "shape": "dome"
   },
   {
    "id": "lander-hp3",
    "slot": "instrument",
-   "name": "Heat-Flow Probe (HP3-style)",
-   "mass": 5,
-   "power": 6,
+   "name": "HP3 heat-flow probe",
+   "mass": 0.75,
+   "power": 0.31,
    "data": 6,
    "cost": 30,
    "science": 4,
    "color": "#FFC24B",
    "note": "Hammers into the ground to measure heat escaping from inside Mars.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "lander"
    ],
-   "lab": "fields"
+   "lab": "fields",
+   "realMass": 3,
+   "realPower": 2,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-insight-instruments",
+   "specs": [
+    [
+     "Designed to burrow",
+     "up to about 5 m"
+    ],
+    [
+     "Data",
+     "350 megabits over the mission"
+    ]
+   ],
+   "shape": "mole"
   },
   {
    "id": "lander-rise",
    "slot": "instrument",
-   "name": "Radio Science (RISE-style)",
-   "mass": 2,
-   "power": 4,
+   "name": "RISE radio science",
+   "mass": 1.82,
+   "power": 0.5,
    "data": 3,
    "cost": 15,
    "science": 3,
    "color": "#3EE0A0",
    "note": "Tracks the radio signal to measure how Mars wobbles.",
-   "approximate": true,
+   "approximate": false,
    "missions": [
     "lander"
    ],
-   "lab": "fields"
+   "lab": "fields",
+   "realMass": 7.3,
+   "realPower": 3.25,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "source": "nasa-insight-instruments",
+   "specs": [
+    [
+     "Uses",
+     "the X-band radio and two medium-gain antennas"
+    ],
+    [
+     "Power",
+     "78 W for up to one hour a day (about 3.3 W on average)"
+    ]
+   ],
+   "shape": "twin-horn"
   },
   {
    "id": "lander-arm",
    "slot": "instrument",
-   "name": "Robotic Arm and Cameras",
-   "mass": 6,
-   "power": 10,
+   "name": "Robotic arm and cameras",
+   "mass": 3.0,
+   "power": 1.54,
    "data": 25,
    "cost": 35,
    "science": 3,
@@ -654,14 +1036,27 @@
    "missions": [
     "lander"
    ],
-   "lab": "imaging"
+   "lab": "imaging",
+   "realMass": 12,
+   "realPower": 10,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "specs": [
+    [
+     "Job",
+     "places SEIS and HP3 on the ground"
+    ]
+   ],
+   "shape": "arm"
   },
   {
    "id": "lander-weather",
    "slot": "instrument",
-   "name": "Weather Station (TWINS-style)",
-   "mass": 2,
-   "power": 3,
+   "name": "Weather sensors (TWINS)",
+   "mass": 0.5,
+   "power": 0.46,
    "data": 4,
    "cost": 10,
    "science": 2,
@@ -671,14 +1066,27 @@
    "missions": [
     "lander"
    ],
-   "lab": "radar"
+   "lab": "radar",
+   "realMass": 2,
+   "realPower": 3,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "specs": [
+    [
+     "Measures",
+     "wind, temperature and pressure"
+    ]
+   ],
+   "shape": "mast"
   },
   {
    "id": "lander-mag",
    "slot": "instrument",
    "name": "Magnetometer",
-   "mass": 1,
-   "power": 2,
+   "mass": 0.25,
+   "power": 0.31,
    "data": 2,
    "cost": 10,
    "science": 1,
@@ -688,7 +1096,20 @@
    "missions": [
     "lander"
    ],
-   "lab": "fields"
+   "lab": "fields",
+   "realMass": 1,
+   "realPower": 2,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "specs": [
+    [
+     "Measures",
+     "the magnetic field at the surface"
+    ]
+   ],
+   "shape": "mag"
   },
   {
    "id": "lander-array-s",
@@ -826,6 +1247,234 @@
    "missions": [
     "lander"
    ]
+  },
+  {
+   "id": "moon-minirf",
+   "slot": "instrument",
+   "name": "Mini-RF imaging radar",
+   "mass": 1.5,
+   "power": 0.85,
+   "data": 12,
+   "cost": 20,
+   "science": 3,
+   "color": "#3EE0A0",
+   "note": "A synthetic-aperture radar that looks for ice in shadowed craters.",
+   "missions": [
+    "moon"
+   ],
+   "lab": "radar",
+   "realMass": 13.8,
+   "realPower": 7.0,
+   "sourced": {
+    "mass": true,
+    "power": true
+   },
+   "approximate": false,
+   "source": "nasa-lro-presskit",
+   "specs": [
+    [
+     "Type",
+     "synthetic-aperture radar"
+    ],
+    [
+     "Looks for",
+     "ice and rough ground in polar craters"
+    ]
+   ],
+   "shape": "sar"
+  },
+  {
+   "id": "eu-uvs",
+   "slot": "instrument",
+   "name": "Ultraviolet spectrograph (Europa-UVS)",
+   "mass": 0.67,
+   "power": 4.0,
+   "data": 3,
+   "cost": 15,
+   "science": 3,
+   "color": "#C9A2FF",
+   "note": "Looks for plumes and gases above the surface in ultraviolet light.",
+   "missions": [
+    "europa"
+   ],
+   "lab": "spectro",
+   "realMass": 20,
+   "realPower": 28,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "approximate": true,
+   "source": "jpl-clipper-mass",
+   "shape": "uv",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
+  },
+  {
+   "id": "eu-pims",
+   "slot": "instrument",
+   "name": "Plasma instrument (PIMS)",
+   "mass": 0.5,
+   "power": 3.0,
+   "data": 1,
+   "cost": 12,
+   "science": 2,
+   "color": "#FFB3BA",
+   "note": "Measures the charged particles around Europa so the magnetometer can see the ocean.",
+   "missions": [
+    "europa"
+   ],
+   "lab": "fields",
+   "realMass": 15,
+   "realPower": 21,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "approximate": true,
+   "source": "jpl-clipper-mass",
+   "shape": "cups",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
+  },
+  {
+   "id": "eu-suda",
+   "slot": "instrument",
+   "name": "Dust analyzer (SUDA)",
+   "mass": 0.5,
+   "power": 3.0,
+   "data": 2,
+   "cost": 14,
+   "science": 3,
+   "color": "#FF9A6E",
+   "note": "Catches tiny grains thrown off Europa and tells what they are made of.",
+   "missions": [
+    "europa"
+   ],
+   "lab": "fields",
+   "realMass": 15,
+   "realPower": 21,
+   "sourced": {
+    "mass": false,
+    "power": false
+   },
+   "approximate": true,
+   "source": "jpl-clipper-mass",
+   "shape": "drum",
+   "specs": [
+    [
+     "Mass and power",
+     "approximate: NASA lists 352 kg for all nine instruments together"
+    ]
+   ]
+  },
+  {
+   "id": "mo-eng-biprop",
+   "slot": "engine",
+   "name": "Bipropellant main engine",
+   "mass": 2.71,
+   "cost": 25.0,
+   "isp": 315,
+   "color": "#FF9A6E",
+   "note": "Burns two propellants instead of one. More efficient than hydrazine thrusters, so you need less propellant, but it adds mass and cost.",
+   "approximate": true,
+   "missions": [
+    "moon"
+   ],
+   "shape": "engine",
+   "specs": [
+    [
+     "Efficiency (Isp)",
+     "about 315 s (game value) vs 223 s hydrazine"
+    ],
+    [
+     "Mass",
+     "about 25 kg with valves (game value)"
+    ]
+   ]
+  },
+  {
+   "id": "ma-eng-biprop",
+   "slot": "engine",
+   "name": "Bipropellant main engine",
+   "mass": 2.29,
+   "cost": 25.0,
+   "isp": 315,
+   "color": "#FF9A6E",
+   "note": "Burns two propellants instead of one. More efficient than hydrazine thrusters, so you need less propellant, but it adds mass and cost.",
+   "approximate": true,
+   "missions": [
+    "mars"
+   ],
+   "shape": "engine",
+   "specs": [
+    [
+     "Efficiency (Isp)",
+     "about 315 s (game value) vs 223 s hydrazine"
+    ],
+    [
+     "Mass",
+     "about 25 kg with valves (game value)"
+    ]
+   ]
+  },
+  {
+   "id": "la-eng-biprop",
+   "slot": "engine",
+   "name": "Bipropellant main engine",
+   "mass": 6.25,
+   "cost": 25.0,
+   "isp": 315,
+   "color": "#FF9A6E",
+   "note": "Burns two propellants instead of one. More efficient than hydrazine thrusters, so you need less propellant, but it adds mass and cost.",
+   "approximate": true,
+   "missions": [
+    "lander"
+   ],
+   "shape": "engine",
+   "specs": [
+    [
+     "Efficiency (Isp)",
+     "about 315 s (game value) vs 223 s hydrazine"
+    ],
+    [
+     "Mass",
+     "about 25 kg with valves (game value)"
+    ]
+   ]
+  },
+  {
+   "id": "eu-eng-biprop",
+   "slot": "engine",
+   "name": "Bipropellant main engine",
+   "mass": 0.83,
+   "cost": 2.5,
+   "isp": 315,
+   "color": "#FF9A6E",
+   "note": "Burns two propellants instead of one. More efficient than hydrazine thrusters, so you need less propellant, but it adds mass and cost.",
+   "approximate": true,
+   "missions": [
+    "europa"
+   ],
+   "shape": "engine",
+   "specs": [
+    [
+     "Efficiency (Isp)",
+     "about 315 s (game value) vs 223 s hydrazine"
+    ],
+    [
+     "Mass",
+     "about 25 kg with valves (game value)"
+    ]
+   ]
   }
  ],
  "realBySlot": {
@@ -834,21 +1483,24 @@
    "array": "The real orbiter had two arrays, 20 m² in total, giving about 2,000 W at Mars (JPL MRO press kit). Other sizes are game options.",
    "antenna": "The real high-gain antenna was a 3 m dish (JPL MRO press kit). The 2 m option is a game option.",
    "battery": "The real orbiter used nickel-hydrogen batteries for periods without sunlight (JPL MRO press kit).",
-   "shield": "Solar storms can flip memory bits and force a safe mode (NASA Earthdata). Mass here is approximate."
+   "shield": "Solar storms can flip memory bits and force a safe mode (NASA Earthdata). Mass here is approximate.",
+   "engine": "Without an engine upgrade the spacecraft uses its built-in hydrazine thrusters (specific impulse 223 s, NTRS 19970010493; LRO’s effective value was 212.2 s, NASA GSFC LRO paper). The bipropellant figures are game values."
   },
   "moon": {
    "instrument": "The real orbiter carried about 92 kg of science payload (NASA NSSDC). Per-instrument values here are approximate game values; names say \"-style\" because the numbers are not the real instruments’.",
    "array": "Array sizes here are game options; a NASA figure for the real array was not found.",
    "antenna": "The real orbiter sent data in Ka band at up to 100 Mbps (NTRS 20180000056).",
    "battery": "Every lunar orbiter passes behind the Moon and needs stored energy. Mass is approximate.",
-   "shield": "Solar storms can flip memory bits and force a safe mode (NASA Earthdata). Mass is approximate."
+   "shield": "Solar storms can flip memory bits and force a safe mode (NASA Earthdata). Mass is approximate.",
+   "engine": "Without an engine upgrade the spacecraft uses its built-in hydrazine thrusters (specific impulse 223 s, NTRS 19970010493; LRO’s effective value was 212.2 s, NASA GSFC LRO paper). The bipropellant figures are game values."
   },
   "europa": {
    "instrument": "Europa Clipper carries nine instruments, including EIS, MISE, REASON, E-THEMIS, ECM and MASPEX (NASA Science, Europa Clipper instruments). Mass, power and data values are approximate game values.",
    "array": "The real arrays total about 102 m² and give at least 700 W at Jupiter (JPL Europa Clipper spacecraft page).",
    "antenna": "The real high-gain antenna is a 3 m dish, with seven smaller antennas as backup (JPL Europa Clipper pages).",
    "battery": "Jupiter’s shadow cuts sunlight; mass is approximate.",
-   "shield": "The real vault has aluminum-zinc walls up to 9.2 mm thick to protect the electronics (JPL Europa Clipper quick facts). Mass is approximate."
+   "shield": "The real vault has aluminum-zinc walls up to 9.2 mm thick to protect the electronics (JPL Europa Clipper quick facts). Mass is approximate.",
+   "engine": "Without an engine upgrade the spacecraft uses its built-in hydrazine thrusters (specific impulse 223 s, NTRS 19970010493; LRO’s effective value was 212.2 s, NASA GSFC LRO paper). The bipropellant figures are game values."
   },
   "lander": {
    "instrument": "InSight carried a seismometer (SEIS), a heat-flow probe (HP3), radio science (RISE), a robotic arm with cameras, and weather sensors (JPL InSight press kit). Mass, power and data values here are approximate game values.",
@@ -856,7 +1508,9 @@
    "antenna": "InSight talked to Earth directly and relayed data through orbiters. Values here are game values.",
    "battery": "InSight used lithium-ion batteries (JPL InSight press kit). Mass is approximate.",
    "aeroshell": "InSight’s aeroshell was 2.64 m across, and its heat shield was slightly thicker than Phoenix’s (JPL InSight press kit). Masses and limits are game values.",
-   "parachute": "Parachutes slow a lander in the thin Martian air before the engines take over. Masses and savings are game values."
-  }
+   "parachute": "Parachutes slow a lander in the thin Martian air before the engines take over. Masses and savings are game values.",
+   "engine": "Without an engine upgrade the spacecraft uses its built-in hydrazine thrusters (specific impulse 223 s, NTRS 19970010493; LRO’s effective value was 212.2 s, NASA GSFC LRO paper). The bipropellant figures are game values."
+  },
+  "_all": {}
  }
 }

@@ -796,3 +796,33 @@ button{touch-action:manipulation}
 .minimap-chip{align-self:flex-end;flex:none;padding:6px 12px;border-radius:999px;font-size:12.5px;white-space:nowrap}
 .mm-next{color:var(--amber)}
 @media (max-height:760px){.minimap .plan{max-height:130px}.minimap{width:min(200px,100%)}}
+
+/* v0.20: real specifications and sources in the picker */
+.pk-specs{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0 8px}
+.pk-specs th{text-align:left;color:var(--muted);font-weight:500;padding:4px 10px 4px 0;white-space:nowrap;vertical-align:top;width:38%}
+.pk-specs td{padding:4px 0;color:#dfe4ff}
+.pk-specs tr+tr th,.pk-specs tr+tr td{border-top:1px solid rgba(130,160,255,.1)}
+.pk-src{font-size:12px;color:var(--muted);margin:4px 0 8px;line-height:1.5}
+.pk-src a{color:var(--blue)}
+.pk-src .nasa,.pk-src .approx{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;margin-right:6px}
+.pk-src .nasa{background:rgba(62,224,160,.15);color:var(--go);border:1px solid rgba(62,224,160,.4)}
+.pk-src .approx{background:rgba(255,194,75,.12);color:var(--amber);border:1px solid rgba(255,194,75,.4)}
+/* phone landscape: tighter picker and map */
+@media (max-height:440px){
+  .picker{padding:8px 10px}
+  .pk-head .pk-title b{font-size:14px}
+  .pk-tabs button{padding:4px 10px;font-size:12px}
+  .pk-name{font-size:18px}.pk-price{font-size:20px}
+  .pk-bars{grid-template-columns:1fr 1fr;gap:4px 10px}
+  .pk-bar-sub{display:none}
+  .pk-specs{font-size:11.5px}
+  .btn.big{padding:8px 14px;font-size:13px}
+  .pk-meter{min-width:200px}
+  .fullmap{padding:8px 10px}
+  .fullmap .plan{max-height:calc(100vh - 120px)}
+  .lock-card{max-height:calc(100vh - 16px);overflow-y:auto}
+}
+@media (max-width:700px) and (orientation:landscape){
+  .pk-body{grid-template-columns:42% 1fr}
+  .hud .controls{display:none}
+}

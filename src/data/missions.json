@@ -12,15 +12,15 @@
    "Measure surface temperature day and night",
    "Measure the radiation environment for future crews"
   ],
-  "budget": 800,
+  "budget": 820,
   "opsCost": 100,
   "busCost": 180,
-  "busMass": 62,
-  "busPower": 40,
+  "busMass": 63.96,
+  "busPower": 68.38,
   "tankCap": 100,
   "dvMOI": 555,
   "dvOther": 703,
-  "isp": 223,
+  "isp": 212.2,
   "acs": 0.05,
   "u": {
    "mass": 9.23,
@@ -73,7 +73,8 @@
     "moon-array-m",
     "moon-ant-ka",
     "moon-battery",
-    "moon-shield"
+    "moon-shield",
+    "moon-minirf"
    ],
    "rocket": "atlas"
   },
@@ -88,7 +89,8 @@
    "Trip about 5 days"
   ],
   "board": "Earth to Moon transfer",
-  "insertionLabel": "Orbit insertion"
+  "insertionLabel": "Orbit insertion",
+  "ispNote": "LRO’s effective specific impulse was 212.2 s (NASA GSFC LRO mission design paper)."
  },
  {
   "id": "mars",
@@ -106,8 +108,8 @@
   "budget": 720,
   "opsCost": 180,
   "busCost": 200,
-  "busMass": 58,
-  "busPower": 25,
+  "busMass": 60.49,
+  "busPower": 70.05,
   "tankCap": 100,
   "dvMOI": 1000,
   "dvOther": 400,
@@ -197,8 +199,8 @@
   "budget": 880,
   "opsCost": 120,
   "busCost": 200,
-  "busMass": 100,
-  "busPower": 30,
+  "busMass": 112.68,
+  "busPower": 58.57,
   "tankCap": 100,
   "dvMOI": 600,
   "dvOther": 100,
@@ -289,11 +291,11 @@
    "Map the surface composition",
    "Detect the ocean through the induced magnetic field"
   ],
-  "budget": 520,
+  "budget": 561,
   "opsCost": 100,
   "busCost": 180,
-  "busMass": 76,
-  "busPower": 25,
+  "busMass": 78.67,
+  "busPower": 15.0,
   "tankCap": 100,
   "dvMOI": 900,
   "dvOther": 400,
@@ -351,7 +353,10 @@
     "eu-array-m",
     "eu-ant-3",
     "eu-battery",
-    "eu-vault"
+    "eu-vault",
+    "eu-uvs",
+    "eu-pims",
+    "eu-suda"
    ],
    "rocket": "fh"
   },

@@ -31,6 +31,23 @@ Last checked 12 November 2026. If a link is marked *link to add*, the source was
 | NASA Launch Services Program fact sheet | *link to add* | **Rockets:** Atlas V, Vulcan Centaur, Falcon Heavy capacities to low Earth orbit |
 | NASA Small Spacecraft Technology State of the Art, Power | *link to add* | **Power:** sunlight falls with the square of distance; solar cell and battery figures in the glossary |
 
+## A2. Instrument figures (added in version 0.20)
+
+Every instrument card in the game shows its mass and power. Where a NASA source gives the figure, the card says **NASA figures** and links the source; otherwise it says **Approximate values**. The rest of each spacecraft (the bus) is sized so that each mission's real design keeps the same total mass and power as before.
+
+| Source | Link | What we used it for |
+|---|---|---|
+| NASA Science: MRO science instruments | https://science.nasa.gov/mission/mars-reconnaissance-orbiter/science-instruments/ | **Mars Orbiter:** HiRISE 65 kg, 60 W; CRISM 32.92 kg, 44.4–47.3 W; MCS 9 kg, 11 W; SHARAD 15 kg (10 W transmit power); CTX 3 kg, 7 W; MARCI 481 g, under 5 W; plus resolutions, swath widths and wavelengths shown on the cards |
+| JPL MRO launch press kit, science instruments section | https://www.jpl.nasa.gov/news/press_kits/mro-launch-Aug05.pdf | **Mars Orbiter:** HiRISE 50 cm mirror, CRISM 544 wavelengths, SHARAD 15–25 MHz with a 10 m antenna, MARCI 180° view |
+| NASA LRO/LCROSS launch press kit (2009), instrument figures as reproduced by Spaceflight Now | https://spaceflightnow.com/atlas/av020/090610lro.html | **Lunar Orbiter:** LROC 19.2 kg, 24.0 W; LOLA 11.3 kg, 33.4 W; Diviner 11.0 kg, 24.7 W; LAMP 6.1 kg, 4.0 W; LEND 25.8 kg, 11.6 W; CRaTER 5.4 kg, 7.3 W; Mini-RF 13.8 kg, 7.0 W. The original NASA press kit link should be added if found. |
+| NASA GSFC LRO mission design paper (Houghton and Tooley), archived copy | https://corpora.tika.apache.org/base/docs/govdocs1/698/698820.pdf | **Lunar Orbiter:** effective specific impulse 212.2 s (used for the Moon mission's propellant), total mass 1,845 kg, Atlas V 401 limit of 2,000 kg |
+| NASA Science: LRO spacecraft and instruments | https://science.nasa.gov/mission/lro/spacecraft-and-instruments/ | **Lunar Orbiter:** payload capacity about 100 kg and 100 W |
+| NASA Science: InSight science instruments | https://science.nasa.gov/mission/insight/science-instruments/ | **Mars Lander:** SEIS up to 8.5 W and 38 Mb per day; HP3 about 3 kg and 2 W; RISE 7.3 kg and 78 W for up to one hour a day (about 3.3 W averaged) |
+| JPL InSight landing press kit: quick facts | https://www.jpl.nasa.gov/news/press_kits/insight/landing/facts | **Mars Lander:** science payload about 50 kg (used to size the instruments without their own NASA figure) |
+| JPL Europa Clipper project newsletter: Weigh Your Options Carefully | https://europa.nasa.gov/internal_resources/116 | **Europa:** 352 kg allocated to the nine instruments, 3,241 kg dry, 2,750 kg propellant, 6,001 kg maximum wet mass, 273 kg (8.4%) project reserve. Per-instrument figures are not published there, so Europa instruments are marked approximate. |
+
+New real instruments added in this version: Mini-RF (LRO), Europa-UVS, PIMS and SUDA (Europa Clipper). New optional part: a bipropellant main engine in the Engine Bay (game values, marked approximate); without it the spacecraft uses hydrazine thrusters at 223 s (NTRS 19970010493), or 212.2 s for the Moon mission.
+
 ## B. NASA guidance used for game rules and wording
 
 | Source | Link | What we used it for |
@@ -71,7 +88,9 @@ All 3D models, textures and sounds are generated in code. No third-party models,
 
 ## Values that are game assumptions (marked approximate)
 
-- Per-instrument mass, power and data on every mission (instrument names with “-style” are not the real instruments’ numbers).
+- Per-instrument mass and power on Europa (only the 352 kg total is published), SEIS mass, and the InSight arm, weather sensors and magnetometer; data volumes in game units on every mission.
+- Instrument prices (no per-instrument NASA cost figures were found).
+- The bipropellant engine's efficiency, mass and price.
 - Solar array sizes other than the real one on each mission, the smaller antennas, battery, shielding, heat-shield and parachute values.
 - Rocket capacity to each destination and prices for Vulcan Centaur and Falcon Heavy (Atlas V uses the real MRO launch cost).
 - Extra Δv for other burns on Mars, all Δv values for Europa, descent Δv and parachute savings for the Mars Lander.

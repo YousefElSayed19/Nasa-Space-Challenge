@@ -1,14 +1,238 @@
 [
-  { "id": "control", "label": "Mission Control", "room": "control", "pos": [-12.5, -18], "obj": [-12.5, -21], "r": 3.2, "stage": 1, "color": "#6EA8FF" },
-  { "id": "review", "label": "Go/No-Go Console", "room": "control", "pos": [-7.5, -16], "obj": [-7.5, -18.5], "r": 2.8, "stage": 6, "color": "#3EE0A0" },
-  { "id": "board", "label": "Launch Vehicle Board", "room": "launch", "pos": [0, -15.5], "obj": [0, -21], "r": 3.4, "stage": 4, "color": "#FFC24B", "picker": true },
-  { "id": "fuel", "label": "Fueling Station", "room": "propulsion", "pos": [10, -16.5], "obj": [10, -20.5], "r": 3.2, "stage": 5, "color": "#FF9A6E" },
-  { "id": "cradle", "label": "Assembly Cradle", "room": "hall", "pos": [0, 0], "obj": [0, 0], "r": 4.2, "stage": 2, "color": "#6EA8FF" },
-  { "id": "lab-imaging", "label": "Imaging Lab", "room": "imaging", "lab": "imaging", "pos": [-21, -5.5], "obj": [-21, -5.5], "r": 3.4, "stage": 2, "color": "#6EA8FF", "picker": true },
-  { "id": "lab-spectro", "label": "Spectroscopy Lab", "room": "spectro", "lab": "spectro", "pos": [-21, 5.5], "obj": [-21, 5.5], "r": 3.4, "stage": 2, "color": "#C9A2FF", "picker": true },
-  { "id": "lab-radar", "label": "Radar & Atmosphere Lab", "room": "radar", "lab": "radar", "pos": [21, -5.5], "obj": [21, -5.5], "r": 3.4, "stage": 2, "color": "#3EE0A0", "picker": true },
-  { "id": "lab-fields", "label": "Fields & Geophysics Lab", "room": "fields", "lab": "fields", "pos": [21, 5.5], "obj": [21, 5.5], "r": 3.4, "stage": 2, "color": "#FFB3BA", "picker": true },
-  { "id": "power", "label": "Power Room", "room": "power", "slots": ["array", "battery"], "pos": [-10, 16.5], "obj": [-10, 16.5], "r": 3.4, "stage": 3, "color": "#FFD166", "picker": true },
-  { "id": "comms", "label": "Communications Room", "room": "comms", "slots": ["antenna"], "pos": [0, 16.5], "obj": [0, 16.5], "r": 3.4, "stage": 3, "color": "#8FD3FF", "picker": true },
-  { "id": "protection", "label": "Protection & Entry Room", "room": "protection", "slots": ["shield", "aeroshell", "parachute"], "pos": [10, 16.5], "obj": [10, 16.5], "r": 3.4, "stage": 3, "color": "#B48CFF", "picker": true }
+ {
+  "id": "control",
+  "label": "Mission Control",
+  "room": "control",
+  "pos": [
+   -12.5,
+   -18
+  ],
+  "obj": [
+   -12.5,
+   -21
+  ],
+  "r": 3.2,
+  "stage": 1,
+  "color": "#6EA8FF"
+ },
+ {
+  "id": "review",
+  "label": "Go/No-Go Console",
+  "room": "control",
+  "pos": [
+   -7.5,
+   -16
+  ],
+  "obj": [
+   -7.5,
+   -18.5
+  ],
+  "r": 2.8,
+  "stage": 6,
+  "color": "#3EE0A0"
+ },
+ {
+  "id": "board",
+  "label": "Launch Vehicle Board",
+  "room": "launch",
+  "pos": [
+   0,
+   -15.5
+  ],
+  "obj": [
+   0,
+   -21
+  ],
+  "r": 3.4,
+  "stage": 4,
+  "color": "#FFC24B",
+  "picker": true
+ },
+ {
+  "id": "fuel",
+  "label": "Fueling Station",
+  "room": "propulsion",
+  "pos": [
+   11.5,
+   -16.5
+  ],
+  "obj": [
+   10,
+   -20.5
+  ],
+  "r": 3.2,
+  "stage": 5,
+  "color": "#FF9A6E"
+ },
+ {
+  "id": "cradle",
+  "label": "Assembly Cradle",
+  "room": "hall",
+  "pos": [
+   0,
+   0
+  ],
+  "obj": [
+   0,
+   0
+  ],
+  "r": 4.2,
+  "stage": 2,
+  "color": "#6EA8FF"
+ },
+ {
+  "id": "lab-imaging",
+  "label": "Imaging Lab",
+  "room": "imaging",
+  "lab": "imaging",
+  "pos": [
+   -21,
+   -5.5
+  ],
+  "obj": [
+   -21,
+   -5.5
+  ],
+  "r": 3.4,
+  "stage": 2,
+  "color": "#6EA8FF",
+  "picker": true
+ },
+ {
+  "id": "lab-spectro",
+  "label": "Spectroscopy Lab",
+  "room": "spectro",
+  "lab": "spectro",
+  "pos": [
+   -21,
+   5.5
+  ],
+  "obj": [
+   -21,
+   5.5
+  ],
+  "r": 3.4,
+  "stage": 2,
+  "color": "#C9A2FF",
+  "picker": true
+ },
+ {
+  "id": "lab-radar",
+  "label": "Radar & Atmosphere Lab",
+  "room": "radar",
+  "lab": "radar",
+  "pos": [
+   21,
+   -5.5
+  ],
+  "obj": [
+   21,
+   -5.5
+  ],
+  "r": 3.4,
+  "stage": 2,
+  "color": "#3EE0A0",
+  "picker": true
+ },
+ {
+  "id": "lab-fields",
+  "label": "Fields & Geophysics Lab",
+  "room": "fields",
+  "lab": "fields",
+  "pos": [
+   21,
+   5.5
+  ],
+  "obj": [
+   21,
+   5.5
+  ],
+  "r": 3.4,
+  "stage": 2,
+  "color": "#FFB3BA",
+  "picker": true
+ },
+ {
+  "id": "power",
+  "label": "Power Room",
+  "room": "power",
+  "slots": [
+   "array",
+   "battery"
+  ],
+  "pos": [
+   -10,
+   16.5
+  ],
+  "obj": [
+   -10,
+   16.5
+  ],
+  "r": 3.4,
+  "stage": 3,
+  "color": "#FFD166",
+  "picker": true
+ },
+ {
+  "id": "comms",
+  "label": "Communications Room",
+  "room": "comms",
+  "slots": [
+   "antenna"
+  ],
+  "pos": [
+   0,
+   16.5
+  ],
+  "obj": [
+   0,
+   16.5
+  ],
+  "r": 3.4,
+  "stage": 3,
+  "color": "#8FD3FF",
+  "picker": true
+ },
+ {
+  "id": "protection",
+  "label": "Protection & Entry Room",
+  "room": "protection",
+  "slots": [
+   "shield",
+   "aeroshell",
+   "parachute"
+  ],
+  "pos": [
+   10,
+   16.5
+  ],
+  "obj": [
+   10,
+   16.5
+  ],
+  "r": 3.4,
+  "stage": 3,
+  "color": "#B48CFF",
+  "picker": true
+ },
+ {
+  "id": "engines",
+  "label": "Engine Bay",
+  "room": "propulsion",
+  "slots": [
+   "engine"
+  ],
+  "pos": [
+   7,
+   -14.2
+  ],
+  "obj": [
+   7,
+   -14.2
+  ],
+  "r": 2.6,
+  "stage": 3,
+  "color": "#FF9A6E",
+  "picker": true
+ }
 ]

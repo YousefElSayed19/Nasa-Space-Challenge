@@ -9,6 +9,7 @@ export const HOWTO = {
   shield: 'Protects the computer. Near Jupiter it is not optional: without the vault the radiation destroys the electronics.',
   aeroshell: 'Protects the lander from the heat of entering the atmosphere. Each shield has a mass limit: if your spacecraft is heavier, it overheats.',
   parachute: 'Slows the lander in the thin air after entry. A bigger one means the engines need less propellant for the last part of the descent.',
+  engine: 'Optional. Without it the spacecraft uses its built-in hydrazine thrusters. A more efficient engine needs less propellant for the same burn (the rocket equation), but it weighs and costs more.',
 };
 export const WHAT = {
   instrument: 'A science instrument: the reason the mission exists.',
@@ -18,6 +19,7 @@ export const WHAT = {
   shield: 'Protection for the electronics against space weather.',
   aeroshell: 'A heat shield that takes the heat of entering the atmosphere at high speed.',
   parachute: 'A supersonic parachute that slows the lander before the engines take over.',
+  engine: 'A main engine for the big burns, such as orbit insertion.',
 };
 
 const rank = (list, key, p) => {
@@ -57,6 +59,8 @@ export function prosCons(p) {
     const e = R('maxEntry'); if (e.v === e.max) pros.push(`Protects up to ${p.maxEntry} units`); else cons.push(`Only protects up to ${p.maxEntry} units`);
   } else if (p.slot === 'parachute') {
     const d = R('dvSave'); if (d.v === d.max) pros.push('Brakes the most: less descent propellant'); else cons.push('Engines must brake more: more propellant');
+  } else if (p.slot === 'engine') {
+    pros.push(`Isp ${p.isp} s vs ${MISSION.isp} s: less propellant`); cons.push('Adds mass and cost');
   } else if (p.slot === 'battery') {
     pros.push('Keeps the craft alive in shadow'); cons.push('Adds mass and cost, no science');
   } else {
@@ -69,10 +73,13 @@ export function prosCons(p) {
 
 export function statsOf(p) {
   const u = MISSION.u, rows = [];
-  rows.push(['Mass', `${p.mass} u`, `≈ ${fmt(p.mass * u.mass)} kg`, 'up']);
+  const kg = p.realMass != null ? p.realMass : p.mass * u.mass, w = p.realPower != null ? p.realPower : (p.power || 0) * u.power;
+  const tag = ok => (ok ? 'NASA figure' : 'approximate');
+  rows.push(['Mass', kg < 10 ? `${+kg.toFixed(2)} kg` : `${fmt(kg)} kg`, `${+p.mass.toFixed(2)} u · ${tag(p.sourced && p.sourced.mass)}`, 'up']);
+  if (p.isp) rows.push(['Efficiency (Isp)', `${p.isp} s`, `vs ${MISSION.isp} s built-in`, 'good']);
   if (p.maxEntry) rows.push(['Entry mass limit', `${p.maxEntry} u`, `≈ ${fmt(p.maxEntry * u.mass)} kg`, 'good']);
   if (p.dvSave) rows.push(['Braking', `${p.dvSave} m/s`, 'less engine work', 'good']);
-  if (p.power) rows.push(['Power use', `${p.power} u`, `≈ ${fmt(p.power * u.power)} W`, 'up']);
+  if (p.power) rows.push(['Power use', `${+w.toFixed(1)} W`, `${+p.power.toFixed(2)} u · ${tag(p.sourced && p.sourced.power)}`, 'up']);
   if (p.supply) rows.push(['Power made', `${p.supply} u`, `≈ ${fmt(p.supply * u.power)} W`, 'good']);
   if (p.data) rows.push(['Data', `${p.data} u`, u.data ? `≈ ${(p.data * u.data).toFixed(u.data < 1 ? 1 : 0)} ${u.dataUnit}` : 'game units', 'up']);
   if (p.downlink) rows.push(['Downlink', `${p.downlink} u`, u.data ? `≈ ${(p.downlink * u.data).toFixed(u.data < 1 ? 1 : 0)} ${u.dataUnit}` : 'game units', 'good']);

@@ -121,5 +121,61 @@
   "type": "NTRS",
   "url": "https://ntrs.nasa.gov/citations/20180000056",
   "supports": "823 W, 100 Mbps, 894 kg fuel"
+ },
+ {
+  "id": "nasa-mro-instruments",
+  "title": "NASA Science: MRO science instruments",
+  "type": "NASA",
+  "url": "https://science.nasa.gov/mission/mars-reconnaissance-orbiter/science-instruments/",
+  "supports": "Mass, power and specifications of HiRISE (65 kg, 60 W), CRISM (32.92 kg, 44.4–47.3 W), MCS (9 kg, 11 W), SHARAD (15 kg, 10 W transmit), CTX (3 kg, 7 W), MARCI (481 g, under 5 W)"
+ },
+ {
+  "id": "nasa-lro-presskit",
+  "title": "NASA LRO/LCROSS launch press kit (2009), instrument figures as reproduced by Spaceflight Now",
+  "type": "NASA",
+  "url": "https://spaceflightnow.com/atlas/av020/090610lro.html",
+  "supports": "LRO instrument mass and average power: LROC 19.2 kg/24.0 W, LOLA 11.3/33.4, Diviner 11.0/24.7, LAMP 6.1/4.0, LEND 25.8/11.6, CRaTER 5.4/7.3, Mini-RF 13.8/7.0"
+ },
+ {
+  "id": "nasa-lro-gsfc-paper",
+  "title": "NASA GSFC LRO mission design paper (Houghton and Tooley), archived copy",
+  "type": "NASA",
+  "url": "https://corpora.tika.apache.org/base/docs/govdocs1/698/698820.pdf",
+  "supports": "LRO total mass 1,845 kg; effective specific impulse 212.2 s; Atlas V 401 limit of 2,000 kg for LRO"
+ },
+ {
+  "id": "nasa-lro-spacecraft",
+  "title": "NASA Science: LRO spacecraft and instruments",
+  "type": "NASA",
+  "url": "https://science.nasa.gov/mission/lro/spacecraft-and-instruments/",
+  "supports": "Payload capacity about 100 kg and 100 W"
+ },
+ {
+  "id": "nasa-insight-instruments",
+  "title": "NASA Science: InSight science instruments",
+  "type": "NASA",
+  "url": "https://science.nasa.gov/mission/insight/science-instruments/",
+  "supports": "SEIS up to 8.5 W and 38 Mb/day; HP3 about 3 kg and 2 W; RISE 7.3 kg and 78 W for up to one hour a day"
+ },
+ {
+  "id": "jpl-insight-landing-facts",
+  "title": "JPL InSight landing press kit: quick facts",
+  "type": "NASA",
+  "url": "https://www.jpl.nasa.gov/news/press_kits/insight/landing/facts",
+  "supports": "InSight science payload about 50 kg"
+ },
+ {
+  "id": "jpl-clipper-mass",
+  "title": "JPL Europa Clipper project newsletter: Weigh Your Options Carefully",
+  "type": "NASA",
+  "url": "https://europa.nasa.gov/internal_resources/116",
+  "supports": "Maximum wet mass 6,001 kg; 2,750 kg propellant; 3,241 kg dry, of which 352 kg payload and 273 kg (8.4%) project reserve"
+ },
+ {
+  "id": "mro-presskit-specs",
+  "title": "JPL MRO launch press kit: science instruments section",
+  "type": "NASA",
+  "url": "https://www.jpl.nasa.gov/news/press_kits/mro-launch-Aug05.pdf",
+  "supports": "Instrument descriptions used in the cards (HiRISE 50 cm mirror, CRISM 544 wavelengths, SHARAD 15–25 MHz, MARCI 180° view)"
  }
 ]
