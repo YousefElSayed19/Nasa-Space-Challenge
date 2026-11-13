@@ -17,7 +17,7 @@ import { stepOf } from '../state/tutorial.js';
 import { lin } from './materials.js';
 import { renderThumbs } from './thumbs.js';
 import TOURS from '../data/tours.json';
-let flightT = 0;
+let flightT = 0, tourReleased = -1, tourView = null;
 import { warmPreview } from './preview.js';
 
 const V3 = THREE.Vector3;
@@ -73,6 +73,7 @@ export function initScene(container) {
     hud.set({ missionPhase: 'Launch', missionKind: 'ok' });
     const s = store.get();
     space.setMission(s.missionId, s.installed, s.rocket);
+    tourReleased = -1; tourView = null; space.setHold(0.002);
     if (launchRocket) scene.remove(launchRocket.group);
     launchRocket = buildRocket(rocketById(s.rocket) || rocketById('atlas'), 10);
     launchRocket.group.position.set(0, 0.42, 0); launchRocket.group.visible = false; scene.add(launchRocket.group);
@@ -84,6 +85,8 @@ export function initScene(container) {
   bus.on('reset', reset);
   bus.on('enter', () => { player.pos.copy(START_POS); player.facing = Math.PI; player.heading = Math.PI; player.turnVel = 0; cam.yaw = 0; cam.pitch = 0.38; });
   bus.on('installed', () => { refs.craftLight.intensity = 6; });
+  bus.on('tourNext', () => { tourReleased += 1; tourView = null; });
+  bus.on('tourView', i => { tourView = i; });
   bus.on('travel', roomId => {
     const s = store.get();
     if (traveling || s.screen !== 'game') return;
@@ -307,8 +310,10 @@ function updatePlayer(dt, s) {
     if (s.firstPerson) { cam.yaw += player.turnVel * dt; player.heading = cam.yaw + Math.PI; } // the view is the heading; dragging also steers
     else player.heading += player.turnVel * dt;
     const back = f < 0;
-    const mag = Math.min(1, Math.abs(f)) * (back ? 0.6 : 1);
-    const dir = new V3(Math.sin(player.heading), 0, Math.cos(player.heading)).multiplyScalar(Math.sign(f) * sp * mag);
+    // backwards is a moonwalk glide: a little quicker with Shift, never a sprint (and never airborne-looking)
+    const backSpeed = (running ? 3.2 : 2.1) * (s.carrying ? 0.8 : 1);
+    const mag = Math.min(1, Math.abs(f));
+    const dir = new V3(Math.sin(player.heading), 0, Math.cos(player.heading)).multiplyScalar(Math.sign(f) * (back ? backSpeed : sp) * mag);
     target = Math.abs(f) > 0.02 ? dir : new V3();
     player.backward = back && Math.abs(f) > 0.02;
   } else {
@@ -702,7 +707,17 @@ function tick() {
   if (s.screen === 'mission') {
     const h = hud.get();
     space.update(dt, h.missionPhase || 'Launch', h.missionKind || 'ok');
-    flightT += dt; if (flightT > 0.15) { flightT = 0; const fp = space.getProgress(); const tour = TOURS[store.get().missionId] || []; let cur = tour[0]; for (const t of tour) if (fp >= t.at) cur = t; space.setFocus(cur && cur.body); hud.set({ flightP: fp, tourStop: cur || null }); }
+    flightT += dt; if (flightT > 0.12) {
+      flightT = 0;
+      const fp = space.getProgress(), tour = TOURS[store.get().missionId] || [];
+      let reached = -1; tour.forEach((t, i) => { if (fp >= t.at) reached = i; });
+      const next = tour[tourReleased + 1];
+      space.setHold(next ? next.at + 0.002 : null);
+      const holding = reached > tourReleased;
+      const shown = tourView != null ? tour[tourView] : tour[Math.max(0, reached)];
+      space.setFocus(shown && shown.body);
+      hud.set({ flightP: fp, tourStop: shown || null, tourIdx: Math.max(0, reached), tourHold: holding, tourView });
+    }
     renderer.render(space.scene, space.camera);
     return;
   }

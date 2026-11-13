@@ -93,11 +93,25 @@ function ReopenModal({ s }) {
       <section className="lock-card glass" onClick={e => e.stopPropagation()} role="dialog" aria-label="Go back to an earlier stage">
         <div className="lock-icon" aria-hidden="true" style={{ fontSize: 40 }}>↩</div>
         <h2>Go back to {STAGE_NAMES[n - 1]}?</h2>
-        <p className="lock-sub">You can change a locked decision, like adding a forgotten battery. Like a real change request, it costs money, and the later you are, the more it costs. Every stage after {STAGE_NAMES[n - 1]} must be confirmed again.</p>
+        <p className="lock-sub">Change only this step, like adding a forgotten battery. Everything else you confirmed stays as it is. Like a real change request, it costs money, and the later you are, the more it costs. Afterwards the pre-launch checks run again, and you top up propellant if the change needs it.</p>
         <div className="lock-todo"><div className="label">Change request fee</div><b style={{ fontSize: 24, color: 'var(--amber)' }}>{money(fee)}</b>
           <p className="tag" style={{ margin: '4px 0 0' }}>NASA studies show late design changes cost far more than early ones (NTRS 20150008247).</p></div>
-        <div className="lock-foot"><button className="btn" onClick={A.cancelReopen}>Stay here</button><button className="btn primary" onClick={() => A.reopenStage(n)}>Go back and pay {money(fee)}</button></div>
+        <div className="lock-foot"><button className="btn" onClick={A.cancelReopen}>Stay here</button><button className="btn primary" onClick={() => A.reopenStage(n)}>Open change request: {money(fee)}</button></div>
       </section>
+    </div>
+  );
+}
+
+function ChangeBanner({ s }) {
+  if (!s.changeMode && !s.topUp) return null;
+  if (s.topUp) return <div className="change-banner glass"><b>⛽ Top up propellant</b><span>Your design changed. Go to the Fueling Station and fill to the green band.</span><button className="btn small" onClick={() => A.travel('propulsion')}>Take me there</button></div>;
+  const n = s.changeMode.stage, room = { 2: 'imaging', 3: 'power', 4: 'launch', 5: 'propulsion' }[n];
+  return (
+    <div className="change-banner glass">
+      <b>✎ Change request: {STAGE_NAMES[n - 1]}</b>
+      <span>Change what you need. Nothing else has to be redone.</span>
+      <button className="btn small" onClick={() => A.travel(room)}>Take me there</button>
+      <button className="btn small primary" onClick={A.finishChange}>Done ✓</button>
     </div>
   );
 }
@@ -159,6 +173,7 @@ export function HUD({ s }) {
       {game && <Pointer />}
       <Toasts s={s} />
       <ReopenModal s={s} />
+      {game && <ChangeBanner s={s} />}
       <SignoffModal s={s} />
       {game && <PickerHost s={s} />}
       {game && s.showMap && <FullMap s={s} />}

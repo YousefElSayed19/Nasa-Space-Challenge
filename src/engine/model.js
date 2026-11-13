@@ -118,6 +118,7 @@ export const money = units => {
 /** [Design] Reversing a locked decision costs more the further back it is (GDD 4.4). */
 export function changeFee(s, p) {
   if (isFree(s)) return 0;
+  if (s.changeMode && partStage(p) === s.changeMode.stage) return 0; // already paid for this change request
   const ps = partStage(p); return s.locked[ps] ? CHANGE_BASE * (s.stage - ps) : 0;
 }
 

@@ -190,10 +190,11 @@ export function createSpaceView() {
     rocket.group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().lerp(curve.getTangent(0.02), k * 0.6).normalize());
   }
 
-  let focusBody = null;
+  let focusBody = null, holdAt = null;
   function update(dt, phase, kind) {
     t += dt;
-    const target = PHASE_AT[phase] ?? 0;
+    let target = PHASE_AT[phase] ?? 0;
+    if (holdAt != null) target = Math.min(target, holdAt); // wait at the current tour stop
     progress += (target - progress) * damp(1.2, dt);
     const look = new THREE.Vector3(), want = new THREE.Vector3();
     world.children.forEach(o => { if (o.userData.moon) { const a = t * 0.5; o.position.set(dest.position.x + Math.cos(a) * orbitR, 0, dest.position.z + Math.sin(a) * orbitR); } });
@@ -301,5 +302,5 @@ export function createSpaceView() {
   }
 
   function setSize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); }
-  return { scene, camera, setMission, update, setSize, getProgress: () => progress, setFocus: b => { focusBody = b; } };
+  return { scene, camera, setMission, update, setSize, getProgress: () => progress, setFocus: b => { focusBody = b; }, setHold: v => { holdAt = v; } };
 }

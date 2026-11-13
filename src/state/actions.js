@@ -107,13 +107,21 @@ export const A = {
   reopenFee(n) { const s = store.get(); return isFree(s) ? 0 : CHANGE_BASE * Math.max(1, s.stage - n) * 2; },
   askReopen(n) { const s = store.get(); if (isFree(s) || n >= s.stage || s.screen !== 'game') return; store.set({ reopen: n }); },
   cancelReopen() { store.set({ reopen: null }); },
+  /** Pay once, change only that step, and keep every other confirmed step as it is. */
   reopenStage(n) {
     const s = store.get(); if (n >= s.stage) return;
     const fee = A.reopenFee(n);
-    const keep = {}; Object.keys(s.locked).forEach(k => { const st = k === 'rocket' ? 4 : k === 'fuel' ? 5 : +k.replace('stage', ''); if (st < n) keep[k] = s.locked[k]; });
-    A.log({ kind: 'change', text: `Reopened stage ${n}, ${STAGE_NAMES[n - 1]} (change request ${money(fee)})`, effects: { cost: fee }, fee });
-    store.set(st => ({ stage: n, locked: keep, reopen: null, verdicts: null, checks: {}, changeFees: (st.changeFees || 0) + fee, changeCount: (st.changeCount || 0) + 1, panel: null }));
-    Sound.chime(); A.toast(`Back at stage ${n}. Later stages must be confirmed again.`, 'warn');
+    A.log({ kind: 'change', text: `Change request: reopened ${STAGE_NAMES[n - 1]} only (${money(fee)})`, effects: { cost: fee }, fee });
+    store.set(st => ({ changeMode: { stage: n }, reopen: null, changeFees: (st.changeFees || 0) + fee, changeCount: (st.changeCount || 0) + 1, panel: null }));
+    Sound.chime(); A.toast(`Change request open for ${STAGE_NAMES[n - 1]}. Make your change, then press Done.`, 'warn');
+  },
+  finishChange() {
+    const s = store.get(); if (!s.changeMode) return;
+    const T = totals(s), patch = { changeMode: null, checks: {}, verdicts: null, panel: null };
+    if ((s.locked.fuel || s.locked[5] || s.stage > 5) && T.loaded < T.need * 0.98) { patch.topUp = true; A.toast('Your design changed: top up the propellant at the Fueling Station.', 'warn'); }
+    else if (T.wet > T.cap) A.toast('Your spacecraft is now too heavy for the rocket. Open a change request for the launch vehicle.', 'warn');
+    else A.toast('Change made. The pre-launch checks must be run again.', 'good');
+    store.set(patch);
   },
   takeLoan() {
     const s = store.get(); if (s.mode !== 'campaign' || s.loan || s.stage > 5) return;
@@ -129,14 +137,14 @@ export const A = {
     Sound.chime(); A.toast('Stage 2: choose instruments at the Payload Bay.');
   },
   pickUp(id) {
-    const s = store.get(); if (!isFree(s) && s.stage > 5) return;
+    const s = store.get(); if (!isFree(s) && s.stage > 5 && !s.changeMode) return;
     store.set({ carrying: id, panel: null }); Sound.click();
     const p = partById(id);
     if (!s.installed.length && !s.tutorial) A.toast('Carry it to the Assembly Cradle in the middle of the hangar, then hold E to install.');
     else if (changeFee(s, p)) A.toast(`This stage is locked. Installing it files a change request costing ${money(changeFee(s, p))}.`, 'warn');
   },
   installDirect(id) {
-    const s = store.get(); if (!isFree(s) && s.stage > 5) return;
+    const s = store.get(); if (!isFree(s) && s.stage > 5 && !s.changeMode) return;
     store.set({ carrying: id }); // the picker stays open so you can keep choosing
     A.install();
     bus.emit('fly', id);
@@ -163,7 +171,7 @@ export const A = {
     if (s.propLoaded > 0) A.toast('Dry mass changed, so the propellant target moved. Top up at the Fueling Station.', 'warn');
   },
   remove(id) {
-    const s = store.get(); if (!isFree(s) && s.stage > 5) return;
+    const s = store.get(); if (!isFree(s) && s.stage > 5 && !s.changeMode) return;
     const p = partById(id); const fee = changeFee(s, p);
     A.log({ kind: 'remove', partId: id, text: `Removed ${p.name}`, effects: effectsOf(p, null, -1), fee });
     store.set(st => ({ installed: st.installed.filter(x => x !== id), changeFees: st.changeFees + fee, changeCount: st.changeCount + (fee ? 1 : 0), checks: {} }));
@@ -216,7 +224,7 @@ export const A = {
     store.set({ stage: n + 1, locked: { ...s.locked, [n]: true }, panel: null });
     Sound.chime(); A.toast(next[n]);
   },
-  chooseRocket(id) { const s = store.get(); if (s.stage === 4 || isFree(s)) { store.set({ rocket: id }); Sound.click(); } },
+  chooseRocket(id) { const s = store.get(); if (s.stage === 4 || isFree(s) || (s.changeMode && s.changeMode.stage === 4)) { store.set({ rocket: id }); Sound.click(); } },
   confirmRocket() {
     const s = store.get(); if (s.stage !== 4 || !s.rocket) return;
     const r = rocketById(s.rocket);
@@ -225,9 +233,10 @@ export const A = {
     Sound.chime(); A.toast('Stage 5: fill the propellant tank at the Fueling Station.');
   },
   pump(amount) {
-    const s = store.get(); if (s.stage !== 5 && !isFree(s)) return;
+    const s = store.get(); if (s.stage !== 5 && !isFree(s) && !s.topUp && !(s.changeMode && s.changeMode.stage === 5)) return;
     const T = totals(s);
     const v = Math.max(0, Math.min(MISSION.tankCap, s.propLoaded + amount));
+    if (s.topUp && v >= T.need * 0.98) { store.set({ topUp: false }); A.toast('Propellant topped up. Back to the Go/No-Go console.', 'good'); }
     if (s.propLoaded <= T.need * 1.15 && v > T.need * 1.15) { Sound.warn(); A.toast('Overfill: extra propellant adds mass and is wasted.', 'warn'); }
     if (v >= MISSION.tankCap && s.propLoaded < MISSION.tankCap) Sound.tone(1200, 0.08, 'square', 0.04);
     store.set({ propLoaded: v, checks: { ...s.checks, leak: false } });

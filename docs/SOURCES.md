@@ -61,6 +61,19 @@ General background in the tour (the Moon about 384,000 km away, the Sun at the c
 
 All four missions in the game are one-way robotic missions: none of the real spacecraft returns to Earth. The game shows the real “return”, the science data sent home by radio.
 
+## A4. Landing and flight equations (added in version 0.24)
+
+| Source | Link | What we used it for |
+|---|---|---|
+| JPL InSight landing press kit: mission overview | https://www.jpl.nasa.gov/news/press_kits/insight/landing/mission/ | **Mars Lander landing, step by step:** cruise stage dropped 7 minutes before entry; entry at 128 km and about 5.5 km/s with about 608 kg; peak heating about 1,500 °C; nearly 99.5% of the energy removed before the parachute; up to 7.5 g; parachute at 11.1 km and about 385 m/s with about 55,600 N; heat shield dropped and legs out within 25 s; lander separation at about 1 km and 60 m/s, 45 s before touchdown, 12 descent engines; constant velocity at 50 m and 7.7 m/s; touchdown at about 2.24 m/s; about 6.5 minutes in total; 6 planned trajectory corrections and a 205-day cruise |
+| JPL InSight landing press kit: quick facts | https://www.jpl.nasa.gov/news/press_kits/insight/landing/facts | **Mars Lander:** lander about 358 kg, aeroshell 189 kg, cruise stage 79 kg, 67 kg of propellant and pressurant; 11.8 m parachute; SLA-561V heat shield 2.64 m wide; U.S. investment $813.8 million including about $163.4 million for the launch |
+
+**Equations shown during the flight**, using the player's own design:
+- Kinetic energy at entry: KE = ½·m·v², with v = 5.5 km/s from the press kit.
+- Powered descent Δv ≈ (60 − 2.24) m/s + 3.71 m/s² × 45 s ≈ 225 m/s, from the press kit's separation speed, touchdown speed and timing, and Mars gravity of 38% of Earth's (MRO press kit). For InSight's 358 kg lander at a hydrazine Isp of 223 s this needs about 35 kg of propellant, consistent with the 67 kg loaded for the whole flight.
+- Capture burn for orbiters: m_prop = m_dry·(e^(Δv / (Isp·g₀)) − 1), the NASA Glenn rocket equation.
+- Altitude and speed between the press kit's points are interpolated, and the card says so.
+
 ## B. NASA guidance used for game rules and wording
 
 | Source | Link | What we used it for |

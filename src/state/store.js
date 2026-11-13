@@ -30,7 +30,7 @@ export function freshState(profile, prefs = {}) {
     mode: prefs.mode || 'campaign', missionId: prefs.missionId || 'moon', teamNames: prefs.teamNames || [], team: [],
     propLoaded: 0, changeFees: 0, changeCount: 0, overruled: 0, objections: 0, verdicts: null, checks: {},
     log: [], panel: null, firstPerson: false, view: 'third', showLog: true, toasts: [], result: null,
-    signoff: null, tutorial: null, showMap: false, reopen: null, tutTick: 0, introBeat: 0, replayNotice: false, thumbsTick: 0, loan: 0, scoreId: null, showGlossary: false, savedTick: 0,
+    signoff: null, tutorial: null, showMap: false, reopen: null, changeMode: null, topUp: false, tutTick: 0, introBeat: 0, replayNotice: false, thumbsTick: 0, loan: 0, scoreId: null, showGlossary: false, savedTick: 0,
     camMode: prefs.camMode || 'auto', mapHidden: !!prefs.mapHidden, graphics: prefs.graphics || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 'low' : 'high'), muted: !!prefs.muted,
   };
 }

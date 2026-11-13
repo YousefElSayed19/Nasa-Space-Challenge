@@ -46,8 +46,14 @@ function speak(text, on, onWord, onEnd) {
   try {
     window.speechSynthesis.cancel(); if (!on || !text) return false;
     const u = new SpeechSynthesisUtterance(text); u.rate = 1; u.pitch = 1; u.lang = 'en-US';
-    if (onWord) u.onboundary = e => { if (e.name === 'word' || e.charIndex != null) onWord(e.charIndex); };
-    if (onEnd) u.onend = onEnd;
+    if (onWord) u.onboundary = e => {
+      if (e.name && e.name !== 'word') return;
+      const start = e.charIndex || 0;
+      let end = e.charLength ? start + e.charLength : start;
+      if (!e.charLength) { const m = /^\S+/.exec(text.slice(start)); end = start + (m ? m[0].length : 0); }
+      onWord(end);
+    };
+    u.onend = () => { if (onWord) onWord(text.length); if (onEnd) onEnd(); };
     window.speechSynthesis.speak(u); return true;
   } catch (e) { return false; }
 }

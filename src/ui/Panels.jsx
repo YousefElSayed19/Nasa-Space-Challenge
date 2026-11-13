@@ -62,7 +62,7 @@ function PartCard({ p, s, T }) {
   const installed = s.installed.includes(p.id);
   const carrying = s.carrying === p.id;
   const fee = changeFee(s, p);
-  const frozen = !isFree(s) && s.stage > 5;
+  const frozen = !isFree(s) && s.stage > 5 && !s.changeMode;
   const current = p.slot !== 'instrument' ? s.installed.map(partById).find(x => x.slot === p.slot && x.id !== p.id) : null;
   const pc = prosCons(p);
   const info = { what: `${WHAT[p.slot]} ${p.note}`, why: HOWTO[p.slot], real: PART_REAL[p.slot] };

@@ -112,7 +112,7 @@ export function Picker({ s, station }) {
     return () => window.removeEventListener('keydown', onKey, true);
   });
 
-  const frozen = !isFree(s) && s.stage > 5;
+  const frozen = !isFree(s) && s.stage > 5 && !s.changeMode;
   let info, actions, cost = 0;
   if (isRocket) {
     const r = item, sel = s.rocket === r.id, fits = T.wet <= r.cap, h = headroom(r.cap, T.wet), pc = rocketProsCons(r, T.wet);
@@ -136,7 +136,7 @@ export function Picker({ s, station }) {
         {showReal && <p className="pk-sec real">{r.real}</p>}
       </>
     );
-    actions = (s.stage === 4 || isFree(s))
+    actions = (s.stage === 4 || isFree(s) || (s.changeMode && s.changeMode.stage === 4))
       ? <button className="btn primary big" onClick={() => A.chooseRocket(r.id)} disabled={sel}>{sel ? 'Selected ✓' : 'Select this rocket'}</button>
       : s.stage < 4 ? <span className="tag">Rockets are chosen at stage 4.</span>
         : <button className="btn primary" onClick={() => A.askReopen(4)}>↩ Go back to Launch vehicle to change it ({money(A.reopenFee(4))})</button>;

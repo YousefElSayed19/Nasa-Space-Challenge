@@ -293,7 +293,7 @@ export function createCharacter(profile) {
     }
     // moonwalk: one foot flat and sliding back while the other bends with the heel up, switching in rhythm
     if (W.moon > 0.01) {
-      const M = W.moon, beat = st.t * 3.9;
+      const M = W.moon; st.moonBeat = (st.moonBeat || 0) + dt * (2.4 + inp.speed * 0.75); const beat = st.moonBeat;
       const side = (Math.sin(beat) + 1) / 2; // 0..1 which leg is on its toes
       const legs = [[r.legL, side], [r.legR, 1 - side]];
       for (const [L, toe] of legs) {
@@ -304,6 +304,7 @@ export function createCharacter(profile) {
       r.body.position.y = lerp(r.body.position.y, -0.02 + Math.abs(Math.sin(beat)) * 0.015, M);
       r.hips.rotation.y = lerp(r.hips.rotation.y, 0, M); r.spine.rotation.y = lerp(r.spine.rotation.y, 0, M);
       r.spine.rotation.x = lerp(r.spine.rotation.x, 0.06, M);
+      r.spine.rotation.z = lerp(r.spine.rotation.z, 0, M); r.body.position.x = lerp(r.body.position.x, 0, M);
       r.head.rotation.x = lerp(r.head.rotation.x, -0.05 + Math.sin(beat * 2) * 0.06, M);
       if (!inp.carrying) {
         lx = lerp(lx, -0.15 + Math.sin(beat) * 0.15, M); rx = lerp(rx, -0.15 - Math.sin(beat) * 0.15, M);
@@ -319,7 +320,7 @@ export function createCharacter(profile) {
     r.stripM.opacity = 0.35 + 0.65 * Math.min(1, W.walk * (0.7 + 0.5 * Math.abs(Math.sin(ph))) + W.air + W.fly + 0.15);
     if (W.fly > 0.1) r.stripTex.offset.x -= dt * 2.5 * W.fly;
     r.lights.forEach((l, i) => { if (l.material.emissiveIntensity !== undefined) l.material.emissiveIntensity = 1 + Math.sin(t * 3 + i * 2.1) * 0.6; });
-    r.jets.forEach(j => { const f = Math.max(W.walk * W.run, W.air, W.thrust); j.scale.y = 0.5 + f * 1.8 + Math.random() * 0.25; j.material.opacity = 0.12 + 0.8 * f; });
+    r.jets.forEach(j => { const f = Math.max(W.walk * W.run * (1 - W.moon), W.air, W.thrust); j.scale.y = 0.5 + f * 1.8 + Math.random() * 0.25; j.material.opacity = 0.12 + 0.8 * f; });
     const th = Math.max(W.thrust, W.fly * 0.45);
     r.thrusters.forEach((j, i) => { const fl = 0.85 + Math.random() * 0.3; j.scale.set(1, (0.4 + th * 1.4) * fl, 1); j.material.opacity = th * (i % 2 ? 0.95 : 0.7); });
 
