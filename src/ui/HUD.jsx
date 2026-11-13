@@ -10,11 +10,11 @@ import { stepOf } from '../state/tutorial.js';
 import { Picker } from './Picker.jsx';
 import { LockedStation } from './Locked.jsx';
 import { isTouch, goFullscreen } from './TouchControls.jsx';
-import { stationById, STAGE_NAMES, isPickerStation } from '../engine/index.js';
+import { stationById, STAGE_NAMES, isPickerStation, money } from '../engine/index.js';
 import { MiniMap, FullMap, WarpOverlay } from './Map.jsx';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
-import { partById, isFree, money } from '../engine/index.js';
+import { partById, isFree } from '../engine/index.js';
 
 function objectiveText(s) {
   if (s.carrying) return 'Carry the part to the Assembly Cradle, then hold E to install it.';
@@ -78,11 +78,35 @@ export function Settings({ s }) {
       {s.screen === 'game' && <button className="btn" onClick={A.cycleView} title="V: third person, first person, hands view">👁 {{ third: '3rd person', first: '1st person', hands: 'Hands view' }[s.view || 'third']}</button>}
       {s.screen === 'game' && <button key={s.camMode} className={'btn cam-btn flash ' + s.camMode} onClick={A.toggleCamera} title="C: switch between a camera that follows behind you and a free camera">🎥 {s.camMode === 'auto' ? 'Auto camera' : 'Free camera'}</button>}
       <button className="btn" onClick={() => A.setPrefs({ graphics: s.graphics === 'low' ? 'high' : 'low' })}>{s.graphics === 'low' ? 'Low graphics' : 'High graphics'}</button>
-      {isTouch && <button className="btn" onClick={goFullscreen}>Fullscreen</button>}
+      <FullscreenBtn />
       <button className="btn" onClick={A.toggleGlossary}>Help</button>
       {s.screen === 'game' && <button className="btn" onClick={A.backToMenu}>Menu</button>}
     </div>
   );
+}
+
+function ReopenModal({ s }) {
+  if (s.reopen == null) return null;
+  const n = s.reopen, fee = A.reopenFee(n);
+  return (
+    <div className="lock-ov" onClick={A.cancelReopen}>
+      <section className="lock-card glass" onClick={e => e.stopPropagation()} role="dialog" aria-label="Go back to an earlier stage">
+        <div className="lock-icon" aria-hidden="true" style={{ fontSize: 40 }}>↩</div>
+        <h2>Go back to {STAGE_NAMES[n - 1]}?</h2>
+        <p className="lock-sub">You can change a locked decision, like adding a forgotten battery. Like a real change request, it costs money, and the later you are, the more it costs. Every stage after {STAGE_NAMES[n - 1]} must be confirmed again.</p>
+        <div className="lock-todo"><div className="label">Change request fee</div><b style={{ fontSize: 24, color: 'var(--amber)' }}>{money(fee)}</b>
+          <p className="tag" style={{ margin: '4px 0 0' }}>NASA studies show late design changes cost far more than early ones (NTRS 20150008247).</p></div>
+        <div className="lock-foot"><button className="btn" onClick={A.cancelReopen}>Stay here</button><button className="btn primary" onClick={() => A.reopenStage(n)}>Go back and pay {money(fee)}</button></div>
+      </section>
+    </div>
+  );
+}
+
+function FullscreenBtn() {
+  const [fs, setFs] = React.useState(!!document.fullscreenElement);
+  React.useEffect(() => { const on = () => setFs(!!document.fullscreenElement); document.addEventListener('fullscreenchange', on); return () => document.removeEventListener('fullscreenchange', on); }, []);
+  if (!document.documentElement.requestFullscreen) return null;
+  return <button className="btn" onClick={goFullscreen} title="Full screen (F11 also works)">{fs ? '⤡ Exit full screen' : '⤢ Full screen'}</button>;
 }
 
 function FlightBadge() {
@@ -115,7 +139,6 @@ export function HUD({ s }) {
         </div>
         <div className="hud-center">
           {game && <TasksCard s={s} focus={focus === 'tasks'} />}
-          <Toasts s={s} />
           {game && <TutorialCard s={s} />}
         </div>
         <div className="hud-right">
@@ -134,6 +157,8 @@ export function HUD({ s }) {
         <div className="hb-right"><Settings s={s} /></div>
       </div>
       {game && <Pointer />}
+      <Toasts s={s} />
+      <ReopenModal s={s} />
       <SignoffModal s={s} />
       {game && <PickerHost s={s} />}
       {game && s.showMap && <FullMap s={s} />}

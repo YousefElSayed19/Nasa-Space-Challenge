@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { A } from '../state/actions.js';
 import { STAGE_NAMES, MISSION, isFree, totals, headroom, money, partById } from '../engine/index.js';
 import { useAnimatedNumber } from './hooks.js';
 
@@ -12,7 +13,9 @@ export function TopBar({ s }) {
         <ol className="chips" aria-label="Mission stages">
           {STAGE_NAMES.map((n, i) => {
             const k = i + 1, cls = k < s.stage ? ' done' : k === s.stage ? ' active' : '';
-            return <li key={n} className={'chip' + cls} aria-current={k === s.stage ? 'step' : undefined}><span className="num">{k < s.stage ? '✓' : k}</span>{n}</li>;
+            const back = s.screen === 'game' && k >= 2 && k < s.stage && k <= 6;
+            return <li key={n} className={'chip' + cls + (back ? ' back' : '')} aria-current={k === s.stage ? 'step' : undefined}
+              onClick={back ? () => A.askReopen(k) : undefined} title={back ? `Go back to ${n} (change request)` : undefined}><span className="num">{k < s.stage ? '✓' : k}</span>{n}</li>;
           })}
         </ol>
       )}

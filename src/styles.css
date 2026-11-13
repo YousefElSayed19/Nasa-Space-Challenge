@@ -826,3 +826,34 @@ button{touch-action:manipulation}
   .pk-body{grid-template-columns:42% 1fr}
   .hud .controls{display:none}
 }
+
+/* v0.21: notifications are small notes at the right edge, above the bottom bar */
+#ui .hud .toasts{position:absolute!important;right:calc(var(--gap) + 4px);left:auto;top:auto;bottom:calc(var(--bottom-h) + var(--gap) + 8px);width:min(300px,calc(100vw - 24px));max-width:none;z-index:16;gap:6px;pointer-events:none}
+#ui .hud .toast{padding:8px 12px 10px 10px;font-size:12.5px;line-height:1.35;border-radius:11px;grid-template-columns:20px minmax(0,1fr);column-gap:8px;animation:note-side .35s cubic-bezier(.16,1,.3,1) both}
+#ui .hud .toast .toast-icon{width:20px;height:20px;font-size:11px}
+#ui .hud .toast.leaving{animation:note-side-out .3s ease forwards}
+@keyframes note-side{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes note-side-out{to{opacity:0;transform:translateX(24px)}}
+.hud.is-touch .toasts{bottom:170px!important}
+@media (max-height:620px){#ui .hud .toast{font-size:11.5px;padding:6px 10px 8px 8px}}
+
+.chip.back{cursor:pointer}
+.chip.back:hover{border-color:var(--amber);color:var(--amber)}
+.pk-rec{font-size:11px;font-weight:800;color:#1A1300;background:linear-gradient(135deg,#FFD166,#FFB020);border-radius:999px;padding:2px 9px}
+.pk-rec-why{font-size:12px;color:#FFD58A;margin:2px 0 4px}
+.pk-thumb-rec{position:absolute;top:3px;left:6px;color:#FFC24B;font-size:13px;text-shadow:0 0 6px rgba(255,194,75,.7)}
+
+/* v0.21: educational flight tour */
+.tour{position:absolute;left:16px;bottom:16px;width:min(380px,calc(100vw - 32px));padding:12px 14px;z-index:12;animation:note-side .4s ease}
+.tour-route{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.tr-stop{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;border:1px solid var(--edge);background:rgba(255,255,255,.03);opacity:.55;transition:all .3s}
+.tr-stop.done{opacity:.85;border-color:rgba(62,224,160,.5)}
+.tr-stop.on{opacity:1;border-color:var(--amber);box-shadow:0 0 12px rgba(255,194,75,.55);transform:scale(1.12)}
+.tour-body{animation:pk-in-r .45s cubic-bezier(.16,1,.3,1)}
+.tour-head{display:flex;gap:10px;align-items:center}
+.tour-icon{font-size:28px}
+.tour-head b{display:block;font-size:17px}
+.tour-role{font-size:12px;color:var(--amber)}
+.tour ul{margin:8px 0 4px;padding-left:18px;font-size:13px;color:#dfe4ff;line-height:1.45}
+.tour-src{font-size:11px;color:var(--muted)}
+@media (max-height:620px){.tour{width:min(300px,calc(100vw - 24px));padding:8px 10px}.tour ul{font-size:12px}.tour-head b{font-size:14px}}

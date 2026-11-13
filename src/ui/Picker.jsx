@@ -45,6 +45,39 @@ function BudgetMeter({ s, T, cost }) {
   );
 }
 
+/** Score each option for the current design; the highest is shown first and marked Recommended. */
+function recommend(items, s, T, isRocket) {
+  if (!items.length) return { order: items, best: null, why: '' };
+  const left = T.budget - T.cost;
+  const score = new Map(); let why = {};
+  for (const x of items) {
+    let v = 0, w = '';
+    if (isRocket) {
+      const h = (x.cap - T.wet) / x.cap;
+      v = h >= 0.25 ? 100 - x.cost / 10 : h >= 0 ? 40 - x.cost / 10 : -100;
+      w = h >= 0.25 ? 'Cheapest rocket that still leaves a 25% mass margin' : h >= 0 ? 'Fits, but with little margin' : 'Too small for your spacecraft';
+    } else if (x.slot === 'instrument') {
+      const inst = s.installed.includes(x.id);
+      v = (x.science || 0) * 10 / (1 + (x.cost || 0) / 20 + (x.mass || 0) / 4 + (x.power || 0) / 8) - (x.cost > left ? 50 : 0) - (inst ? 30 : 0);
+      w = x.cost > left ? 'Over your remaining budget' : 'Most science for its cost, mass and power';
+    } else if (x.slot === 'array') {
+      const demand = T.demand, h = (x.supply - demand) / x.supply;
+      v = h >= 0.25 ? 100 - x.mass * 3 : h >= 0 ? 40 : -100; w = h >= 0.25 ? 'Lightest array that keeps a 25% power margin' : 'Leaves too little power margin';
+    } else if (x.slot === 'antenna') {
+      const h = (x.downlink - T.prod) / x.downlink;
+      v = h >= 0.25 ? 100 - x.mass * 3 : h >= 0 ? 40 : -100; w = h >= 0.25 ? 'Lightest antenna with a 25% data margin' : 'Leaves too little data margin';
+    } else if (x.slot === 'aeroshell') {
+      v = x.maxEntry >= T.wet * 1.1 ? 100 - x.mass : -50; w = x.maxEntry >= T.wet * 1.1 ? 'Lightest shield that protects your entry mass with margin' : 'Too light for your spacecraft';
+    } else if (x.slot === 'parachute') { v = x.dvSave; w = 'Brakes the most, so less descent propellant'; }
+    else if (x.slot === 'engine') {
+      v = 50; w = 'Worth it when propellant is your tightest margin';
+    } else { v = 100 - (x.mass || 0); w = 'Needed for this mission'; }
+    score.set(x.id, v); why[x.id] = w;
+  }
+  const order = items.slice().sort((a, b) => score.get(b.id) - score.get(a.id));
+  return { order, best: order[0].id, why };
+}
+
 export function Picker({ s, station }) {
   const T = totals(s);
   const isRocket = station === 'board';
@@ -64,7 +97,8 @@ export function Picker({ s, station }) {
   const [i, setI] = useState(0);
   const [dir, setDir] = useState('r');
   const [showReal, setShowReal] = useState(false);
-  const items = groups[g].items, idx = Math.min(i, items.length - 1), item = items[idx];
+  const rec = recommend(groups[g].items, s, T, isRocket);
+  const items = rec.order, idx = Math.min(i, items.length - 1), item = items[idx];
   const go = d => { setDir(d > 0 ? 'r' : 'l'); setI(x => (x + d + items.length) % items.length); };
   const pick = k => { setDir(k > idx ? 'r' : 'l'); setI(k); };
   const tab = k => { setDir('r'); setG(k); setI(0); };
@@ -86,7 +120,8 @@ export function Picker({ s, station }) {
     cost = r.cost - (s.rocket ? rocketById(s.rocket).cost : 0);
     info = (
       <>
-        <div className="pk-cat">Launch vehicle</div>
+        <div className="pk-cat">Launch vehicle{rec.best === r.id && <span className="pk-rec">★ Recommended</span>}</div>
+        {rec.best === r.id && <div className="pk-rec-why">{rec.why[r.id]}</div>}
         <h2 className="pk-name">{r.name}</h2>
         <div className="pk-price">{money(r.cost)}<span>launch price{r.approx ? ' · approximate' : ''}</span></div>
         <p className="pk-note">{r.note}</p>
@@ -112,7 +147,8 @@ export function Picker({ s, station }) {
     cost = installed ? 0 : p.cost + fee - (current ? current.cost : 0);
     info = (
       <>
-        <div className="pk-cat">{SLOT_NAMES()[p.slot]}{installed && <span className="pk-badge">Installed</span>}</div>
+        <div className="pk-cat">{SLOT_NAMES()[p.slot]}{installed && <span className="pk-badge">Installed</span>}{rec.best === p.id && <span className="pk-rec">★ Recommended</span>}</div>
+        {rec.best === p.id && <div className="pk-rec-why">{rec.why[p.id]}</div>}
         <div className="pk-topline"><h2 className="pk-name">{p.name}</h2>{p.science ? <Stars n={p.science} /> : null}</div>
         <div className="pk-price">{money(p.cost)}<span>{p.approximate ? 'approximate game value' : 'based on the real mission'}</span></div>
         <p className="pk-note">{p.note}</p>
@@ -178,6 +214,7 @@ export function Picker({ s, station }) {
                 <span className="pk-thumb-name">{x.name}</span>
                 <span className="pk-thumb-price">{money(x.cost)}</span>
                 {has(x) && <span className="pk-thumb-ok">✓</span>}
+                {rec.best === x.id && <span className="pk-thumb-rec">★</span>}
               </button>
             );
           })}

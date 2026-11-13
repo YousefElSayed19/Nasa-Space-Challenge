@@ -62,6 +62,9 @@ export function createSpaceView() {
   const tex = k => textures[k] || (textures[k] = planetTexture(k));
   let curve, earth, earthR, dest, destR, orbitR, craft, rocket, engineGlow, trail, progress = 0, t = 0, missionId = 'mars';
   let capsule = null, heatGlow = null, chute = null, landSite = null, landUp = null;
+  // named bodies for the educational tour, staging pieces, and the data link home
+  let bodies = {}, stages = null, beams = [];
+  const stageMat = (c) => std(c, { metalness: 0.4, roughness: 0.5 });
   const camPos = new THREE.Vector3(0, 10, 30), camLook = new THREE.Vector3();
 
   function planet(kind, r, x, z, opts = {}) {
@@ -128,6 +131,23 @@ export function createSpaceView() {
       ring(orbitR, 34, 0);
       pts = [V(-9 + earthR * 1.05, 0.4), V(-4, 8, 1), V(0, 12.6, 1), V(6, 6, 0.6), V(2, -8, 0.4), V(-9, -2.5, 0.4), V(-6, 9, 1), V(8, 18, 2), V(24, 12, 1.5), V(34 - orbitR, 0.6)];
     }
+    bodies = { earth, dest };
+    if (id !== 'moon') {
+      const moonR = earthR * 0.27; const mo = planet('moon', moonR, earth.position.x + earthR * 3.2, earth.position.z + earthR * 1.2); bodies.moon = mo;
+    } else bodies.moon = dest;
+    if (id === 'mars' || id === 'lander') { ring(9.5); bodies.venus = planet('jupiter', 0.75, -6.7, 6.7); bodies.venus.material.color = lin('#E8C77A'); bodies.sun = world.children.find(o => o.geometry && o.geometry.parameters && o.geometry.parameters.radius === 2.4); }
+    if (id === 'europa') {
+      bodies.sun = world.children.find(o => o.geometry && o.geometry.parameters && o.geometry.parameters.radius === 2.2);
+      bodies.mars = world.children.find(o => o.material && o.material.map === tex('mars'));
+      bodies.jupiter = dest;
+      const n = 900, pos = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, r = 17 + Math.random() * 6; pos.set([Math.cos(a) * r, (Math.random() - 0.5) * 0.8, Math.sin(a) * r], i * 3); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const belt = new THREE.Points(g, new THREE.PointsMaterial({ color: lin('#B8A88A'), size: 0.12 })); world.add(belt);
+      bodies.belt = { position: new THREE.Vector3(0, 0, 20) };
+      bodies.dest = world.children.find(o => o.userData.moon) || dest;
+    }
+    if (id === 'moon') bodies.sun = { position: new THREE.Vector3(-30, 4, 12) };
     curve = new THREE.CatmullRomCurve3(pts);
     const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(300)), new THREE.LineDashedMaterial({ color: lin('#6EA8FF'), dashSize: 0.5, gapSize: 0.35, transparent: true, opacity: 0.55 }));
     line.computeLineDistances(); world.add(line);
@@ -148,6 +168,14 @@ export function createSpaceView() {
     const r = ALL_ROCKETS.find(x => x.id === rocketId) || ALL_ROCKETS[0];
     rocket = buildRocket(r, 1.2); rocket.flames.forEach(f => { f.visible = true; });
     world.add(rocket.group);
+    stages = new THREE.Group(); world.add(stages); stages.visible = false;
+    const booster = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.7, 20), stageMat(r.color || '#E07B39'));
+    const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.32, 20), stageMat('#EEF1FF'));
+    const upFlame = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.3, 14, 1, true), glow('#8FD3FF', 0.9)); upFlame.rotation.x = Math.PI; upFlame.position.y = -0.3; upper.add(upFlame);
+    const fairL = new THREE.Mesh(new THREE.SphereGeometry(0.095, 16, 12, 0, Math.PI, 0, Math.PI / 2), stageMat('#FFFFFF')); fairL.scale.y = 2;
+    const fairR = fairL.clone(); fairR.rotation.y = Math.PI;
+    stages.add(booster, upper, fairL, fairR); stages.userData = { booster, upper, fairL, fairR, upFlame };
+    beams.forEach(b => world.remove(b)); beams = [];
     progress = 0; t = 0;
     placeRocket(0);
     camPos.copy(earth.position).add(new THREE.Vector3(earthR * 1.4, earthR * 0.8, earthR * 2.6));
@@ -162,6 +190,7 @@ export function createSpaceView() {
     rocket.group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().lerp(curve.getTangent(0.02), k * 0.6).normalize());
   }
 
+  let focusBody = null;
   function update(dt, phase, kind) {
     t += dt;
     const target = PHASE_AT[phase] ?? 0;
@@ -172,11 +201,38 @@ export function createSpaceView() {
 
     if (progress < 0.07) {
       const k = progress / 0.07;
-      rocket.group.visible = true; craft.visible = false; placeRocket(k);
-      rocket.flames.forEach(f => { const s = 1 + Math.random() * 0.3; f.scale.set(s, s, s); });
-      look.copy(rocket.group.position);
-      want.copy(rocket.group.position).add(new THREE.Vector3(1.4, 0.6, 2.4).multiplyScalar(1 + k * 1.5));
+      craft.visible = false;
+      if (k < 0.45) {
+        // liftoff on the full rocket
+        rocket.group.visible = true; stages.visible = false; placeRocket(k / 0.45 * 0.6);
+        rocket.flames.forEach(f => { const s = 1 + Math.random() * 0.3; f.scale.set(s, s, s); });
+        look.copy(rocket.group.position);
+        want.copy(rocket.group.position).add(new THREE.Vector3(1.4, 0.6, 2.4));
+      } else {
+        // staging: the booster drops away, the fairing splits, then the spacecraft leaves the upper stage
+        rocket.group.visible = false; stages.visible = true;
+        const S = stages.userData, q = rocket.group.quaternion, up = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
+        const base = rocket.group.position.clone().add(up.clone().multiplyScalar(0.5 + (k - 0.45) * 2));
+        stages.position.set(0, 0, 0);
+        const s1 = (k - 0.45) / 0.55;
+        S.booster.position.copy(base).add(up.clone().multiplyScalar(-0.6 - s1 * 1.6)); S.booster.position.y -= s1 * 0.4; S.booster.quaternion.copy(q); S.booster.rotateZ(s1 * 1.2);
+        S.upper.position.copy(base); S.upper.quaternion.copy(q);
+        S.upFlame.visible = k < 0.85; S.upFlame.scale.setScalar(1 + Math.random() * 0.3);
+        const fs = Math.max(0, (k - 0.6) / 0.4);
+        const side = new THREE.Vector3(1, 0, 0).applyQuaternion(q);
+        S.fairL.position.copy(base).add(up.clone().multiplyScalar(0.26)).add(side.clone().multiplyScalar(fs * 0.9)); S.fairL.quaternion.copy(q); S.fairL.rotateZ(-fs * 1.5);
+        S.fairR.position.copy(base).add(up.clone().multiplyScalar(0.26)).add(side.clone().multiplyScalar(-fs * 0.9)); S.fairR.quaternion.copy(q); S.fairR.rotateZ(fs * 1.5); S.fairR.rotateY(Math.PI);
+        if (k > 0.85) {
+          craft.visible = !capsule; if (capsule) capsule.visible = true;
+          const cp = base.clone().add(up.clone().multiplyScalar(0.3 + (k - 0.85) * 3));
+          craft.position.copy(cp); craft.quaternion.copy(q); if (capsule) { capsule.position.copy(cp); capsule.quaternion.copy(q); }
+          S.upper.position.add(up.clone().multiplyScalar(-(k - 0.85) * 2));
+        }
+        look.copy(base);
+        want.copy(base).add(new THREE.Vector3(1.2, 0.5, 2.0));
+      }
     } else {
+      stages.visible = false;
       rocket.group.visible = false; craft.visible = !capsule;
       if (capsule && progress >= 0.84) { landing(dt, kind, look, want); camPos.lerp(want, damp(2.2, dt)); camLook.lerp(look, damp(3, dt)); camera.position.copy(camPos); camera.lookAt(camLook); return; }
       if (capsule) { capsule.visible = true; }
@@ -208,6 +264,15 @@ export function createSpaceView() {
         look.copy(dest.position);
       }
     }
+    if (focusBody && bodies[focusBody] && progress > 0.08 && progress < 0.82) look.lerp(bodies[focusBody].position, 0.45);
+    if (progress > 0.95) {
+      // the science comes home as radio signals
+      if (beams.length < 14 && Math.random() < dt * 6) {
+        const b = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), glow('#8FD3FF', 1)); b.userData.t = 0; world.add(b); beams.push(b);
+      }
+      const from = (craft.visible ? craft.position : dest.position), to = earth.position;
+      beams = beams.filter(b => { b.userData.t += dt * 0.35; b.position.lerpVectors(from, to, b.userData.t); if (b.userData.t >= 1) { world.remove(b); return false; } return true; });
+    }
     camPos.lerp(want, damp(2.2, dt)); camLook.lerp(look, damp(3, dt));
     camera.position.copy(camPos); camera.lookAt(camLook);
   }
@@ -236,5 +301,5 @@ export function createSpaceView() {
   }
 
   function setSize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); }
-  return { scene, camera, setMission, update, setSize };
+  return { scene, camera, setMission, update, setSize, getProgress: () => progress, setFocus: b => { focusBody = b; } };
 }

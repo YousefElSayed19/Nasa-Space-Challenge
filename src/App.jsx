@@ -2,7 +2,7 @@ import React from 'react';
 import { useGame } from './ui/hooks.js';
 import { HUD, Settings } from './ui/HUD.jsx';
 import { StartScreen } from './ui/StartScreen.jsx';
-import { MissionScreen } from './ui/MissionScreen.jsx';
+import { MissionScreen, TourCard } from './ui/MissionScreen.jsx';
 import { ReportScreen } from './ui/ReportScreen.jsx';
 import { Glossary } from './ui/Glossary.jsx';
 import { Intro, ReplayNotice } from './ui/Intro.jsx';
@@ -18,6 +18,7 @@ export function App() {
       {s.screen === 'game' && <ReplayNotice s={s} />}
       {(s.screen === 'game' || s.screen === 'launching') && <HUD s={s} />}
       {s.screen === 'mission' && <MissionScreen s={s} />}
+      {s.screen === 'mission' && <TourCard s={s} />}
       {s.screen === 'report' && <ReportScreen s={s} />}
       {s.screen !== 'launching' && s.screen !== 'game' && <div className="settings-float"><Settings s={s} /></div>}
       {isTouch && s.screen === 'game' && !isPickerStation(s.panel) && <TouchControls s={s} />}

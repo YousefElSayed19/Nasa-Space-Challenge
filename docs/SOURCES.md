@@ -25,7 +25,7 @@ Last checked 12 November 2026. If a link is marked *link to add*, the source was
 | NASA Glenn, Specific Impulse | https://www.grc.nasa.gov/www/BGH/specimp.html | **All missions:** definition of specific impulse used in the propellant formula and the glossary |
 | NTRS 19970010493, small spacecraft propulsion | https://ntrs.nasa.gov/citations/19970010493 | **All missions:** hydrazine specific impulse of 223 s |
 | NTRS 20120013284, margin guidelines | https://ntrs.nasa.gov/citations/20120013284 | **All missions:** the 25–30% safety margin (white tick on every bar), 30% power and data contingency, 5% attitude-control propellant allowance |
-| NTRS 20150008247, early versus late design decisions | https://ntrs.nasa.gov/citations/20150008247 | **All missions:** margins by phase; the rule that late changes cost more (change-request fees) |
+| NTRS 20150008247, early versus late design decisions | https://ntrs.nasa.gov/citations/20150008247 | **All missions:** margins by phase; the rule that late changes cost more (change-request fees, and the fee for going back to an earlier stage) |
 | NTRS 20150022911, concurrent engineering centers | https://ntrs.nasa.gov/citations/20150022911 | **Team play:** the idea behind the four roles |
 | NASA Earthdata, Sun–satellite interactions | https://www.earthdata.nasa.gov/learn/articles/sun-satellite-interactions | **Solar storm event:** bit flips, safe mode, drag (May 2024 examples) |
 | NASA Launch Services Program fact sheet | *link to add* | **Rockets:** Atlas V, Vulcan Centaur, Falcon Heavy capacities to low Earth orbit |
@@ -47,6 +47,19 @@ Every instrument card in the game shows its mass and power. Where a NASA source 
 | JPL Europa Clipper project newsletter: Weigh Your Options Carefully | https://europa.nasa.gov/internal_resources/116 | **Europa:** 352 kg allocated to the nine instruments, 3,241 kg dry, 2,750 kg propellant, 6,001 kg maximum wet mass, 273 kg (8.4%) project reserve. Per-instrument figures are not published there, so Europa instruments are marked approximate. |
 
 New real instruments added in this version: Mini-RF (LRO), Europa-UVS, PIMS and SUDA (Europa Clipper). New optional part: a bipropellant main engine in the Engine Bay (game values, marked approximate); without it the spacecraft uses hydrazine thrusters at 223 s (NTRS 19970010493), or 212.2 s for the Moon mission.
+
+## A3. Flight tour and extra camera options (added in version 0.21)
+
+| Source | Link | What we used it for |
+|---|---|---|
+| JPL MRO launch press kit | https://www.jpl.nasa.gov/news/press_kits/mro-launch-Aug05.pdf | **Flight tour (Mars and Lander):** Atlas V booster burns about 4 minutes, Centaur fires twice, separation under an hour after liftoff at about 11,000 m/s; five planned trajectory corrections; orbit insertion about 25 minutes and about 1,000 m/s; about six months of aerobraking; Mars 227.7 million km from the Sun, gravity 38%, day 24 h 39 min; data rate about 600 kbit/s at the farthest distance, signals up to about 21 minutes |
+| NASA Science: MRO science instruments | https://science.nasa.gov/mission/mars-reconnaissance-orbiter/science-instruments/ | **Camera classes on every mission:** HiRISE-class (65 kg, 60 W), CTX-class (3 kg, 7 W) and MARCI-class (481 g, 5 W) options use the mass and power these cameras flew with on MRO; resolution at other worlds depends on orbit height |
+| NTRS 20110007093, NTRS 20180000056, NASA GSFC LRO paper | see section A | **Flight tour (Moon):** 5-day trip, 1,258 m/s total Δv, 555 m/s insertion into a 50 km orbit, 100 Mbit/s downlink, 2,000 kg Atlas V limit |
+| JPL Europa Clipper Quick Facts | https://www.jpl.nasa.gov/press-kits/europa-clipper/quick-facts/ | **Flight tour (Europa):** about 5,800 kg at launch, radiation vault walls up to 9.2 mm |
+
+General background in the tour (the Moon about 384,000 km away, the Sun at the centre of every orbit, gravity assists, the asteroid belt being mostly empty) is standard astronomy and is not given a single source.
+
+All four missions in the game are one-way robotic missions: none of the real spacecraft returns to Earth. The game shows the real “return”, the science data sent home by radio.
 
 ## B. NASA guidance used for game rules and wording
 

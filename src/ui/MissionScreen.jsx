@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useHud } from './hooks.js';
+import TOURS from '../data/tours.json';
 import { A } from '../state/actions.js';
 import { Sound } from '../audio/sound.js';
 import { MISSION } from '../engine/index.js';
@@ -43,5 +45,26 @@ export function MissionScreen({ s }) {
         </div>
       </section>
     </div>
+  );
+}
+
+
+/** Educational card for the body or event the spacecraft is passing right now, with the whole route as a strip. */
+export function TourCard({ s }) {
+  const h = useHud();
+  const tour = TOURS[s.missionId] || [];
+  const cur = h.tourStop;
+  if (!cur || !tour.length) return null;
+  return (
+    <section className="tour glass" aria-live="polite">
+      <div className="tour-route">
+        {tour.map((t, i) => <span key={i} className={'tr-stop' + (t === cur || t.name === cur.name ? ' on' : (h.flightP || 0) > t.at ? ' done' : '')} title={t.name}>{t.icon}</span>)}
+      </div>
+      <div className="tour-body" key={cur.name}>
+        <div className="tour-head"><span className="tour-icon">{cur.icon}</span><div><b>{cur.name}</b><span className="tour-role">{cur.role}</span></div></div>
+        <ul>{cur.facts.map(f => <li key={f}>{f}</li>)}</ul>
+        {cur.source && <div className="tour-src">Source: {cur.source}</div>}
+      </div>
+    </section>
   );
 }

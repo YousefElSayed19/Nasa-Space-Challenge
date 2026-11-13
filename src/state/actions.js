@@ -5,7 +5,7 @@ import { addScore } from './leaderboard.js';
 import { Sound } from '../audio/sound.js';
 import {
   MISSION, MISSIONS, RES_INFO, ROLES, STAGE_NAMES, MARGIN, CHECKS, setMission, missionById, partById, rocketById,
-  totals, resources, byKey, pct, fmt, money, changeFee, effectsOf, reviewVerdicts, stageChecks, simulate, isFree, LOAN_SHARE, LOAN_RATE,
+  totals, resources, byKey, pct, fmt, money, changeFee, effectsOf, reviewVerdicts, stageChecks, simulate, isFree, LOAN_SHARE, LOAN_RATE, CHANGE_BASE,
 } from '../engine/index.js';
 
 export const unlockedMissions = () => {
@@ -25,8 +25,8 @@ export const A = {
     const st = store.get();
     if (st.toasts.some(t => t.text === text && !t.leaving)) return; // no duplicates
     const id = Date.now() + Math.random();
-    const life = Math.min(7000, 3200 + text.length * 35); // longer messages stay longer
-    store.set(s => ({ toasts: [...s.toasts, { id, text, kind, life }].slice(-3) }));
+    const life = Math.min(4200, 2200 + text.length * 14); // short: a quick note at the side
+    store.set(s => ({ toasts: [...s.toasts, { id, text, kind, life }].slice(-2) }));
     setTimeout(() => store.set(s => ({ toasts: s.toasts.map(t => (t.id === id ? { ...t, leaving: true } : t)) })), life - 320);
     setTimeout(() => store.set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), life);
   },
@@ -103,6 +103,18 @@ export const A = {
   toggleGlossary() { Sound.click(); store.set(s => ({ showGlossary: !s.showGlossary })); },
 
   // ---------- hangar ----------
+  /** Go back to an earlier stage to change a locked decision. The fee grows with how far back you go (late changes cost more, NTRS 20150008247). */
+  reopenFee(n) { const s = store.get(); return isFree(s) ? 0 : CHANGE_BASE * Math.max(1, s.stage - n) * 2; },
+  askReopen(n) { const s = store.get(); if (isFree(s) || n >= s.stage || s.screen !== 'game') return; store.set({ reopen: n }); },
+  cancelReopen() { store.set({ reopen: null }); },
+  reopenStage(n) {
+    const s = store.get(); if (n >= s.stage) return;
+    const fee = A.reopenFee(n);
+    const keep = {}; Object.keys(s.locked).forEach(k => { const st = k === 'rocket' ? 4 : k === 'fuel' ? 5 : +k.replace('stage', ''); if (st < n) keep[k] = s.locked[k]; });
+    A.log({ kind: 'change', text: `Reopened stage ${n}, ${STAGE_NAMES[n - 1]} (change request ${money(fee)})`, effects: { cost: fee }, fee });
+    store.set(st => ({ stage: n, locked: keep, reopen: null, verdicts: null, checks: {}, changeFees: (st.changeFees || 0) + fee, changeCount: (st.changeCount || 0) + 1, panel: null }));
+    Sound.chime(); A.toast(`Back at stage ${n}. Later stages must be confirmed again.`, 'warn');
+  },
   takeLoan() {
     const s = store.get(); if (s.mode !== 'campaign' || s.loan || s.stage > 5) return;
     const amount = Math.round(MISSION.budget * LOAN_SHARE), interest = Math.round(amount * LOAN_RATE);

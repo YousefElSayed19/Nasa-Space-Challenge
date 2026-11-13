@@ -1,0 +1,39 @@
+{
+  "_note": "What the player sees along each flight. Facts marked with a source come from that NASA document; the rest are general background.",
+  "mars": [
+    { "at": 0.0, "body": "earth", "icon": "🌍", "name": "Earth", "role": "Launch site", "facts": ["The Atlas V first stage burns for about 4 minutes, then the Centaur upper stage fires twice.", "The spacecraft separates less than an hour after liftoff, moving at about 11,000 m/s."], "source": "JPL MRO launch press kit" },
+    { "at": 0.12, "body": "moon", "icon": "🌕", "name": "The Moon", "role": "Passed early, not a stop", "facts": ["Earth’s Moon is about 384,000 km away.", "A Mars mission passes its orbit within a day or two and keeps going."] },
+    { "at": 0.22, "body": "sun", "icon": "☀️", "name": "The Sun", "role": "Centre of the trip", "facts": ["Earth, Mars and your spacecraft all orbit the Sun.", "The trip to Mars is about half an orbit around the Sun, called a transfer orbit."] },
+    { "at": 0.32, "body": "venus", "icon": "🟡", "name": "Venus", "role": "Inside Earth’s orbit, not on this path", "facts": ["Some missions use Venus for a gravity assist.", "A direct Mars trip heads outward, away from Venus."] },
+    { "at": 0.45, "body": null, "icon": "🧭", "name": "Deep-space cruise", "role": "Steering on the way", "facts": ["Five trajectory correction manoeuvres were planned for MRO’s cruise.", "Navigators track the spacecraft with the Deep Space Network’s antennas in California, Spain and Australia."], "source": "JPL MRO launch press kit" },
+    { "at": 0.7, "body": "dest", "icon": "🔴", "name": "Mars", "role": "Destination", "facts": ["Mars averages 227.7 million km from the Sun, about 1.5 times farther than Earth.", "Its gravity is 38% of Earth’s and a day lasts 24 h 39 min."], "source": "JPL MRO launch press kit" },
+    { "at": 0.86, "body": "dest", "icon": "🔥", "name": "Orbit insertion", "role": "The critical burn", "facts": ["MRO fired its six main engines for about 25 minutes to slow down by about 1,000 m/s and be captured by Mars.", "Afterwards it used aerobraking, dipping into the upper atmosphere for about six months, to shrink its orbit."], "source": "JPL MRO launch press kit" },
+    { "at": 0.96, "body": "earth", "icon": "📡", "name": "Data comes home", "role": "How the mission ‘returns’", "facts": ["Orbiters like MRO never come back to Earth: the science returns as radio signals.", "At Mars’ farthest, MRO sent about 600 kilobits per second to a 34 m antenna; signals take up to about 21 minutes."], "source": "JPL MRO launch press kit" }
+  ],
+  "lander": [
+    { "at": 0.0, "body": "earth", "icon": "🌍", "name": "Earth", "role": "Launch site", "facts": ["InSight launched on an Atlas V, the first planetary launch from California’s west coast.", "The whole spacecraft weighed about 694 kg at launch."], "source": "JPL InSight launch press kit" },
+    { "at": 0.12, "body": "moon", "icon": "🌕", "name": "The Moon", "role": "Passed early, not a stop", "facts": ["About 384,000 km from Earth.", "The lander passes its orbit and keeps going toward Mars."] },
+    { "at": 0.22, "body": "sun", "icon": "☀️", "name": "The Sun", "role": "Centre of the trip", "facts": ["The cruise to Mars is about half an orbit around the Sun.", "Sunlight at Mars is weaker, so the lander’s round arrays make 600–700 W on a clear day."], "source": "JPL InSight launch press kit" },
+    { "at": 0.32, "body": "venus", "icon": "🟡", "name": "Venus", "role": "Not on this path", "facts": ["Venus orbits closer to the Sun than Earth.", "Mars missions head outward, away from it."] },
+    { "at": 0.7, "body": "dest", "icon": "🔴", "name": "Mars", "role": "Destination", "facts": ["Gravity is 38% of Earth’s, and the air is less than 1% as thick.", "Thin air is why a lander needs a heat shield, a parachute and engines."], "source": "JPL MRO launch press kit" },
+    { "at": 0.86, "body": "dest", "icon": "🪂", "name": "Entry, descent and landing", "role": "The hardest minutes", "facts": ["The 2.64 m aeroshell takes the heat of entry; InSight’s heat shield was slightly thicker than Phoenix’s.", "A parachute and then descent engines set the lander down."], "source": "JPL InSight press kits" },
+    { "at": 0.96, "body": "earth", "icon": "📡", "name": "Data comes home", "role": "How the mission ‘returns’", "facts": ["Landers stay on Mars. InSight sent its data home directly and through orbiters.", "Dust on the arrays slowly cut its power: 200–300 W on dusty days."], "source": "JPL InSight launch press kit" }
+  ],
+  "moon": [
+    { "at": 0.0, "body": "earth", "icon": "🌍", "name": "Earth", "role": "Launch site", "facts": ["LRO launched on an Atlas V 401 in 2009.", "The Atlas V limit for LRO was 2,000 kg; LRO was designed at about 1,845 kg."], "source": "NASA GSFC LRO mission design paper" },
+    { "at": 0.3, "body": "sun", "icon": "☀️", "name": "The Sun", "role": "Full sunlight", "facts": ["The Moon is about as far from the Sun as Earth, so the arrays get full sunlight.", "Shadows behind the Moon are what the battery is for."] },
+    { "at": 0.55, "body": null, "icon": "🧭", "name": "Translunar cruise", "role": "About 5 days", "facts": ["The trip to the Moon takes about five days.", "Total Δv for LRO was about 1,258 m/s."], "source": "NTRS 20110007093" },
+    { "at": 0.8, "body": "dest", "icon": "🌕", "name": "The Moon", "role": "Destination", "facts": ["About 384,000 km from Earth.", "LRO braked by about 555 m/s to enter a 50 km polar orbit."], "source": "NTRS 20110007093" },
+    { "at": 0.96, "body": "earth", "icon": "📡", "name": "Data comes home", "role": "How the mission ‘returns’", "facts": ["LRO stays at the Moon and sends its maps home by radio.", "Its Ka-band link reached 100 megabits per second."], "source": "NTRS 20180000056" }
+  ],
+  "europa": [
+    { "at": 0.0, "body": "earth", "icon": "🌍", "name": "Earth", "role": "Launch site", "facts": ["Europa Clipper launched on a Falcon Heavy weighing about 5,800 kg, almost half of it propellant."], "source": "JPL Europa Clipper Quick Facts" },
+    { "at": 0.14, "body": "sun", "icon": "☀️", "name": "The Sun", "role": "Centre of the trip", "facts": ["Jupiter is about five times farther from the Sun than Earth, so sunlight there is only about 4% as strong.", "That is why Clipper’s arrays are so large."] },
+    { "at": 0.26, "body": "mars", "icon": "🔴", "name": "Mars flyby", "role": "Gravity assist", "facts": ["Clipper swings past Mars to steal a little of its orbital speed.", "Gravity assists save propellant that a rocket alone could not carry."] },
+    { "at": 0.42, "body": "earth", "icon": "🌍", "name": "Earth flyby", "role": "Second gravity assist", "facts": ["Back past Earth for one more push outward toward Jupiter."] },
+    { "at": 0.6, "body": "belt", "icon": "🪨", "name": "Asteroid belt", "role": "Mostly empty space", "facts": ["Between Mars and Jupiter. Asteroids are so far apart that spacecraft cross the belt without dodging."] },
+    { "at": 0.78, "body": "jupiter", "icon": "🪐", "name": "Jupiter", "role": "Giant planet, deadly radiation", "facts": ["Jupiter’s radiation belts would destroy normal electronics.", "Clipper keeps its electronics in a vault with walls up to 9.2 mm thick."], "source": "JPL Europa Clipper Quick Facts" },
+    { "at": 0.88, "body": "dest", "icon": "🧊", "name": "Europa", "role": "Destination", "facts": ["An icy moon with an ocean under its shell.", "Clipper orbits Jupiter and dives past Europa again and again instead of orbiting it, to limit radiation."] },
+    { "at": 0.96, "body": "earth", "icon": "📡", "name": "Data comes home", "role": "How the mission ‘returns’", "facts": ["Clipper stays at Jupiter. Each flyby’s data is stored, then sent home by radio."] }
+  ]
+}

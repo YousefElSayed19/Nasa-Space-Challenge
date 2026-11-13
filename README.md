@@ -26,6 +26,9 @@ Opens in any modern browser on a laptop, tablet or phone (landscape). No install
 - **Interactive tour** on first play: each step waits for you to try it, then you press Next (or Skip).
 - **Task list and guide arrow:** the current stage's tasks with an arrow on the one to do now, a floating arrow over the station, and an edge arrow when it is off screen.
 - **Opening story** with short quizzes, then an interactive tour.
+- **Educational flight:** liftoff, booster separation, fairing split and spacecraft separation, then a guided tour of everything on the way (the Moon, the Sun, Venus, gravity-assist flybys, the asteroid belt) with facts and sources, orbit insertion or landing, and the data coming home by radio.
+- **Recommended choices:** every room sorts its options with the best fit for your current design first, and says why.
+- **Go back to an earlier stage:** click a completed stage to reopen it (for example, to add a forgotten battery) for a change-request fee that grows the later you are.
 - **Real instrument data:** each mission's real instruments with their NASA mass and power (HiRISE 65 kg, LROC 19.2 kg, HP3 3 kg…), specifications, a NASA or approximate badge, and a link to the source on every card. Detailed 3D models for each instrument type.
 - **Full-screen part and rocket picker:** one big card at a time with a live 3D model you can turn, price, real-world values, strengths and weaknesses, how to use it, and the budget after choosing. Carry it yourself or install it directly.
 - **Jump and fly:** hold Space to fire the suit thrusters, or press F for flight mode (Space up, Q down).

@@ -58,7 +58,8 @@ export function RotateNotice() {
 
 export async function goFullscreen() {
   try {
-    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
-    if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape');
+    if (document.fullscreenElement) { await document.exitFullscreen(); return; }
+    await document.documentElement.requestFullscreen();
+    if (isTouch && screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape');
   } catch (e) { /* not supported on this browser */ }
 }

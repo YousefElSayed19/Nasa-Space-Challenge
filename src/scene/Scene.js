@@ -16,6 +16,8 @@ import { tasksFor } from '../state/tasks.js';
 import { stepOf } from '../state/tutorial.js';
 import { lin } from './materials.js';
 import { renderThumbs } from './thumbs.js';
+import TOURS from '../data/tours.json';
+let flightT = 0;
 import { warmPreview } from './preview.js';
 
 const V3 = THREE.Vector3;
@@ -688,6 +690,7 @@ function tick() {
   if (s.screen === 'mission') {
     const h = hud.get();
     space.update(dt, h.missionPhase || 'Launch', h.missionKind || 'ok');
+    flightT += dt; if (flightT > 0.15) { flightT = 0; const fp = space.getProgress(); const tour = TOURS[store.get().missionId] || []; let cur = tour[0]; for (const t of tour) if (fp >= t.at) cur = t; space.setFocus(cur && cur.body); hud.set({ flightP: fp, tourStop: cur || null }); }
     renderer.render(space.scene, space.camera);
     return;
   }
