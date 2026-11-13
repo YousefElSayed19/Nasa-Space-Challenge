@@ -239,9 +239,33 @@ export function buildWorld(scene) {
 
   // ---------- Assembly Hall: cradle and spacecraft ----------
   {
-    cyl(1.7, 1.9, 0.4, metal, 0, 0.2, 0);
-    cyl(1.75, 1.75, 0.05, std('#6EA8FF', { emissive: '#6EA8FF', emissiveIntensity: 1.4 }), 0, 0.42, 0);
-    for (const sx of [-1, 1]) box(0.25, 1.4, 1.4, metal, sx * 0.85, 1.0, 0);
+    // payload processing stand: stepped octagonal base, adapter ring, four clamp arms, lights and an umbilical mast
+    const dark = std('#232B5C', { metalness: 0.65, roughness: 0.35 }), steel = std('#9AA6D8', { metalness: 0.9, roughness: 0.25 });
+    const glowRing = std('#6EA8FF', { emissive: '#6EA8FF', emissiveIntensity: 1.5 });
+    const tier = (rt, rb, h, y, mat) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, 8), mat); m.rotation.y = Math.PI / 8; m.position.y = y; scene.add(m); return m; };
+    tier(1.95, 2.05, 0.18, 0.09, dark);
+    tier(1.6, 1.75, 0.22, 0.29, metal);
+    tier(1.15, 1.3, 0.16, 0.48, dark);
+    cyl(1.98, 1.98, 0.03, glowRing, 0, 0.19, 0, undefined, 48);
+    cyl(1.62, 1.62, 0.03, glowRing, 0, 0.41, 0, undefined, 48);
+    // conical payload adapter the spacecraft sits on
+    const adapter = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.98, 1.04, 32, 1, true), steel); adapter.position.y = 1.08; // top meets the bus floor scene.add(adapter);
+    const flange = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.05, 10, 40), steel); flange.rotation.x = Math.PI / 2; flange.position.y = 1.6; scene.add(flange);
+    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; const bolt = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.05, 8), dark); bolt.position.set(Math.cos(a) * 0.62, 1.63, Math.sin(a) * 0.62); scene.add(bolt); }
+    // four clamp arms with pads that hold the bus
+    for (let i = 0; i < 4; i++) {
+      const a = Math.PI / 4 + i * Math.PI / 2, cx = Math.cos(a), cz = Math.sin(a);
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.5, 0.18), metal); post.position.set(cx * 1.45, 1.25, cz * 1.45); scene.add(post);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.12), steel); arm.position.set(cx * 1.27, 1.95, cz * 1.27); arm.rotation.y = -a; scene.add(arm);
+      const pad = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.32, 0.26), dark); pad.position.set(cx * 1.1, 1.95, cz * 1.1); pad.rotation.y = -a; scene.add(pad);
+      const piston = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.75, 10), steel); piston.position.set(cx * 1.6, 0.85, cz * 1.6); piston.rotation.set(Math.sin(a) * 0.35, 0, -Math.cos(a) * 0.35); scene.add(piston);
+      const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10), std('#FFC24B', { emissive: '#FFC24B', emissiveIntensity: 2 })); lamp.position.set(cx * 1.45, 2.05, cz * 1.45); scene.add(lamp); refs.lamps.push(lamp);
+    }
+    // umbilical mast with a cable to the spacecraft
+    const mast = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.2, 0.2), metal); mast.position.set(-2.35, 1.6, 0.6); scene.add(mast);
+    const mastTop = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.12, 0.2), steel); mastTop.position.set(-2.05, 3.1, 0.6); scene.add(mastTop);
+    const cable = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(-1.75, 3.05, 0.6), new THREE.Vector3(-1.4, 2.6, 0.5), new THREE.Vector3(-1.1, 2.4, 0.35)]), 16, 0.035, 8), dark); scene.add(cable);
+    collider(-2.35, 0.6, 0.2, 0.2);
     const craft = new THREE.Group(); scene.add(craft); refs.craft = craft;
     const foilTex = canvasTex(512, 512, (g, w, h) => {
       g.fillStyle = '#C9A04A'; g.fillRect(0, 0, w, h);
@@ -263,7 +287,7 @@ export function buildWorld(scene) {
     refs.flame = new THREE.Mesh(new THREE.ConeGeometry(0.45, 2.8, 24, 1, true), glow('#FFB04B', 0.9)); refs.flame.rotation.x = Math.PI; refs.flame.position.set(0, BUS_Y - 2.8, 0); refs.flame.visible = false; craft.add(refs.flame);
     refs.flameCore = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1.6, 16, 1, true), glow('#FFFFFF', 0.9)); refs.flameCore.rotation.x = Math.PI; refs.flameCore.position.set(0, BUS_Y - 2.2, 0); refs.flameCore.visible = false; craft.add(refs.flameCore);
     refs.mountRing = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.04, 10, 40), glow('#6EA8FF', 1)); refs.mountRing.visible = false; scene.add(refs.mountRing);
-    collider(0, 0, 1.9, 1.9);
+    collider(0, 0, 2.05, 2.05);
     const sg = label('🛠  Assembly Cradle', '#6EA8FF'); sg.position.set(0, 5.6, 0); scene.add(sg);
   }
 

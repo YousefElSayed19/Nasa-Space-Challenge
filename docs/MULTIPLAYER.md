@@ -4,7 +4,7 @@ MissionForge can be played by 1 to 4 people online. One player hosts a room; the
 
 ## How it works
 - The host's browser runs the real game. Guests send their actions (install a part, approve a stage, choose a rocket…) to the host, and the host sends the shared design back to everyone about ten times a second.
-- Each player takes one of the four roles: Systems Engineer (the host), Science Lead, Launch and Orbit Lead, Budget and Risk Manager. A stage locks only when every role approves; each player can approve only their own role, and the host signs for roles nobody took.
+- Each player takes one of the four roles: Systems Engineer (the host), Science Lead, Launch and Orbit Lead, Budget and Risk Manager. A stage locks only when every role approves. Each player sees and signs only their own role; the host is the admin, sees every role, and can approve or object for any of them (including roles nobody took).
 - Everyone walks the facility with their own engineer and sees the others moving, with their names above them.
 - Messages go through a free public MQTT message server over a secure WebSocket (the same kind of connection as opening a web page), so it works on the same hotspot, on different hotspots, or on any Wi-Fi. No direct device-to-device connection is needed. Version 0.25 used peer-to-peer WebRTC, which many phone hotspots block; 0.25.3 switched to MQTT for that reason.
 - The public brokers are shared and unencrypted beyond TLS: do not send personal information. Only player names, positions and design choices are sent.

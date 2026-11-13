@@ -97,7 +97,7 @@ export function Picker({ s, station }) {
   const [i, setI] = useState(0);
   const [dir, setDir] = useState('r');
   const [showReal, setShowReal] = useState(false);
-  const rec = recommend(groups[g].items, s, T, isRocket);
+  const rec = s.showRecs ? recommend(groups[g].items, s, T, isRocket) : { order: groups[g].items, best: null, why: {} };
   const items = rec.order, idx = Math.min(i, items.length - 1), item = items[idx];
   const go = d => { setDir(d > 0 ? 'r' : 'l'); setI(x => (x + d + items.length) % items.length); };
   const pick = k => { setDir(k > idx ? 'r' : 'l'); setI(k); };

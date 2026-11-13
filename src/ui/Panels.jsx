@@ -4,6 +4,7 @@ import { useHud } from './hooks.js';
 import { THUMBS } from '../state/thumbs.js';
 import { HOWTO, WHAT, prosCons, statsOf, rocketProsCons } from './explain.js';
 import { LockedStation } from './Locked.jsx';
+import { net } from '../state/net.js';
 import { A, roleOwner } from '../state/actions.js';
 import { hud } from '../state/store.js';
 import { Sound } from '../audio/sound.js';
@@ -373,31 +374,42 @@ export function StationPanel({ s }) {
 export function SignoffModal({ s }) {
   const so = s.signoff; if (!so) return null;
   const checks = stageChecks(s, so.stage);
+  const guest = net.role === 'guest', host = net.role === 'host';
+  const ownerName = i => { const p = net.players.find(x => x.role === i); return p ? p.name + (p.id === net.myId ? ' (you)' : '') : 'no player: the host signs'; };
+  // guests see only their own role; the host (admin) and same-screen teams see every role
+  const rows = checks.map((c, i) => ({ c, i })).filter(({ i }) => !guest || i === net.myRole);
+  const count = Object.keys(so.approvals).length;
   return (
     <div className="overlay">
       <section className="signoff glass" aria-label="Team sign-off">
-        <div className="label">Team sign-off</div>
+        <div className="label">{host ? 'Team sign-off · you are the admin' : 'Team sign-off'}</div>
         <h2 style={{ margin: '2px 0 4px' }}>Lock {STAGE_NAMES[so.stage - 1].toLowerCase()}?</h2>
-        <p className="sub">Each role checks its own numbers. Locking needs all four approvals. One objection sends the team back to fix it.</p>
-        {checks.map((c, i) => {
+        <p className="sub">{guest ? 'Check your own numbers, then approve or object. The other roles review theirs.'
+          : host ? 'You see every role. Each player approves their own; as the admin you can approve or object for any role.'
+            : 'Each role checks its own numbers. Locking needs all four approvals. One objection sends the team back to fix it.'}</p>
+        {rows.map(({ c, i }) => {
           const approved = so.approvals[i];
+          const mine = !net.role || net.role === 'solo' || i === net.myRole;
           return (
             <div key={c.role} className={'role' + (approved ? ' approved' : '')}>
-              <span className="rn">{c.role} <span className="owner">{roleOwner(s, i)}</span></span>
+              <span className="rn">{c.role} <span className="owner">{net.role === 'solo' ? roleOwner(s, i) : ownerName(i)}</span></span>
               <span className={'st ' + (c.ok ? 'ok' : 'warn')}>{c.ok ? 'Looks fine' : 'Concern'}</span>
               <span className="rr">{c.note}</span>
               <span className="role-act">
                 {approved ? <span className="st ok">Approved</span> : (
                   <>
-                    <button className="btn small" onClick={() => A.object(i, c.note)}>Object</button>
-                    <button className="btn small primary" onClick={() => A.approve(i)}>Approve</button>
+                    <button className="btn small" onClick={() => A.object(i, c.note)}>{host && !mine ? 'Object for them' : 'Object'}</button>
+                    <button className="btn small primary" onClick={() => A.approve(i)}>{host && !mine ? 'Approve for them' : 'Approve'}</button>
                   </>
                 )}
               </span>
             </div>
           );
         })}
-        <div className="foot"><button className="btn" onClick={A.cancelSignoff}>Cancel</button><span className="tag">{Object.keys(so.approvals).length} of 4 approved</span></div>
+        <div className="foot">
+          {!guest ? <button className="btn" onClick={A.cancelSignoff}>Cancel</button> : <span></span>}
+          <span className="tag">{guest ? (so.approvals[net.myRole] ? 'You approved. Waiting for the others…' : `${count} of 4 approved`) : `${count} of 4 approved`}</span>
+        </div>
       </section>
     </div>
   );

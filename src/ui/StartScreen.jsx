@@ -68,6 +68,11 @@ function OnlinePanel({ s, ok }) {
   const choose = t => { if (t === 'solo' && net.role !== 'solo') leaveRoom(); setTab(t); };
   return (
     <div className="online">
+      <div className="label">Recommendations</div>
+      <div className="seg">
+        <button className={s.showRecs ? 'on' : ''} onClick={() => A.setPrefs({ showRecs: true })}>★ Show recommended choices</button>
+        <button className={!s.showRecs ? 'on' : ''} onClick={() => A.setPrefs({ showRecs: false })}>No hints (harder)</button>
+      </div>
       <div className="label">How do you want to play?</div>
       <div className="seg online-tabs">
         <button className={tab === 'solo' ? 'on' : ''} onClick={() => choose('solo')}>🧑‍🚀 Solo or same screen</button>

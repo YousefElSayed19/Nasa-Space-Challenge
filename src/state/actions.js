@@ -89,7 +89,7 @@ export const A = {
   setPrefs(patch) {
     store.set(patch);
     const s = store.get();
-    saveJSON('mf-prefs', { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden });
+    saveJSON('mf-prefs', { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden, showRecs: s.showRecs });
     if ('graphics' in patch) bus.emit('graphics', s.graphics);
   },
   cycleView() {
@@ -286,7 +286,7 @@ export const A = {
     const missionId = patch.missionId || s.missionId;
     const mode = patch.mode || s.mode;
     setMission(missionId);
-    store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden, mode, missionId, teamNames: s.teamNames }), team: s.team, screen: 'game' });
+    store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden, showRecs: s.showRecs, mode, missionId, teamNames: s.teamNames }), team: s.team, screen: 'game' });
     let extra = { stage: 1 };
     if (mode === 'replay') extra = { ...preloadReal(store.get()), stage: 6, locked: { 1: true, 2: true, 3: true, 4: true, 5: true } };
     if (mode === 'sandbox') extra = { stage: 6, ...(patch.design ? { installed: patch.design.installed, rocket: patch.design.rocket, propLoaded: patch.design.propLoaded } : {}) };
@@ -309,7 +309,7 @@ export const A = {
   },
   deleteDesign(id) { saveJSON('mf-designs', loadJSON('mf-designs', []).filter(d => d.id !== id)); store.set(st => ({ savedTick: st.savedTick + 1 })); },
   openInSandbox(design) { A.reset({ mode: 'sandbox', missionId: design.mission, design }); },
-  backToMenu() { const s = store.get(); store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden, mode: s.mode, missionId: s.missionId, teamNames: s.teamNames }) }); bus.emit('reset'); },
+  backToMenu() { const s = store.get(); store.set({ ...freshState(s.profile, { graphics: s.graphics, muted: s.muted, camMode: s.camMode, mapHidden: s.mapHidden, showRecs: s.showRecs, mode: s.mode, missionId: s.missionId, teamNames: s.teamNames }) }); bus.emit('reset'); },
 };
 
 // ---------- online play: guests send design actions to the host, who runs them for everyone ----------
@@ -319,8 +319,8 @@ const HOST_ONLY = ['startMission', 'openReport'];
 for (const name of SHARED_ACTIONS) {
   const run = A[name];
   A[name] = (...args) => {
-    const freeRole = net.role === 'host' && !net.players.some(p => p.role === args[0]); // roles nobody took: the host signs for them
-    if ((name === 'approve' || name === 'object') && net.role !== 'solo' && args[0] !== net.myRole && !freeRole) {
+    // the host is the admin and may sign for any role; every other player only for their own
+    if ((name === 'approve' || name === 'object') && net.role === 'guest' && args[0] !== net.myRole) {
       A.toast(`Only the ${ROLES[args[0]]} can ${name} this. You are the ${ROLES[net.myRole]}.`, 'warn'); return;
     }
     if (net.role === 'guest') { sendAct(name, args); return; }
