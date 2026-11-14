@@ -18,7 +18,7 @@ export function label(text, accent) {
   const t = canvasTex(512, 128, g => {
     g.fillStyle = 'rgba(18,24,52,0.9)'; rr(g, 6, 6, 500, 116, 30); g.fill();
     g.strokeStyle = accent; g.lineWidth = 4; rr(g, 6, 6, 500, 116, 30); g.stroke();
-    g.fillStyle = '#E8ECFF'; g.font = `600 44px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 256, 66);
+    g.fillStyle = '#E8ECFF'; let fs = 44; g.font = `600 ${fs}px ${FONT}`; while (fs > 22 && g.measureText(text).width > 452) { fs -= 2; g.font = `600 ${fs}px ${FONT}`; } g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 256, 66);
   });
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false }));
   s.scale.set(3.6, 0.9, 1);
