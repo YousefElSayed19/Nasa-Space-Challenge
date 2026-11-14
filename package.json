@@ -1,7 +1,7 @@
 {
   "name": "missionforge",
   "private": true,
-  "version": "0.30.1",
+  "version": "0.30.2",
   "type": "module",
   "description": "A 3D space mission design game for NASA Space Apps Cairo 2026.",
   "scripts": {

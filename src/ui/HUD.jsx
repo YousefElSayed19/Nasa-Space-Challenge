@@ -180,7 +180,7 @@ function FlightBadge() {
 
 function PickerHost({ s }) {
   const id = s.panel;
-  if (!id) return null;
+  if (!id || s.signoff) return null; // the sign-off window replaces the buy screen
   const st = stationById(id);
   if (!isPickerStation(id)) return !isFree(s) && st.stage > s.stage ? <LockedStation s={s} station={st} key={'lock' + id} /> : null;
   if (!isFree(s) && st.stage > s.stage) return <LockedStation s={s} station={st} key={'lock' + id} />;

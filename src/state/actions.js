@@ -357,7 +357,7 @@ for (const name of SHARED_ACTIONS) {
     if ((name === 'approve' || name === 'object') && net.role === 'guest' && args[0] !== net.myRole) {
       A.toast(`Only the ${ROLES[args[0]]} can ${name} this. You are the ${ROLES[net.myRole]}.`, 'warn'); return;
     }
-    if (net.role === 'guest') { sendAct(name, args); return; }
+    if (net.role === 'guest') { if (name === 'requestLock') store.set({ panel: null }); sendAct(name, args); return; }
     return run(...args);
   };
 }
