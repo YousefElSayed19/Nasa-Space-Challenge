@@ -20,11 +20,11 @@ function Viewer({ spec, label }) {
       <div className="pk-canvas-host" ref={ref}></div>
       <span className="pk-chip">{label}</span>
       <div className="pk-zoom">
-        <button onClick={() => zoomBy(1 / 1.2)} aria-label="Zoom in">+</button>
-        <button onClick={() => zoomBy(1.2)} aria-label="Zoom out">−</button>
+        <button onClick={() => zoomBy(1 / 1.25)} aria-label="Zoom in" title="Zoom in (+)">+</button>
+        <button onClick={() => zoomBy(1.25)} aria-label="Zoom out" title="Zoom out (−)">−</button>
         <button onClick={resetView} aria-label="Reset view">⟲</button>
       </div>
-      <span className="pk-hint">Drag to orbit · Scroll to zoom · Double-click to reset</span>
+      <span className="pk-hint">Drag to turn · Right-drag or Shift-drag to move · Scroll or pinch to zoom · Double-click to reset</span>
     </div>
   );
 }
@@ -106,6 +106,8 @@ export function Picker({ s, station }) {
     const onKey = e => {
       if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      else if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomBy(1 / 1.25); }
+      else if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomBy(1.25); }
       else if (e.key === 'Escape') A.close();
     };
     window.addEventListener('keydown', onKey, true);

@@ -33,24 +33,48 @@ function init() {
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.002; stage.add(shadow);
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 200);
   V = { canvas, renderer, scene, stage, ring, camera, current: null, leaving: [], raf: 0, attached: null,
-    yaw: 0.7, pitch: 0.32, dist: 4, fit: 4, height: 1, vel: 0.0035, idle: 0, drag: null, zoom: 1, zoomT: 1, t: 0 };
+    yaw: 0.7, pitch: 0.32, dist: 4, fit: 4, height: 1, vel: 0.0035, idle: 0, drag: null, zoom: 1, zoomT: 1, t: 0,
+    pan: new THREE.Vector3(), panT: new THREE.Vector3(), pointers: new Map(), pinch: null };
 
-  canvas.addEventListener('pointerdown', e => { V.drag = { x: e.clientX, y: e.clientY }; V.vel = 0; V.idle = 0; canvas.setPointerCapture(e.pointerId); });
+  // left drag orbits, right drag (or Shift + drag) pans, wheel or pinch zooms, double-click resets
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+  canvas.addEventListener('pointerdown', e => {
+    V.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    canvas.setPointerCapture(e.pointerId); V.vel = 0; V.idle = 0;
+    if (V.pointers.size === 2) { const [a, b] = [...V.pointers.values()]; V.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: V.zoomT }; V.drag = null; return; }
+    V.drag = { x: e.clientX, y: e.clientY, pan: e.button === 2 || e.shiftKey };
+  });
   canvas.addEventListener('pointermove', e => {
+    if (!V.pointers.has(e.pointerId)) return;
+    V.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (V.pinch && V.pointers.size === 2) {
+      const [a, b] = [...V.pointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      V.zoomT = clampZoom(V.pinch.z * V.pinch.d / Math.max(20, d)); V.idle = 0; return;
+    }
     if (!V.drag) return;
     const dx = e.clientX - V.drag.x, dy = e.clientY - V.drag.y;
-    V.yaw -= dx * 0.009; V.pitch = Math.max(-0.15, Math.min(1.25, V.pitch + dy * 0.007));
-    V.vel = -dx * 0.009; V.drag = { x: e.clientX, y: e.clientY };
+    if (V.drag.pan) {
+      // move the view across the screen plane, scaled to how far away the camera is
+      const k = V.fit * V.zoom * 0.0016;
+      const right = new THREE.Vector3(Math.cos(V.yaw), 0, -Math.sin(V.yaw));
+      V.panT.addScaledVector(right, -dx * k); V.panT.y += dy * k;
+      const lim = V.fit * 0.35; V.panT.clampLength(0, lim);
+    } else {
+      V.yaw -= dx * 0.009; V.pitch = Math.max(-0.35, Math.min(1.35, V.pitch + dy * 0.007)); V.vel = -dx * 0.009;
+    }
+    V.drag.x = e.clientX; V.drag.y = e.clientY; V.idle = 0;
   });
-  const up = () => { V.drag = null; V.idle = 0; };
+  const up = e => { V.pointers.delete(e.pointerId); if (V.pointers.size < 2) V.pinch = null; if (!V.pointers.size) V.drag = null; V.idle = 0; };
   canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
-  canvas.addEventListener('wheel', e => { e.preventDefault(); zoomBy(e.deltaY > 0 ? 1.12 : 1 / 1.12); }, { passive: false });
+  // smooth wheel: small trackpad scrolls give small steps, a mouse notch gives about 12%
+  canvas.addEventListener('wheel', e => { e.preventDefault(); const d = Math.max(-120, Math.min(120, e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY)); zoomBy(Math.exp(d * 0.0011)); }, { passive: false });
   canvas.addEventListener('dblclick', resetView);
   return V;
 }
 
-export function zoomBy(f) { if (!V) return; V.zoomT = Math.max(0.45, Math.min(2.2, V.zoomT * f)); V.idle = 0; }
-export function resetView() { if (!V) return; V.zoomT = 1; V.pitch = 0.32; V.vel = 0.0035; V.idle = 3; }
+const clampZoom = z => Math.max(0.16, Math.min(2.6, z)); // close enough to see small details, far enough to see the whole part
+export function zoomBy(f) { if (!V) return; V.zoomT = clampZoom(V.zoomT * f); V.idle = 0; }
+export function resetView() { if (!V) return; V.zoomT = 1; V.panT.set(0, 0, 0); V.pitch = 0.32; V.vel = 0.0035; V.idle = 3; }
 
 function build(spec) {
   if (spec.kind === 'rocket') return buildRocket(ALL_ROCKETS.find(r => r.id === spec.id) || ALL_ROCKETS[0], 4).group;
@@ -73,6 +97,7 @@ function setSpec(spec) {
   V.height = size.y;
   V.fit = sphere / Math.sin((V.camera.fov * Math.PI / 180) / 2) * 1.35;
   V.stageScale = Math.max(0.35, radius * 1.25);
+  V.zoomT = 1; V.panT.set(0, 0, 0);
   V.renderer.compile(V.scene, V.camera);
 }
 
@@ -96,9 +121,11 @@ function loop(now) {
   const ss = V.stage.scale.x + ((V.stageScale || 1) - V.stage.scale.x) * (1 - Math.exp(-8 * dt));
   V.stage.scale.set(ss, 1, ss);
   V.ring.material.opacity = 0.6 + Math.sin(V.t * 2) * 0.3;
-  const d = V.fit * V.zoom, ty = V.height * 0.45;
-  camera.position.set(Math.sin(V.yaw) * Math.cos(V.pitch) * d, ty + Math.sin(V.pitch) * d, Math.cos(V.yaw) * Math.cos(V.pitch) * d);
-  camera.lookAt(0, ty, 0);
+  V.pan.lerp(V.panT, 1 - Math.exp(-12 * dt));
+  const d = V.fit * V.zoom, ty = V.height * 0.45, tgt = new THREE.Vector3(V.pan.x, ty + V.pan.y, V.pan.z);
+  camera.position.set(tgt.x + Math.sin(V.yaw) * Math.cos(V.pitch) * d, tgt.y + Math.sin(V.pitch) * d, tgt.z + Math.cos(V.yaw) * Math.cos(V.pitch) * d);
+  camera.near = Math.max(0.002, d * 0.02); camera.updateProjectionMatrix();
+  camera.lookAt(tgt);
   renderer.render(V.scene, camera);
   V.raf = requestAnimationFrame(loop);
 }
