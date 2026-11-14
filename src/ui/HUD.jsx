@@ -207,7 +207,6 @@ export function HUD({ s }) {
         <div className="hud-right">
           {game && <MiniMap s={s} />}
           {game && <StationPanel s={s} />}
-          <LogPanel s={s} />
         </div>
       </div>
       <div className="hud-bottom">

@@ -265,7 +265,12 @@ export const A = {
     store.set({ stage: 7, locked: { ...s.locked, 6: true }, overruled: n, verdicts: v, panel: null, carrying: null, screen: 'launching' });
     bus.emit('launch'); Sound.rumble();
   },
-  startMission() { const s = store.get(); store.set({ screen: 'mission', emerg: {}, result: simulate(s, (Date.now() & 0xffffff) + 7) }); },
+  startMission() {
+    const s = store.get();
+    // emergencies are random: each possible one happens with a 35% chance, at most two per flight, sometimes none
+    const spots = Object.entries(EMERG.place[s.missionId] || {}).filter(() => Math.random() < 0.35).slice(0, 2).map(([stop]) => stop);
+    store.set({ screen: 'mission', emerg: {}, emergPlan: spots, result: simulate(s, (Date.now() & 0xffffff) + 7) });
+  },
   /** A flight emergency was answered: ok changes nothing, partial costs science and a warning, lost ends the flight. */
   emergency(id, pick) {
     const s = store.get(); const r = s.result; if (!r || (s.emerg || {})[id]) return;

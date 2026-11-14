@@ -6,7 +6,7 @@ and then the game explains which of your own decisions made the mission succeed 
 
 ## Flight emergencies
 
-During the flight, real-world problems come up: safe mode, a comet’s dust, a collision warning, the asteroid belt, a faulty propellant valve. Pick A, B or C. The right answer is what NASA actually did; a wrong one can lose the spacecraft. The flight panel also works through the real orbit equations (Hohmann transfer, Kepler’s third law, rocket equation) with NASA planetary constants. See docs/SOURCES.md.
+During the flight, real-world problems come up: safe mode, a comet’s dust, a collision warning, the asteroid belt, a faulty propellant valve. They are random: each flight gets none, one or two. Pick A, B or C. The right answer is what NASA actually did; a wrong one can lose the spacecraft. The flight panel also works through the real orbit equations (Hohmann transfer, Kepler’s third law, rocket equation) with NASA planetary constants. See docs/SOURCES.md.
 
 ## ▶ Play now
 

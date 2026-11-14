@@ -148,7 +148,10 @@ function EmEquation({ s, kind }) {
   return null;
 }
 
-export function emergencyAt(s, stopName) { const id = ((EMERG.place[s.missionId] || {})[stopName]); return id ? { id, ...EMERG.list[id] } : null; }
+export function emergencyAt(s, stopName) {
+  if (!(s.emergPlan || []).includes(stopName)) return null;
+  const id = ((EMERG.place[s.missionId] || {})[stopName]); return id ? { id, ...EMERG.list[id] } : null;
+}
 
 function EmergencyCard({ s, em }) {
   const ans = (s.emerg || {})[em.id];
@@ -201,10 +204,11 @@ export function TourCard({ s }) {
   const live = h.tourView == null;
   const words = cur ? cur.facts.join(' ').split(/\s+/).length : 0;
   const readTime = Math.max(6, words / 3 + 4 + (cur && cur.eq ? 6 : 0));
-  useEffect(() => { setLeft(readTime); }, [cur && cur.name, h.tourHold]);
+  const emDone = cur && emergencyAt(s, cur.name) && (s.emerg || {})[emergencyAt(s, cur.name).id];
+  useEffect(() => { setLeft(emDone ? 25 : readTime); }, [cur && cur.name, h.tourHold, !!emDone]);
   useEffect(() => {
     const e0 = cur && emergencyAt(s, cur.name);
-    if (!h.tourHold || !auto || !live || e0) return;
+    if (!h.tourHold || !auto || !live || (e0 && !(s.emerg || {})[e0.id])) return;
     const t = setInterval(() => setLeft(x => { if (x <= 0.1) { clearInterval(t); bus.emit('tourNext'); return 0; } return x - 0.1; }), 100);
     return () => clearInterval(t);
   }, [h.tourHold, auto, live, cur && cur.name, s.emerg]);
@@ -233,8 +237,8 @@ export function TourCard({ s }) {
           : !live ? <button className="btn small primary" onClick={() => bus.emit('tourView', null)}>Back to the flight ▶</button>
           : h.tourHold && em && !emAns ? <span className="tag">Choose A, B or C to continue</span>
           : h.tourHold ? <>
-            <label className="tour-auto"><input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} /> Auto {auto && !em && `(${Math.ceil(left)} s)`}</label>
-            <button className="btn small primary" onClick={() => bus.emit('tourNext')}>Continue ▶</button>
+            <label className="tour-auto"><input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} /> Auto {auto && `(${Math.ceil(left)} s)`}</label>
+            <button className="btn small primary" onClick={() => bus.emit('tourNext')}>{emAns ? 'Continue the flight ▶' : 'Continue ▶'}</button>
           </> : <span className="tag">Flying to the next stop…</span>}
       </div>
     </section>

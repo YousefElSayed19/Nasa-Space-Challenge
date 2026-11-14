@@ -266,7 +266,6 @@ function onKeyDown(e) {
   else if (e.code === 'KeyC') A.toggleCamera();
   else if (e.code === 'KeyF') toggleFlight();
   else if (e.code === 'KeyM') A.toggleMap();
-  else if (e.code === 'KeyL') store.set(st => ({ showLog: !st.showLog }));
   else if (e.code === 'KeyX') A.putBack();
   else if (e.code === 'Escape') A.close();
   else if (e.code === 'Space') jump(s);

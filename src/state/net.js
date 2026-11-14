@@ -13,7 +13,7 @@ const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
 /** Design state that every player shares (everything else, like the open panel, stays local). */
 export const SHARED_KEYS = ['missionId', 'mode', 'team', 'stage', 'locked', 'installed', 'rocket', 'propLoaded', 'log', 'changeFees', 'changeCount',
-  'checks', 'verdicts', 'signoff', 'objections', 'overruled', 'loan', 'changeMode', 'topUp', 'result', 'screen', 'emerg'];
+  'checks', 'verdicts', 'signoff', 'objections', 'overruled', 'loan', 'changeMode', 'topUp', 'result', 'screen', 'emerg', 'emergPlan'];
 
 export const net = { role: 'solo', code: null, client: null, players: [], myId: null, myRole: 0, status: '', listeners: new Set() };
 const emit = () => net.listeners.forEach(f => f({ ...net }));

@@ -1,3 +1,4 @@
+import { Sound } from '../audio/sound.js';
 import React, { useEffect, useRef, useState } from 'react';
 import { A } from '../state/actions.js';
 import { Stars } from './InfoDot.jsx';
@@ -247,10 +248,13 @@ export function Picker({ s, station }) {
           );
   }
 
+  // the confirm buttons are always pressable: if something is still missing, say what and where
+  const tryLock = (ok, msg, kind, n) => () => { if (ok) A.requestLock(kind, n); else { Sound.warn(); A.toast(msg, 'warn'); } };
+  const missSys = [!T.has('array') && 'a solar array (Power Room)', !T.has('antenna') && 'an antenna (Communications Room)'].filter(Boolean);
   const stageBtn = !isFree(s) && (
-    def.lab && s.stage === 2 ? <button className="btn ghost-go" disabled={!s.installed.some(id => partById(id).slot === 'instrument')} onClick={() => A.requestLock('stage', 2)}>Confirm payload ➜</button>
-      : def.slots && s.stage === 3 ? <button className="btn ghost-go" disabled={!(T.has('array') && T.has('antenna'))} onClick={() => A.requestLock('stage', 3)}>Confirm systems ➜</button>
-        : station === 'board' && s.stage === 4 ? <button className="btn ghost-go" disabled={!s.rocket} onClick={() => A.requestLock('rocket')}>Confirm rocket ➜</button> : null);
+    def.lab && s.stage === 2 ? <button className="btn ghost-go" onClick={tryLock(s.installed.some(id => partById(id).slot === 'instrument'), 'Install at least one instrument first.', 'stage', 2)}>Confirm payload ➜</button>
+      : def.slots && s.stage === 3 ? <button className="btn ghost-go" onClick={tryLock(!missSys.length, `Before you confirm systems, you still need ${missSys.join(' and ')}.`, 'stage', 3)}>Confirm systems ➜</button>
+        : station === 'board' && s.stage === 4 ? <button className="btn ghost-go" onClick={tryLock(!!s.rocket, 'Select a rocket first.', 'rocket')}>Confirm rocket ➜</button> : null);
 
   const spec = isRocket ? { kind: 'rocket', id: item.id } : { kind: 'part', id: item.id };
   const has = x => (isRocket ? s.rocket === x.id : s.installed.includes(x.id));
