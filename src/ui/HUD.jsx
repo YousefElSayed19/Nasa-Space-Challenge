@@ -219,7 +219,7 @@ export function HUD({ s }) {
         <div className="hb-center">{game && <FlightBadge />}{game && <Prompt />}</div>
         <div className="hb-right"><Settings s={s} /></div>
       </div>
-      {game && <Pointer />}
+      {game && !(s.showGlossary || s.showMap || s.signoff || s.reopen != null || isPickerStation(s.panel) || (s.panel && stationById(s.panel) && !isFree(s) && stationById(s.panel).stage > s.stage)) && <Pointer />}
       {game && <ReviewBubbles />}
       <Toasts s={s} />
       <ReopenModal s={s} />

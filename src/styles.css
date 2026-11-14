@@ -1036,3 +1036,8 @@ button{touch-action:manipulation}
 .pk-tabs button.done{border-color:rgba(62,224,160,.55)}
 @media (max-height:760px){.pk-why-many{display:none}.pk-impact{padding:7px 10px}.pk-imp-sub{display:none}}
 @media (max-height:520px){.pk-impact{display:none}}
+
+/* v0.29.1: Help controls never overflow their badges */
+.controls-grid div{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start}
+.controls-grid .key{min-width:44px;height:auto;min-height:26px;padding:3px 8px;white-space:nowrap;line-height:1.3}
+.controls-grid div > span:last-child{padding-top:3px;line-height:1.4}
