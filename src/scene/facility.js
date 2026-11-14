@@ -233,7 +233,7 @@ export function buildWorld(scene) {
       const top = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.06, 0.85), std('#3EE0A0', { emissive: '#3EE0A0', emissiveIntensity: 0.6 })); top.position.y = 1.02; g.add(top);
       const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.12, 20, 14), std('#555A70', { emissive: '#000000' })); lamp.position.set(0, 1.2, -0.18); g.add(lamp); refs.lamps.push(lamp);
       g.position.set(rx - 1.5 + i * 1.0, 0, rz); scene.add(g);
-      (refs.reviewSeats = refs.reviewSeats || []).push({ x: rx - 1.5 + i * 1.0, z: rz - 0.85 });
+      (refs.reviewSeats = refs.reviewSeats || []).push({ x: rx - 1.5 + i * 1.0, z: rz - 0.98 });
       const chair = new THREE.Group(); chair.position.set(rx - 1.5 + i * 1.0, 0, rz - 0.95); scene.add(chair);
       const seat = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.08, 20), std('#1B2250', { roughness: 0.6 })); seat.position.y = 0.52; chair.add(seat);
       const back = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.55, 0.07), std('#1B2250', { roughness: 0.6 })); back.position.set(0, 0.85, -0.25); chair.add(back);

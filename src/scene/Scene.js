@@ -73,8 +73,8 @@ export function initScene(container) {
   // the Go/No-Go review board: one reviewer per role, seated behind each console
   reviewers = (refs.reviewSeats || []).map((seat, i) => {
     const c = createCharacter({ ...store.get().profile, ...REVIEW_LOOK[i], nick: ROLES[i] });
-    c.root.position.set(seat.x, -0.33, seat.z); c.root.rotation.y = 0; scene.add(c.root);
-    const tag = nameLabel(ROLES[i], REVIEW_LOOK[i].accent); tag.scale.set(2.4, 0.6, 1); tag.position.y = 2.55; c.root.add(tag);
+    c.root.position.set(seat.x, 0, seat.z); c.root.rotation.y = 0; scene.add(c.root);
+    const tag = nameLabel(ROLES[i], REVIEW_LOOK[i].accent); tag.scale.set(1.15, 0.29, 1); tag.position.y = 2.05; c.root.add(tag);
     return { c, seat, tag, verdict: null, t: Math.random() * 6, pose: 0, last: null };
   });
   // first-person hands ride on the camera
@@ -497,17 +497,19 @@ function updateWorld(dt, s, acts) {
   const bubbles = [];
   reviewers.forEach((r, i) => {
     r.t += dt; r.pose = Math.max(0, r.pose - dt * 0.4);
-    const face = inReview || (near && r.verdict) ? Math.atan2(player.pos.x - r.seat.x, player.pos.z - r.seat.z) : 0;
+    const toYou = Math.atan2(player.pos.x - r.seat.x, player.pos.z - r.seat.z);
+    const face = inReview || (near && r.verdict) ? Math.max(-0.5, Math.min(0.5, toYou)) : 0;
     r.base = r.base || 0;
     let d = face - r.base; d = Math.atan2(Math.sin(d), Math.cos(d)); r.base += d * (1 - Math.exp(-4 * dt));
     const go = r.verdict && r.verdict.go, nogo = r.verdict && !r.verdict.go;
     // NO-GO: a slow head-and-shoulders shake toward you; idle: glances at the screen now and then
-    const shake = inReview && nogo ? Math.sin(r.t * 6) * 0.14 * (0.4 + Math.min(1, r.pose * 3)) : (!inReview ? Math.sin(r.t * 0.4 + i) * 0.12 : 0);
+    const shake = inReview && nogo ? Math.sin(r.t * 6) * 0.1 * (0.4 + Math.min(1, r.pose * 3)) : (!inReview ? Math.sin(r.t * 0.4 + i) * 0.08 : 0);
     r.c.root.rotation.y = r.base + shake;
-    r.c.update(dt, { speed: 0, crouch: true, wave: inReview && go && Math.sin(r.t * 1.3 + i) > 0.2, carrying: false });
+    r.c.update(dt, { speed: 0, sit: true, wave: inReview && go && Math.sin(r.t * 1.3 + i) > 0.2, carrying: false });
+    r.tag.visible = inReview || near;
     r.tag.material.color = lin(!r.verdict ? '#FFFFFF' : go ? '#BDF3DA' : '#FFB3BA');
     if ((inReview || near) && r.verdict && s.screen === 'game') {
-      const v3 = new V3(r.seat.x, 2.9, r.seat.z).project(camera);
+      const v3 = new V3(r.seat.x, 2.35, r.seat.z).project(camera);
       if (v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05) bubbles.push({ i, x: Math.round((v3.x + 1) / 2 * window.innerWidth), y: Math.round((1 - v3.y) / 2 * window.innerHeight), go, role: ROLES[i], text: r.verdict.reason, risk: r.verdict.risk });
     }
   });

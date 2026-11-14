@@ -126,12 +126,25 @@ function FullscreenBtn() {
 /** Speech bubbles over the review board: each reviewer says GO or NO-GO and why. */
 function ReviewBubbles() {
   const h = useHud();
-  const list = h.reviewBubbles || [];
+  const list = (h.reviewBubbles || []).slice().sort((a, b) => a.x - b.x);
   if (!list.length) return null;
+  // lay the bubbles out side by side above the reviewers, so they never overlap; a line joins each to its reviewer
+  const W = window.innerWidth, gap = 8;
+  // stay inside the free middle column, under the task card
+  const c = document.querySelector('.hud-center'), t = document.querySelector('.hud-center .tasks');
+  const cr = c ? c.getBoundingClientRect() : { left: 20, right: W - 20, top: 90 };
+  const bw = Math.max(120, Math.min(210, (cr.right - cr.left - gap * (list.length - 1)) / list.length));
+  const total = list.length * bw + (list.length - 1) * gap;
+  const mid = list.reduce((a, b) => a + b.x, 0) / list.length;
+  const left = Math.max(cr.left, Math.min(cr.right - total, mid - total / 2));
+  const top = (t ? t.getBoundingClientRect().bottom : cr.top) + 10;
   return (
     <div className="rv-bubbles passthru">
-      {list.map(b => (
-        <div key={b.i} className={'rv-bubble ' + (b.go ? 'go' : 'nogo')} style={{ left: b.x, top: b.y, animationDelay: b.i * 0.12 + 's' }}>
+      <svg className="rv-lines" width={W} height={window.innerHeight}>
+        {list.map((b, k) => { const cx = left + k * (bw + gap) + bw / 2; return <line key={b.i} x1={cx} y1={top + 40} x2={b.x} y2={b.y} className={b.go ? 'go' : 'nogo'} />; })}
+      </svg>
+      {list.map((b, k) => (
+        <div key={b.i} className={'rv-bubble ' + (b.go ? 'go' : 'nogo')} style={{ left: left + k * (bw + gap), top, width: bw, animationDelay: k * 0.12 + 's' }}>
           <div className="rv-top"><b>{b.go ? 'GO' : 'NO-GO'}</b><span>{b.role}</span>{b.risk && <em>{b.risk} risk</em>}</div>
           <p>{b.text}</p>
         </div>

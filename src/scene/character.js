@@ -36,7 +36,7 @@ function stripTexture(color) {
 export function createCharacter(profile) {
   const root = new THREE.Group();
   const carryHolder = new THREE.Group(); root.add(carryHolder);
-  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0, hands: 0, turn: 0, moon: 0 }, look: 0 };
+  const st = { phase: 0, t: 0, lastStep: 1, w: { walk: 0, run: 0, carry: 0, crouch: 0, pump: 0, wave: 0, air: 0, fly: 0, thrust: 0, hands: 0, turn: 0, moon: 0, sit: 0 }, look: 0 };
   let viewMode = 'full';
   let rig = build(profile);
   root.add(rig.body);
@@ -214,6 +214,7 @@ export function createCharacter(profile) {
     W.air = damp(W.air, inp.air ? 1 : 0, 14, dt);
     W.fly = damp(W.fly, inp.fly ? 1 : 0, 4, dt);
     W.moon = damp(W.moon, inp.moon && inp.speed > 0.4 ? 1 : 0, 8, dt);
+    W.sit = inp.sit ? 1 : 0;
     // turning on the spot: small stepping feet, only when not already walking
     W.turn = damp(W.turn, Math.min(1, (inp.turn || 0) / 1.6) * (1 - Math.min(1, inp.speed / 1.2)), 10, dt);
     W.hands = damp(W.hands, viewMode === 'hands' ? 1 : 0, 10, dt);
@@ -310,6 +311,14 @@ export function createCharacter(profile) {
         lx = lerp(lx, -0.15 + Math.sin(beat) * 0.15, M); rx = lerp(rx, -0.15 - Math.sin(beat) * 0.15, M);
         le = lerp(le, -0.9, M); re = lerp(re, -0.9, M); lz = lerp(lz, 0.2, M); rz = lerp(rz, -0.2, M);
       }
+    }
+    // seated: thighs level on the chair, shins straight down, upright back, forearms resting on the desk
+    if (W.sit) {
+      for (const L of [r.legL, r.legR]) { L.hip.rotation.x = -1.5; L.knee.rotation.x = 1.5; L.ankle.rotation.x = 0; }
+      r.body.position.y = -0.4 * r.hs; r.body.position.x = 0;
+      r.hips.rotation.set(0, 0, 0); r.spine.rotation.set(-0.05 + Math.sin(t * 1.6) * 0.01, 0, 0);
+      if (!inp.wave) { lx = -0.75 + Math.sin(t * 1.1) * 0.03; rx = -0.75 - Math.sin(t * 1.3) * 0.03; le = -0.9; re = -0.9; lz = 0.12; rz = -0.12; }
+      else { lx = -0.75; le = -0.9; lz = 0.12; }
     }
     r.armL.sh.rotation.set(lx, 0, lz); r.armR.sh.rotation.set(rx, 0, rz);
     r.armL.el.rotation.set(le, 0, 0);
