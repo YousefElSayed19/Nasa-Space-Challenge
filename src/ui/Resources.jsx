@@ -3,13 +3,15 @@ import { InfoDot } from './InfoDot.jsx';
 import { useAnimatedNumber } from './hooks.js';
 import { MISSION, RES_INFO, MARGIN, totals, resources, status, pct, fmt, money, rocketById } from '../engine/index.js';
 
+const noChute = T => MISSION.events.includes('entry') && !T.has('parachute');
 function hintFor(key, r, T, s) {
   if (key === 'mass' && !T.rocket) return `Measured against ${rocketById(MISSION.defaultRocket).name} until you pick a rocket.`;
   if (key === 'budget' && s.mode === 'sandbox') return 'Sandbox: no budget limit.';
   if (key === 'budget') return r.h < 0 ? `Over budget by ${money(r.used - r.limit)}.` : `${money(r.limit - r.used)} left to spend (${pct(r.h)}).`;
   if (key === 'power' && T.supply === 0) return 'No solar array installed yet.';
   if (key === 'data' && T.downlink === 0) return T.prod ? 'No antenna: no data can reach Earth.' : 'No antenna installed yet.';
-  if (key === 'prop') return s.propLoaded > 0 ? `Loaded ${fmt(s.propLoaded)} of ${fmt(T.need)} needed.` : `Orbit insertion needs about ${fmt(T.need)} units.`;
+  if (key === 'prop' && noChute(T)) return `No parachute yet, so the engines would have to do all the braking (${fmt(T.need)} units). Fit a parachute in the Protection & Entry Room.`;
+  if (key === 'prop') return s.propLoaded > 0 ? `Loaded ${fmt(s.propLoaded)} of ${fmt(T.need)} needed.` : `${MISSION.lands ? 'The landing' : 'Orbit insertion'} needs about ${fmt(T.need)} units.`;
   if (r.h < 0) return `Over the limit by ${fmt(r.used - r.limit)}.`;
   if (r.h < MARGIN) return `Headroom ${pct(r.h)}, below the 25% margin.`;
   return `Headroom ${pct(r.h)}.`;
@@ -21,7 +23,7 @@ const WORDS = { ok: 'OK', warn: 'Thin', crit: 'Over', none: 'Missing' };
 function Row({ r, T, s }) {
   const used = useAnimatedNumber(r.used);
   const none = r.limit <= 0;
-  const st = none ? 'none' : status(r.h);
+  const st = none || (r.key === 'prop' && noChute(T)) ? 'none' : status(r.h);
   const ratio = none ? 0 : Math.min(1.08, r.used / r.limit);
   return (
     <div className={'row' + (st === 'crit' ? ' pulse' : '')}>

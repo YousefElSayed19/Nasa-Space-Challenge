@@ -969,3 +969,10 @@ button{touch-action:manipulation}
 .rv-bubble{transform:none!important;animation-name:rv-pop3!important}
 @keyframes rv-pop3{from{opacity:0;transform:translateY(-8px) scale(.94)}to{opacity:1;transform:none}}
 .rv-bubbles{z-index:1}
+
+/* v0.28.2: "?" cards float above every panel and are never cut off */
+#ui .pop.pop-float{position:fixed!important;right:auto!important;bottom:auto!important;transform:none!important;width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow-y:auto;z-index:60;
+  padding:12px 14px;white-space:normal;animation:note-in .25s ease;box-shadow:0 16px 40px rgba(0,0,0,.55)}
+#ui .pop.pop-float p{margin:6px 0 0;font-size:13px;line-height:1.5}
+.pop-close{display:block;margin-top:8px;font-size:11px;color:var(--muted)}
+.info.on{background:var(--blue);color:#06102e}
