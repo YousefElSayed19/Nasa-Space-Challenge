@@ -1041,3 +1041,25 @@ button{touch-action:manipulation}
 .controls-grid div{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start}
 .controls-grid .key{min-width:44px;height:auto;min-height:26px;padding:3px 8px;white-space:nowrap;line-height:1.3}
 .controls-grid div > span:last-child{padding-top:3px;line-height:1.4}
+
+/* v0.29.2: Help controls in neat groups, How to score 100 */
+.ctl-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:12px}
+.ctl-group{border:1px solid var(--edge);border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.025)}
+.ctl-title{font-size:12.5px;font-weight:700;color:var(--blue);margin-bottom:6px;letter-spacing:.02em}
+.ctl-row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:start;padding:6px 0;border-top:1px solid rgba(130,160,255,.1)}
+.ctl-row:first-of-type{border-top:none}
+.ctl-row .key{justify-self:start;min-width:0;height:auto;min-height:24px;padding:2px 9px;white-space:nowrap;font-size:12px}
+.ctl-d{font-size:12.5px;line-height:1.45;color:#dfe4ff;padding-top:2px}
+.perfect{margin:6px 0 4px}
+.pf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.pf-card{border:1px solid var(--edge);border-radius:12px;padding:10px 12px;background:rgba(62,224,160,.04)}
+.pf-card b{font-size:13px;color:#9FE8C8}
+.pf-card p{margin:4px 0 0;font-size:12.5px;line-height:1.45;color:#dfe4ff}
+.pf-card em{font-style:normal;color:var(--amber);font-weight:650}
+.pf-example{margin-top:10px;border:1px solid rgba(255,194,75,.5);border-radius:14px;padding:12px 14px;background:rgba(255,194,75,.05)}
+.pf-ex-h{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
+.pf-ex-h b{color:var(--amber)} .pf-ex-h span{font-size:12px;color:var(--muted)}
+.pf-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.pf-cols > div{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.pf-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.pf-chip{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--edge);background:rgba(255,255,255,.04)}

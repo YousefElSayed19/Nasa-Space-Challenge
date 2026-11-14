@@ -1,0 +1,7 @@
+{
+  "_note": "Designs found by searching every combination with the game engine; each scored 100 in most of 30 test flights (the rest lost a few points to random faults).",
+  "moon": { "instruments": ["moon-lroc", "moon-lola", "moon-lamp", "moon-lend", "moon-crater"], "systems": ["moon-array-m", "moon-ant-ka", "moon-battery", "moon-shield"], "rocket": "atlas", "rate": "23 of 30" },
+  "mars": { "instruments": ["cam-hires", "radar", "ctx", "sounder"], "systems": ["array-m", "ant-3", "battery", "shield"], "rocket": "atlas", "rate": "23 of 30" },
+  "lander": { "instruments": ["lander-seis", "lander-hp3", "lander-rise", "lander-cls-tele"], "systems": ["lander-array-m", "lander-ant-uhf", "lander-battery", "lander-heat-h", "lander-chute-s", "la-eng-biprop"], "rocket": "atlas", "rate": "27 of 30" },
+  "europa": { "instruments": ["eu-mise", "eu-reason", "eu-themis", "eu-ecm", "eu-uvs", "eu-pims", "europa-cls-tele"], "systems": ["eu-array-s", "eu-ant-3", "eu-battery", "eu-vault", "eu-eng-biprop"], "rocket": "fh", "rate": "27 of 30" }
+}

@@ -212,9 +212,6 @@ export function HUD({ s }) {
       </div>
       <div className="hud-bottom">
         <div className="hb-left">
-          {s.tutorial == null && !isTouch && <div className="controls glass">
-            {s.camMode === 'auto' ? <><span><b>W/S</b> forward · back</span><span><b>A/D</b> turn</span></> : <span><b>WASD</b> move</span>}<span><b>Drag</b> look</span><span><b>Shift</b> run</span><span><b>Space</b> jump{s.firstPerson ? '' : ' · hold to fly'}</span>{!s.firstPerson && <span><b>F</b> flight mode</span>}<span><b>E</b> interact</span><span><b>V</b> view (3rd · 1st · hands)</span><span><b>C</b> auto/free camera</span><span><b>M</b> map</span><span><b>L</b> log</span>
-          </div>}
         </div>
         <div className="hb-center">{game && <FlightBadge />}{game && <Prompt />}</div>
         <div className="hb-right"><Settings s={s} /></div>

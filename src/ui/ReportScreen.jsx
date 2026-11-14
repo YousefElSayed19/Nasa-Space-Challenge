@@ -100,7 +100,7 @@ export function ReportScreen({ s }) {
                 </div>
               );
             })}
-            {score < 100 ? <p className="lost-sum">Where the missing <b>{100 - Math.round(score)}</b> points went is listed under each part above.</p> : <p className="lost-sum">A perfect score: nothing was lost.</p>}
+            {score < 100 ? <p className="lost-sum">Where the missing <b>{100 - Math.round(score)}</b> points went is listed under each part above. <button className="linkbtn" onClick={A.toggleGlossary}>🏆 How to score 100</button></p> : <p className="lost-sum">A perfect score: nothing was lost.</p>}
             {r.skipped.length > 0 && <p className="tag">Skipped checks: {r.skipped.join(', ')}.</p>}
             {teamNotes && <p className="tag">Team: {teamNotes}</p>}
             <p className="approx">Weights are placeholders to tune in playtesting (GDD 4.7).</p>
