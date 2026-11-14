@@ -16,6 +16,14 @@ import { tasksFor } from '../state/tasks.js';
 import { stepOf } from '../state/tutorial.js';
 import { lin } from './materials.js';
 import { renderThumbs } from './thumbs.js';
+import { ROLES } from '../engine/index.js';
+const REVIEW_LOOK = [
+  { suit: '#6EA8FF', accent: '#FFC24B', helmet: 'dome', body: 'standard', height: 'medium', pack: 'life', patch: 'star', gloves: 'dark', visor: 'gold' },
+  { suit: '#B48CFF', accent: '#3EE0A0', helmet: 'halo', body: 'slim', height: 'short', pack: 'tool', patch: 'none', gloves: 'white', visor: 'blue' },
+  { suit: '#FF9A6E', accent: '#6EA8FF', helmet: 'angular', body: 'sturdy', height: 'tall', pack: 'jet', patch: 'none', gloves: 'accent', visor: 'silver' },
+  { suit: '#3EE0A0', accent: '#FF9A6E', helmet: 'dome', body: 'standard', height: 'medium', pack: 'life', patch: 'none', gloves: 'dark', visor: 'gold' },
+];
+let reviewers = [], lastBubbleKey = '';
 import { net, sendPos } from '../state/net.js';
 import { label as nameLabel } from './textures.js';
 const remotes = {}; let posT = 0;
@@ -62,6 +70,13 @@ export function initScene(container) {
   world = buildWorld(scene); refs = world.refs; colliders = world.colliders;
   hero = createCharacter(store.get().profile);
   scene.add(hero.root);
+  // the Go/No-Go review board: one reviewer per role, seated behind each console
+  reviewers = (refs.reviewSeats || []).map((seat, i) => {
+    const c = createCharacter({ ...store.get().profile, ...REVIEW_LOOK[i], nick: ROLES[i] });
+    c.root.position.set(seat.x, -0.33, seat.z); c.root.rotation.y = 0; scene.add(c.root);
+    const tag = nameLabel(ROLES[i], REVIEW_LOOK[i].accent); tag.scale.set(2.4, 0.6, 1); tag.position.y = 2.55; c.root.add(tag);
+    return { c, seat, tag, verdict: null, t: Math.random() * 6, pose: 0, last: null };
+  });
   // first-person hands ride on the camera
   hands = createHands(store.get().profile);
   camera.add(hands.group); scene.add(camera); hands.group.visible = false;
@@ -186,9 +201,11 @@ function onStore() {
   if (s.stage !== last.stage || s.installed !== last.installed || s.propLoaded !== last.propLoaded || s.verdicts !== last.verdicts) {
     const v = s.stage >= 6 ? (s.verdicts || reviewVerdicts(s)) : null;
     refs.lamps.forEach((l, i) => {
-      const c = !v ? '#555A70' : v[i].go ? '#3EE0A0' : '#FF5D6C';
-      l.material.color = lin(c); l.material.emissive = lin(v ? c : '#000000'); l.material.emissiveIntensity = v ? 2 : 0;
+      if (!v || !v[i]) { l.material.color = lin('#555A70'); l.material.emissive = lin('#000000'); l.material.emissiveIntensity = 0; return; }
+      const c = v[i].go ? '#3EE0A0' : '#FF5D6C';
+      l.material.color = lin(c); l.material.emissive = lin(c); l.material.emissiveIntensity = 2;
     });
+    reviewers.forEach((r, i) => { const nv = v && v[i] ? v[i] : null; if (nv && (!r.verdict || r.verdict.go !== nv.go)) r.pose = 1; r.verdict = nv; });
   }
   const tut = stepOf(s);
   const tid = s.screen === 'game' ? ((tut && tut.target) || tasksFor(s).target) : null;
@@ -474,6 +491,29 @@ function updateWorld(dt, s, acts) {
     r.hero.root.position.set(r.x, r.y, r.z); r.hero.root.rotation.y = r.f; r.hero.root.visible = s.screen === 'game';
     r.hero.update(dt, { speed: r.sp, air: r.y > 0.05 });
   }
+  // review board
+  const inReview = s.screen === 'game' && s.panel === 'review';
+  const near = Math.hypot(player.pos.x - (refs.reviewSeats ? refs.reviewSeats[1].x + 0.5 : 0), player.pos.z - (refs.reviewSeats ? refs.reviewSeats[0].z : 0)) < 6;
+  const bubbles = [];
+  reviewers.forEach((r, i) => {
+    r.t += dt; r.pose = Math.max(0, r.pose - dt * 0.4);
+    const face = inReview || (near && r.verdict) ? Math.atan2(player.pos.x - r.seat.x, player.pos.z - r.seat.z) : 0;
+    r.base = r.base || 0;
+    let d = face - r.base; d = Math.atan2(Math.sin(d), Math.cos(d)); r.base += d * (1 - Math.exp(-4 * dt));
+    const go = r.verdict && r.verdict.go, nogo = r.verdict && !r.verdict.go;
+    // NO-GO: a slow head-and-shoulders shake toward you; idle: glances at the screen now and then
+    const shake = inReview && nogo ? Math.sin(r.t * 6) * 0.14 * (0.4 + Math.min(1, r.pose * 3)) : (!inReview ? Math.sin(r.t * 0.4 + i) * 0.12 : 0);
+    r.c.root.rotation.y = r.base + shake;
+    r.c.update(dt, { speed: 0, crouch: true, wave: inReview && go && Math.sin(r.t * 1.3 + i) > 0.2, carrying: false });
+    r.tag.material.color = lin(!r.verdict ? '#FFFFFF' : go ? '#BDF3DA' : '#FFB3BA');
+    if ((inReview || near) && r.verdict && s.screen === 'game') {
+      const v3 = new V3(r.seat.x, 2.9, r.seat.z).project(camera);
+      if (v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05) bubbles.push({ i, x: Math.round((v3.x + 1) / 2 * window.innerWidth), y: Math.round((1 - v3.y) / 2 * window.innerHeight), go, role: ROLES[i], text: r.verdict.reason, risk: r.verdict.risk });
+    }
+  });
+  const bkey = bubbles.map(b => b.i + ':' + b.go + ':' + Math.round(b.x / 8) + ':' + Math.round(b.y / 8)).join('|');
+  if (bkey !== lastBubbleKey) { lastBubbleKey = bkey; hud.set({ reviewBubbles: bubbles }); }
+
   // tell the map where the player is (a few times a second)
   meT += dt;
   if (meT > 0.12 && s.screen === 'game') {

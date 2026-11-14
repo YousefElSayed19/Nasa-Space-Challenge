@@ -123,6 +123,23 @@ function FullscreenBtn() {
   return <button className="btn" onClick={goFullscreen} title="Full screen (F11 also works)">{fs ? '⤡ Exit full screen' : '⤢ Full screen'}</button>;
 }
 
+/** Speech bubbles over the review board: each reviewer says GO or NO-GO and why. */
+function ReviewBubbles() {
+  const h = useHud();
+  const list = h.reviewBubbles || [];
+  if (!list.length) return null;
+  return (
+    <div className="rv-bubbles passthru">
+      {list.map(b => (
+        <div key={b.i} className={'rv-bubble ' + (b.go ? 'go' : 'nogo')} style={{ left: b.x, top: b.y, animationDelay: b.i * 0.12 + 's' }}>
+          <div className="rv-top"><b>{b.go ? 'GO' : 'NO-GO'}</b><span>{b.role}</span>{b.risk && <em>{b.risk} risk</em>}</div>
+          <p>{b.text}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function FlightBadge() {
   const h = useHud();
   if (!h.flying) return null;
@@ -171,6 +188,7 @@ export function HUD({ s }) {
         <div className="hb-right"><Settings s={s} /></div>
       </div>
       {game && <Pointer />}
+      {game && <ReviewBubbles />}
       <Toasts s={s} />
       <ReopenModal s={s} />
       {game && <ChangeBanner s={s} />}

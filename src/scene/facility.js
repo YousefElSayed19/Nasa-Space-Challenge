@@ -233,8 +233,13 @@ export function buildWorld(scene) {
       const top = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.06, 0.85), std('#3EE0A0', { emissive: '#3EE0A0', emissiveIntensity: 0.6 })); top.position.y = 1.02; g.add(top);
       const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.12, 20, 14), std('#555A70', { emissive: '#000000' })); lamp.position.set(0, 1.2, -0.18); g.add(lamp); refs.lamps.push(lamp);
       g.position.set(rx - 1.5 + i * 1.0, 0, rz); scene.add(g);
+      (refs.reviewSeats = refs.reviewSeats || []).push({ x: rx - 1.5 + i * 1.0, z: rz - 0.85 });
+      const chair = new THREE.Group(); chair.position.set(rx - 1.5 + i * 1.0, 0, rz - 0.95); scene.add(chair);
+      const seat = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.08, 20), std('#1B2250', { roughness: 0.6 })); seat.position.y = 0.52; chair.add(seat);
+      const back = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.55, 0.07), std('#1B2250', { roughness: 0.6 })); back.position.set(0, 0.85, -0.25); chair.add(back);
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 10), std('#9AA6D8', { metalness: 0.8 })); pole.position.y = 0.25; chair.add(pole);
     }
-    collider(rx, rz, 2.1, 0.5);
+    collider(rx, rz - 0.4, 2.1, 0.95);
   }
 
   // ---------- Assembly Hall: cradle and spacecraft ----------
@@ -259,7 +264,7 @@ export function buildWorld(scene) {
       const arm = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.12), steel); arm.position.set(cx * 1.27, 1.95, cz * 1.27); arm.rotation.y = -a; scene.add(arm);
       const pad = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.32, 0.26), dark); pad.position.set(cx * 1.1, 1.95, cz * 1.1); pad.rotation.y = -a; scene.add(pad);
       const piston = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.75, 10), steel); piston.position.set(cx * 1.6, 0.85, cz * 1.6); piston.rotation.set(Math.sin(a) * 0.35, 0, -Math.cos(a) * 0.35); scene.add(piston);
-      const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10), std('#FFC24B', { emissive: '#FFC24B', emissiveIntensity: 2 })); lamp.position.set(cx * 1.45, 2.05, cz * 1.45); scene.add(lamp); refs.lamps.push(lamp);
+      const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10), std('#FFC24B', { emissive: '#FFC24B', emissiveIntensity: 2 })); lamp.position.set(cx * 1.45, 2.05, cz * 1.45); scene.add(lamp); (refs.cradleLamps = refs.cradleLamps || []).push(lamp);
     }
     // umbilical mast with a cable to the spacecraft
     const mast = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.2, 0.2), metal); mast.position.set(-2.35, 1.6, 0.6); scene.add(mast);

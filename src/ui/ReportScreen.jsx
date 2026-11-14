@@ -3,6 +3,7 @@ import { A, unlockedMissions } from '../state/actions.js';
 import { loadJSON } from '../state/store.js';
 import { useAnimatedNumber } from './hooks.js';
 import { topScores } from '../state/leaderboard.js';
+import { scoreBreakdown } from '../engine/index.js';
 import { MISSION, MISSIONS, STAGE_NAMES, partById, causeTrace, badgesFor, pct, fmt, money, isFree } from '../engine/index.js';
 
 const END = {
@@ -69,6 +70,7 @@ export function ReportScreen({ s }) {
     ['Total cost', s.mode === 'sandbox' ? `${money(T.cost)} (sandbox)` : `${money(T.cost)} of ${money(T.budget)}`, MISSION.real.cost],
     ['Instruments', `${s.installed.filter(id => partById(id).slot === 'instrument').length}`, MISSION.real.instruments],
   ];
+  const SB = scoreBreakdown(s, r);
   const sc = [['Science value', r.parts.science, 40], ['Efficiency', r.parts.efficiency, 20], ['Decision quality', r.parts.decisions, 25], ['Risk handling', r.parts.risk, 15]];
   const next = MISSIONS.find(m => m.unlockAfter === s.missionId);
   const canNext = s.mode === 'campaign' && next && unlockedMissions().includes(next.id);
@@ -86,12 +88,19 @@ export function ReportScreen({ s }) {
         </div>
         <div className="grid2">
           <div className="sec"><h3>Score breakdown</h3>
-            {sc.map(([n, v, m]) => (
-              <div className="comp" key={n}>
-                <div className="row-top"><span>{n}</span><span className="val">{Math.round(v)} / {m}</span></div>
-                <div className="bar"><div className="fill grow" style={{ width: (v / m) * 100 + '%', background: 'var(--grad)' }}></div></div>
-              </div>
-            ))}
+            {sc.map(([n, v, m], ci) => {
+              const key = ['science', 'efficiency', 'decisions', 'risk'][ci], why = SB.items[key];
+              return (
+                <div className="comp" key={n}>
+                  <div className="row-top"><span>{n}</span><span className="val">{Math.round(v)} / {m}{m - v >= 0.5 && <em className="lost"> −{Math.round(m - v)}</em>}</span></div>
+                  <div className="bar"><div className="fill grow" style={{ width: (v / m) * 100 + '%', background: 'var(--grad)' }}></div></div>
+                  {why.filter(i => i.pts >= 0.3).map((i, k) => (
+                    <div key={k} className="lost-row"><b>−{i.pts >= 0.95 ? Math.round(i.pts) : i.pts.toFixed(1)}</b><div><span>{i.why}</span><em>→ {i.fix}</em></div></div>
+                  ))}
+                </div>
+              );
+            })}
+            {score < 100 ? <p className="lost-sum">Where the missing <b>{100 - Math.round(score)}</b> points went is listed under each part above.</p> : <p className="lost-sum">A perfect score: nothing was lost.</p>}
             {r.skipped.length > 0 && <p className="tag">Skipped checks: {r.skipped.join(', ')}.</p>}
             {teamNotes && <p className="tag">Team: {teamNotes}</p>}
             <p className="approx">Weights are placeholders to tune in playtesting (GDD 4.7).</p>
