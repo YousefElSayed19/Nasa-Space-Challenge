@@ -92,6 +92,22 @@ All four missions in the game are one-way robotic missions: none of the real spa
 | Space Apps participant terms and conditions | https://spaceappschallenge.org/legal | Open-source licence, citing sources, originality, content rules |
 | Cairo Hackathon Guide 2026 | Provided by the organizers (no public link) | Schedule, judging criteria, submission checklist |
 
+## C2. Flight emergencies and orbit equations
+
+Each flight emergency is based on a real event. The right answer is what the real team did.
+
+| Emergency | Real case used | Source |
+|---|---|---|
+| Safe mode | Curiosity switched to its backup (B-side) computer after a memory fault (Feb–Mar 2013); Voyager 2 lost contact for about two weeks after a wrong command tipped its antenna 2° (Jul–Aug 2023); hydrazine freezes at about 1.4 °C | NASA JPL news releases; NASA propellant data |
+| Comet dust | Comet C/2013 A1 Siding Spring passed about 139,500 km from Mars at 56 km/s (19 Oct 2014); MRO, MAVEN and Mars Odyssey were moved to be behind Mars at the dust peak | NASA JPL, Jul 2014 and Oct 2014 |
+| Collision warning | ISS rule: a debris avoidance maneuver when the probability of collision is above 1 in 10,000 | NASA Orbital Debris Program Office; NASA ISS |
+| Asteroid belt | 1.1–1.9 million asteroids larger than 1 km; average spacing about 600,000 miles; Pioneer 10, Galileo, Cassini, Juno crossed safely | NASA Science, Asteroids facts |
+| Propellant valve | Juno’s helium check valves opened slowly (Oct 2016); NASA kept Juno in its 53-day orbit (Feb 2017). Akatsuki’s engine failed at Venus (2010) and was rescued with its attitude thrusters (Dec 2015) | NASA JPL, Feb 2017; JAXA |
+
+Choosing the right answer changes nothing. A partial answer costs 20% of the science, 3 risk points and 2.5 decision points. A wrong answer ends the mission (the spacecraft does not arrive).
+
+Orbit equations in the flight panel use real constants from the NASA Planetary Fact Sheets (nssdc.gsfc.nasa.gov/planetary/factsheet): μ Sun = 1.32712×10²⁰ m³/s², μ Earth = 3.986004×10¹⁴, μ Mars = 4.2828×10¹³, 1 AU = 1.495979×10¹¹ m, semi-major axes Mars 1.5237 AU and Jupiter 5.2029 AU, Moon distance 384,400 km. The equations are circular speed v = √(μ/r), vis-viva v = √(μ(2/r − 1/a)), Hohmann transfer time π√(a³/μ), Kepler’s third law T = 2π√(a³/μ), the rocket equation Δv = Isp·g₀·ln(m₀/m_f) and the plane change Δv = 2v·sin(Δi/2).
+
 ## D. Consulted but not used for game numbers
 
 | Source | Link | Why it is not used |

@@ -1,5 +1,6 @@
 // Every player decision goes through here, so it is logged with its effects (GDD 4.3).
-import { store, saveJSON, loadJSON, freshState } from './store.js';
+import EMERG from '../data/emergencies.json';
+import { store, hud, saveJSON, loadJSON, freshState } from './store.js';
 import { bus } from './bus.js';
 import { addScore } from './leaderboard.js';
 import { net, sendAct } from './net.js';
@@ -52,7 +53,7 @@ export const A = {
     const team = [s.profile.nick, ...s.teamNames.map(n => n.trim()).filter(Boolean)].slice(0, 4);
     // every run starts empty: the player decides everything (Replay alone starts from the real design, and says so)
     let patch = { screen: 'game', team, stage: 1, locked: {}, installed: [], carrying: null, rocket: null, propLoaded: 0, changeFees: 0, changeCount: 0,
-      overruled: 0, objections: 0, verdicts: null, checks: {}, log: [], panel: null, result: null, signoff: null, replayNotice: s.mode === 'replay', loan: 0, scoreId: null };
+      overruled: 0, objections: 0, verdicts: null, checks: {}, log: [], panel: null, result: null, signoff: null, replayNotice: s.mode === 'replay', loan: 0, scoreId: null, emerg: {} };
     if (s.mode === 'replay') patch = { ...patch, ...preloadReal(s), stage: 6, locked: { 1: true, 2: true, 3: true, 4: true, 5: true } };
     if (s.mode === 'sandbox') patch = { ...patch, stage: 6 };
     store.set(patch);
@@ -264,7 +265,35 @@ export const A = {
     store.set({ stage: 7, locked: { ...s.locked, 6: true }, overruled: n, verdicts: v, panel: null, carrying: null, screen: 'launching' });
     bus.emit('launch'); Sound.rumble();
   },
-  startMission() { const s = store.get(); store.set({ screen: 'mission', result: simulate(s, (Date.now() & 0xffffff) + 7) }); },
+  startMission() { const s = store.get(); store.set({ screen: 'mission', emerg: {}, result: simulate(s, (Date.now() & 0xffffff) + 7) }); },
+  /** A flight emergency was answered: ok changes nothing, partial costs science and a warning, lost ends the flight. */
+  emergency(id, pick) {
+    const s = store.get(); const r = s.result; if (!r || (s.emerg || {})[id]) return;
+    const em = EMERG.list[id], opt = em.options[pick];
+    const shownN = Math.max(1, hud.get().tlShown || 1);
+    let res = { ...r, parts: { ...r.parts }, timeline: r.timeline.slice(), issues: r.issues.slice() };
+    if (opt.result === 'partial' && !r.fail) {
+      res.sciPct *= 0.8; res.science *= 0.8; res.sciFactor *= 0.8; res.parts.science *= 0.8;
+      res.parts.risk = Math.max(0, res.parts.risk - 3); res.parts.decisions = Math.max(0, res.parts.decisions - 2.5);
+      res.issues.push({ res: 'emergency', loss: 0.2, em: id });
+      const at = id === 'fuel' ? Math.max(shownN, res.timeline.findIndex(e => e.phase === 'Orbit insertion') + 1) : shownN;
+      res.timeline.splice(Math.min(at, res.timeline.length), 0, { phase: id === 'fuel' ? 'Orbit insertion' : 'Cruise', kind: 'warn', text: `${em.title}: the spacecraft survived, but some science was lost.` });
+      if (res.outcome === 'ok') res.outcome = 'warn';
+      if (!res.primary) res.primary = 'emergency';
+    } else if (opt.result === 'lost' && !r.fail) {
+      const ph = id === 'fuel' ? 'Orbit insertion' : 'Cruise';
+      const before = res.timeline.slice(0, shownN).filter(e => e.phase === 'Launch' || e.phase === 'Cruise');
+      res.timeline = before.concat([{ phase: ph, kind: 'fail', text: `${em.title}: the wrong call. The spacecraft did not reach its destination.` }, { phase: 'End of mission', kind: 'fail', text: 'Mission ended early.' }]);
+      res.fail = { res: 'emergency', text: `${em.title}. ${opt.why}`, nasa: em.options.find(o => o.result === 'ok').why.replace(/^Right\. /, '') };
+      res.parts.science = 0; res.parts.risk = 0; res.parts.decisions = Math.max(0, res.parts.decisions - 5);
+      res.science = 0; res.sciPct = 0; res.sciFactor = 0; res.outcome = 'fail'; res.primary = 'emergency';
+    }
+    res.score = Math.round(res.parts.science + res.parts.efficiency + res.parts.decisions + res.parts.risk);
+    store.set({ result: res, emerg: { ...(s.emerg || {}), [id]: { pick, result: opt.result } } });
+    if (opt.result === 'ok') { Sound.good(); A.toast('Right call. The flight continues.', 'good'); }
+    else if (opt.result === 'partial') { Sound.warn(); A.toast('The spacecraft survived, but some science was lost.', 'warn'); }
+    else Sound.bad();
+  },
   openReport() {
     const s = store.get();
     store.set({ screen: 'report', stage: 8 });
@@ -313,7 +342,7 @@ export const A = {
 };
 
 // ---------- online play: guests send design actions to the host, who runs them for everyone ----------
-const SHARED_ACTIONS = ['acceptBriefing', 'installDirect', 'remove', 'runCheck', 'requestLock', 'approve', 'object', 'cancelSignoff', 'confirmStage',
+const SHARED_ACTIONS = ['emergency', 'acceptBriefing', 'installDirect', 'remove', 'runCheck', 'requestLock', 'approve', 'object', 'cancelSignoff', 'confirmStage',
   'chooseRocket', 'confirmRocket', 'pump', 'finishFueling', 'goLaunch', 'takeLoan', 'reopenStage', 'finishChange'];
 const HOST_ONLY = ['startMission', 'openReport'];
 for (const name of SHARED_ACTIONS) {

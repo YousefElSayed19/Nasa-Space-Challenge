@@ -27,13 +27,13 @@ export function scoreBreakdown(s, r) {
           power: 'Not enough power: instruments were switched off.', dust: 'Dust on the arrays cut power and switched instruments off.',
           data: 'The antenna could not send all the data home.', pointing: 'The antenna could not send everything during the flybys.',
           'check-calibration': 'An instrument was out of calibration because its check was skipped.', fault: 'A random fault broke an instrument.',
-          storm: 'The solar storm hit with too little margin.', radiation: 'Radiation damaged the electronics.',
+          storm: 'The solar storm hit with too little margin.', emergency: 'A flight emergency damaged the spacecraft.', radiation: 'Radiation damaged the electronics.',
         }[i.res] || 'Science was lost during the flight.';
         const fix = {
           power: 'Pick a bigger solar array, or keep about 25% power headroom.', dust: 'Surface missions need about 30% power headroom for dust storms.',
           data: 'Pick a faster antenna, or fewer data-hungry instruments.', pointing: 'Keep extra data headroom so data can wait until the antenna points home.',
           'check-calibration': 'Run all four pre-launch checks at the cradle.', fault: 'Random faults are bad luck; fewer, well-chosen instruments lose less.',
-          storm: 'Keep about 25% power headroom.', radiation: 'Fit the radiation protection for this mission.',
+          storm: 'Keep about 25% power headroom.', emergency: 'In a flight emergency, choose what the real NASA team did.', radiation: 'Fit the radiation protection for this mission.',
         }[i.res] || 'Keep more margin on every resource.';
         items.push({ w: flown * (i.loss || 0) / Math.max(1e-6, r.issues.reduce((a, x) => a + (x.loss || 0), 0)) || 0, why: txt, fix });
       }
@@ -61,6 +61,9 @@ export function scoreBreakdown(s, r) {
     if (s.overruled) items.push({ w: s.overruled * 0.15, why: `You overruled the team ${s.overruled} time${s.overruled > 1 ? 's' : ''} at the Go/No-Go review.`, fix: 'Fix the No-Go concerns instead of launching over them.' });
     if (s.propLoaded > T.need * 1.15) items.push({ w: 0.2, why: `You loaded ${fmt(s.propLoaded)} units of propellant when ${fmt(T.need)} were needed: extra mass for nothing.`, fix: 'Stop pumping inside the green band at the Fueling Station.' });
     if (r.skipped.length) items.push({ w: r.skipped.length * 0.05, why: `${r.skipped.length} pre-launch check${r.skipped.length > 1 ? 's were' : ' was'} skipped: ${r.skipped.join(', ')}.`, fix: 'Run all four checks at the Assembly Cradle before launch.' });
+    const em = Object.values(s.emerg || {});
+    const emW = em.filter(e => e.result === 'partial').length * 0.1 + em.filter(e => e.result === 'lost').length * 0.2;
+    if (emW) items.push({ w: emW, why: 'A flight emergency was not handled the way NASA would.', fix: 'Read the situation: the right answer is what the real team did (shown after you choose).' });
     if (!items.length) items.push({ w: 1, why: 'Decision quality was reduced.', fix: 'Avoid late changes and run every check.' });
     out.decisions = share(lost('decisions'), items);
   }
@@ -70,7 +73,7 @@ export function scoreBreakdown(s, r) {
     if (r.fail) out.risk = [{ pts: lost('risk'), why: 'The mission was lost.', fix: 'Keep margins on every resource so one problem cannot end the mission.' }];
     else {
       const warns = r.timeline.filter(e => e.kind === 'warn');
-      out.risk = share(lost('risk'), warns.map(e => ({ w: 1, why: `${e.phase}: ${e.text}`, fix: 'More margin on the resource involved would have absorbed it.' })));
+      out.risk = share(lost('risk'), warns.map(e => ({ w: 1, why: `${e.phase}: ${e.text}`, fix: /survived, but/.test(e.text) ? 'Choose what the real NASA team did in the flight emergency.' : 'More margin on the resource involved would have absorbed it.' })));
     }
   }
   const total = Object.values(out).flat().reduce((a, i) => a + i.pts, 0);

@@ -4,6 +4,10 @@ A browser-based 3D game for **NASA Space Apps Cairo 2026** (challenge: *Space Mi
 You walk around a spacecraft hangar, carry parts with your hands, bolt them onto a spacecraft, fuel it, launch it,
 and then the game explains which of your own decisions made the mission succeed or fail.
 
+## Flight emergencies
+
+During the flight, real-world problems come up: safe mode, a comet’s dust, a collision warning, the asteroid belt, a faulty propellant valve. Pick A, B or C. The right answer is what NASA actually did; a wrong one can lose the spacecraft. The flight panel also works through the real orbit equations (Hohmann transfer, Kepler’s third law, rocket equation) with NASA planetary constants. See docs/SOURCES.md.
+
 ## ▶ Play now
 
 **https://yousefelsayed19.github.io/Nasa-Space-Challenge/**

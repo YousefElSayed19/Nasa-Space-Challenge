@@ -1063,3 +1063,28 @@ button{touch-action:manipulation}
 .pf-cols > div{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 .pf-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .pf-chip{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--edge);background:rgba(255,255,255,.04)}
+
+/* v0.30 flight emergencies + debrief "how to score 100" */
+.perf-wrap{margin-top:10px;padding:12px;border:1px solid rgba(255,214,102,.25);border-radius:14px;background:rgba(255,214,102,.04)}
+.perf-wrap .help-h{margin-top:0}
+.emerg{margin-top:10px;padding:12px;border-radius:12px;border:1px solid rgba(255,120,90,.55);background:rgba(255,90,60,.08);animation:emIn .35s ease}
+.emerg.ok{border-color:rgba(80,220,140,.6);background:rgba(80,220,140,.07)}
+.emerg.lost{border-color:rgba(255,80,80,.7)}
+@keyframes emIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.em-head{display:flex;gap:10px;align-items:center}
+.em-ic{font-size:26px}
+.em-tag{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#ff9b80;font-weight:700}
+.em-head b{font-size:15px}
+.emerg p{margin:8px 0 0;font-size:13px;line-height:1.45;color:#d5dcf5}
+.emerg .em-q{font-weight:700;color:#fff}
+.em-opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.em-opt{display:flex;gap:8px;align-items:flex-start;text-align:left;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:#e8ecff;font:inherit;font-size:13px;line-height:1.35;cursor:pointer}
+.em-opt:hover:not(:disabled){border-color:#ffd666;background:rgba(255,214,102,.08)}
+.em-opt:disabled{cursor:default}
+.em-l{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.12);font-weight:800;font-size:12px}
+.em-opt.right{border-color:rgba(80,220,140,.8);background:rgba(80,220,140,.12)}
+.em-opt.wrong{border-color:rgba(255,90,90,.8);background:rgba(255,90,90,.12)}
+.em-opt.dim{opacity:.5}
+.em-res{margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.12)}
+.em-res .em-best{color:#9fe8bd}
+.tour .tour-body{max-height:min(62vh,560px);overflow-y:auto}

@@ -33,7 +33,8 @@
    "facts": [
     "Earth, Mars and your spacecraft all orbit the Sun.",
     "The trip to Mars is about half an orbit around the Sun, called a transfer orbit."
-   ]
+   ],
+   "eq": "hohmann"
   },
   {
    "at": 0.32,
@@ -130,7 +131,8 @@
     "The cruise to Mars is about half an orbit around the Sun.",
     "Sunlight at Mars is weaker, so the lander’s round arrays make 600–700 W on a clear day."
    ],
-   "source": "JPL InSight launch press kit"
+   "source": "JPL InSight launch press kit",
+   "eq": "hohmann"
   },
   {
    "at": 0.32,
@@ -316,7 +318,8 @@
     "The trip to the Moon takes about five days.",
     "Total Δv for LRO was about 1,258 m/s."
    ],
-   "source": "NTRS 20110007093"
+   "source": "NTRS 20110007093",
+   "eq": "hohmann"
   },
   {
    "at": 0.8,
@@ -365,7 +368,8 @@
    "facts": [
     "Jupiter is about five times farther from the Sun than Earth, so sunlight there is only about 4% as strong.",
     "That is why Clipper’s arrays are so large."
-   ]
+   ],
+   "eq": "hohmann"
   },
   {
    "at": 0.26,

@@ -4,6 +4,7 @@ import { loadJSON } from '../state/store.js';
 import { useAnimatedNumber } from './hooks.js';
 import { topScores } from '../state/leaderboard.js';
 import { scoreBreakdown } from '../engine/index.js';
+import { Perfect } from './Perfect.jsx';
 import { MISSION, MISSIONS, STAGE_NAMES, partById, causeTrace, badgesFor, pct, fmt, money, isFree } from '../engine/index.js';
 
 const END = {
@@ -11,6 +12,7 @@ const END = {
   shield: 'Science was lost to a solar-storm safe mode.', pointing: 'Flyby data overflowed while the antenna pointed away.',
   fault: 'An instrument failed partway through.', 'check-connector': 'A loose connector caused data dropouts.',
   'check-calibration': 'An uncalibrated instrument returned unusable data.', 'check-panel': 'A solar panel did not fully unfold.',
+  emergency: 'A flight emergency damaged the spacecraft.',
 };
 
 function Compare({ s, r }) {
@@ -54,6 +56,7 @@ function Compare({ s, r }) {
 export function ReportScreen({ s }) {
   const r = s.result, T = r.T;
   const score = useAnimatedNumber(r.score, 1100);
+  const [perf, setPerf] = useState(false);
   const cancelled = r.outcome === 'fail' && !!s.loan;
   const title = cancelled ? 'Program cancelled' : { ok: MISSION.lands ? 'Landed and working' : 'Mission success', warn: 'Mission degraded', fail: 'Mission lost' }[r.outcome];
   const trace = r.primary ? causeTrace(s, r.primary, T, r) : null;
@@ -100,7 +103,8 @@ export function ReportScreen({ s }) {
                 </div>
               );
             })}
-            {score < 100 ? <p className="lost-sum">Where the missing <b>{100 - Math.round(score)}</b> points went is listed under each part above. <button className="linkbtn" onClick={A.toggleGlossary}>🏆 How to score 100</button></p> : <p className="lost-sum">A perfect score: nothing was lost.</p>}
+            {score < 100 ? <p className="lost-sum">Where the missing <b>{100 - Math.round(score)}</b> points went is listed under each part above. <button className="linkbtn" onClick={() => setPerf(v => !v)}>{perf ? 'Hide' : '🏆 Show'} how to score 100</button></p> : <p className="lost-sum">A perfect score: nothing was lost.</p>}
+            {perf && r.score < 100 && <div className="perf-wrap"><h3 className="help-h">🏆 How to score 100</h3><Perfect /></div>}
             {r.skipped.length > 0 && <p className="tag">Skipped checks: {r.skipped.join(', ')}.</p>}
             {teamNotes && <p className="tag">Team: {teamNotes}</p>}
             <p className="approx">Weights are placeholders to tune in playtesting (GDD 4.7).</p>

@@ -14,7 +14,10 @@ export function causeTrace(s, res, T, result) {
   };
   const skipped = new Set((result && result.skipped) || []);
 
-  if (res === 'power') {
+  if (res === 'emergency') {
+    summary = 'A flight emergency was handled differently from what the real NASA team did.';
+    fix = (result && result.fail && result.fail.nasa) ? 'What NASA did: ' + result.fail.nasa : 'During the flight, read each emergency carefully. The right answer is what NASA actually did in that real case.';
+  } else if (res === 'power') {
     inst.filter(p => p.power).sort((a, b) => b.power - a.power).slice(0, 2)
       .forEach(p => items.push({ idx: step(p.id), text: `You installed the ${p.name} (+${p.power} power use).` }));
     const arr = inst.find(p => p.slot === 'array');

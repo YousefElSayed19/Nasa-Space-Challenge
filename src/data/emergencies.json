@@ -1,0 +1,76 @@
+{
+  "_note": "Flight emergencies. Each one is based on a real event; the right answer is what the real team did. ok = right call, partial = the spacecraft survives but loses science, lost = the mission does not reach its destination.",
+  "place": {
+    "mars": { "Deep-space cruise": "safe", "Mars": "comet", "Orbit insertion": "fuel" },
+    "lander": { "The Sun": "safe", "Mars": "comet" },
+    "moon": { "The Sun": "safe", "Translunar cruise": "debris", "The Moon": "fuel" },
+    "europa": { "Mars flyby": "safe", "Asteroid belt": "belt", "Jupiter": "fuel" }
+  },
+  "list": {
+    "safe": {
+      "icon": "🛟",
+      "title": "The spacecraft put itself in safe mode",
+      "situation": "Mission Control lost the normal data stream. The spacecraft detected a computer error, stopped all science, turned its solar arrays to the Sun and is talking to Earth slowly through its small antenna. This is called safe mode.",
+      "question": "What should the team do?",
+      "options": [
+        { "text": "Send a command to restart everything right away and get back on schedule.", "result": "partial", "why": "Commands sent before the problem is understood can make it worse. In 2023 a wrong command tipped Voyager 2’s antenna 2° away from Earth and contact was lost for about two weeks. Your spacecraft recovers, but some science time is lost." },
+        { "text": "Stay in safe mode, download the error data and let engineers find the cause. Switch to the backup computer if needed, and test every fix on the ground first.", "result": "ok", "why": "Right. Safe mode keeps the spacecraft powered, warm and pointed at the Sun, so there is time. In 2013 a memory fault hit Curiosity: engineers switched it to its backup (B-side) computer, checked everything for about two weeks, then resumed science." },
+        { "text": "Switch off the heaters and instruments to save power until the problem is found.", "result": "lost", "why": "Hydrazine propellant freezes at about 2 °C. Without heaters the fuel lines freeze and crack, and the spacecraft can never steer again. That is why safe mode keeps the heaters on." }
+      ],
+      "eq": "battery",
+      "source": "NASA JPL: Curiosity switched to its B-side computer (Feb–Mar 2013); NASA JPL: Voyager 2 antenna pointing (Jul–Aug 2023); hydrazine freezing point 1.4 °C (NASA propellant data)"
+    },
+    "comet": {
+      "icon": "☄️",
+      "title": "A comet’s dust cloud is coming",
+      "situation": "Comet C/2013 A1 (Siding Spring) will pass about 139,500 km from Mars at 56 km/s. Its tail of dust grains could hit your spacecraft for about 20 minutes. At that speed even a tiny grain can puncture a fuel tank or a solar array.",
+      "question": "What should the team do?",
+      "options": [
+        { "text": "Speed up to get through the dust faster.", "result": "lost", "why": "Your speed is tiny next to the dust’s 56 km/s, so going faster barely shortens the 20 minutes, and you burn propellant you need later. The spacecraft is hit by the densest part of the dust." },
+        { "text": "Change the timing of your path so that Mars itself is between you and the dust at the worst moment.", "result": "ok", "why": "Right. In October 2014 NASA moved MRO, MAVEN and Mars Odyssey so each was behind Mars during the peak of the dust. All three were safe and even observed the comet." },
+        { "text": "Turn the spacecraft so that its toughest side faces the dust, and keep the same path.", "result": "partial", "why": "This helps and teams do it, but it does not protect the solar arrays fully. Some grains hit the arrays and you lose part of your power, so some science is lost." }
+      ],
+      "eq": "kepler",
+      "source": "NASA JPL: ‘NASA’s Mars Spacecraft Maneuvers to Prepare for Close Comet Flyby’ (Jul 2014) and ‘All Three NASA Mars Orbiters Healthy After Comet Flyby’ (Oct 2014)"
+    },
+    "debris": {
+      "icon": "🛰️",
+      "title": "Collision warning",
+      "situation": "Tracking says an old rocket stage will pass close to your spacecraft in 24 hours. The calculated probability of collision is 1 in 3,000.",
+      "question": "What should the team do?",
+      "options": [
+        { "text": "Ignore it. 1 in 3,000 is very unlikely.", "result": "lost", "why": "NASA’s rule for the International Space Station is to move when the risk is higher than 1 in 10,000. This risk is three times higher than that. In this flight the pieces collide." },
+        { "text": "Plan a tiny avoidance burn with the tracking team and do it hours before the close approach.", "result": "ok", "why": "Right. Moving early needs very little propellant, because a small change in speed grows into a big change in position over time (see the equation). The ISS does such debris avoidance maneuvers about once a year." },
+        { "text": "Wait until the object is very close, then do a big burn to dodge it.", "result": "partial", "why": "You dodge it, but a late dodge needs far more propellant for the same distance. You arrive with less propellant, so you can do less science." }
+      ],
+      "eq": "dodge",
+      "source": "NASA Orbital Debris Program Office; NASA: ISS debris avoidance maneuvers (threshold: probability of collision above 1 in 10,000)"
+    },
+    "belt": {
+      "icon": "🪨",
+      "title": "Entering the asteroid belt",
+      "situation": "Your path crosses the asteroid belt between Mars and Jupiter. It holds more than a million asteroids bigger than 1 km. A new team member is worried about a collision.",
+      "question": "What should the team do?",
+      "options": [
+        { "text": "Do a big burn to fly above or below the whole belt.", "result": "lost", "why": "Leaving the plane of the planets needs several km/s of Δv, far more than any spacecraft of this size carries. You run out of propellant and cannot reach Jupiter." },
+        { "text": "Keep the course. The belt is mostly empty; the team checks the path against known asteroids, as usual.", "result": "ok", "why": "Right. The asteroids are spread over such a huge space that the average distance between them is about a million km. Pioneer 10, Galileo, Cassini, Juno and others crossed the belt with no collision." },
+        { "text": "Switch off the instruments and point the antenna forward as a shield for the whole crossing.", "result": "partial", "why": "Nothing hits you, but the crossing takes months. The antenna cannot point at Earth, and you lose that time of contact and science." }
+      ],
+      "eq": "belt",
+      "source": "NASA Science: Asteroids facts (‘the average distance between asteroids is about 600,000 miles’)"
+    },
+    "fuel": {
+      "icon": "⛽",
+      "title": "A propellant valve is acting up",
+      "situation": "Before the big engine burn, two valves in the propellant system took several minutes to open instead of a few seconds. If the main engine fires and a valve stays closed, the burn could stop half-way.",
+      "question": "What should the team do?",
+      "options": [
+        { "text": "Fire the main engine on schedule anyway, at full thrust.", "result": "lost", "why": "In 2010 Japan’s Akatsuki fired its engine with a faulty valve on arrival at Venus. The engine failed after a few minutes and the spacecraft missed the planet. Your spacecraft does not get captured." },
+        { "text": "Skip the risky burn and switch to a plan that needs less Δv, for example a longer, wider orbit.", "result": "ok", "why": "Right. In 2016 NASA’s Juno had the same valve problem at Jupiter. NASA kept Juno in its 53-day orbit instead of firing the engine, and Juno still did all of its science." },
+        { "text": "Do the burn with the small steering thrusters instead.", "result": "partial", "why": "Akatsuki was rescued this way in 2015, five years late, in a much wider orbit than planned. It works, but you return less science." }
+      ],
+      "eq": "fuel",
+      "source": "NASA JPL: ‘NASA’s Juno Mission to Remain in Current Orbit at Jupiter’ (Feb 2017); JAXA: Akatsuki Venus orbit insertion (2010 failure, Dec 2015 success)"
+    }
+  }
+}
