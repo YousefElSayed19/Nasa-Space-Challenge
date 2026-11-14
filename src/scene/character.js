@@ -221,7 +221,7 @@ export function createCharacter(profile) {
     W.thrust = damp(W.thrust, inp.thrust || 0, 10, dt);
     st.phase += dt * (inp.speed * (1.55 + W.run * 0.25)) * (inp.back ? -1 : 1) + dt * W.turn * 9;
     const ph = st.phase, t = st.t, idle = 1 - W.walk, ground = 1 - W.air;
-    const a = Math.max(W.walk * (0.48 + 0.3 * W.run), W.turn * 0.2) * ground;
+    const a = Math.max(W.walk * (0.56 + 0.3 * W.run), W.turn * 0.2) * ground;
 
     // legs: swing, knee bend in the swing phase, a small bend on contact, and the foot rolls with the ankle
     const legPose = (L, s) => {
@@ -239,12 +239,12 @@ export function createCharacter(profile) {
     legPose(r.legL, 0); legPose(r.legR, Math.PI);
 
     // body: double-frequency bob, side sway, pelvis twist and roll, spine counter-twist, breathing and weight shift
-    const bob = (Math.abs(Math.sin(ph)) - 0.35) * 0.055 * Math.max(W.walk * (1 + W.run * 0.6), W.turn * 0.6) * ground;
+    const bob = (Math.abs(Math.sin(ph)) - 0.35) * 0.07 * Math.max(W.walk * (1 + W.run * 0.6), W.turn * 0.6) * ground;
     r.body.position.y = bob - 0.26 * W.crouch * r.hs;
     r.body.position.x = Math.sin(ph) * 0.025 * W.walk * ground;
-    r.hips.rotation.y = Math.sin(ph) * 0.14 * W.walk + Math.sin(ph) * 0.12 * W.turn;
+    r.hips.rotation.y = Math.sin(ph) * 0.19 * W.walk + Math.sin(ph) * 0.12 * W.turn;
     r.hips.rotation.z = Math.sin(ph) * 0.045 * W.walk + Math.sin(t * 0.55) * 0.025 * idle;
-    r.spine.rotation.y = -Math.sin(ph) * 0.22 * W.walk;
+    r.spine.rotation.y = -Math.sin(ph) * 0.3 * W.walk;
     r.spine.rotation.x = 0.05 * W.walk + 0.17 * W.run * W.walk + 0.32 * W.crouch + Math.sin(t * 1.6) * 0.014 * idle - 0.08 * W.air;
     r.spine.rotation.z = -Math.sin(ph) * 0.03 * W.walk;
     r.spine.scale.set(1, 1 + Math.sin(t * 1.6) * 0.01 * idle, 1);
@@ -254,11 +254,12 @@ export function createCharacter(profile) {
     r.head.rotation.x = -bob * 1.2 - 0.06 * W.run * W.walk + 0.25 * W.crouch - 0.2 * W.wave;
 
     // arms: opposite swing with elbow bend; pump when running; carry, install, fuel and wave poses blend on top
-    const swing = s => Math.sin(ph + s) * a * (0.85 + 0.35 * W.run);
+    // relaxed arm swing opposite the legs, a little behind the legs in time like a real walk
+    const swing = s => Math.sin(ph + s - 0.25) * a * (1.35 + 0.35 * W.run);
     let lx = swing(0), rx = swing(Math.PI);
-    let le = -0.25 - 0.25 * W.walk - 0.85 * W.run * W.walk - Math.max(0, Math.sin(ph)) * 0.2 * W.walk;
-    let re = -0.25 - 0.25 * W.walk - 0.85 * W.run * W.walk - Math.max(0, -Math.sin(ph)) * 0.2 * W.walk;
-    let lz = 0.12, rz = -0.12;
+    let le = -0.28 - 0.22 * W.walk - 0.85 * W.run * W.walk - Math.max(0, -Math.sin(ph - 0.25)) * 0.5 * W.walk; // elbow bends as the arm comes forward
+    let re = -0.28 - 0.22 * W.walk - 0.85 * W.run * W.walk - Math.max(0, Math.sin(ph - 0.25)) * 0.5 * W.walk;
+    let lz = 0.12 + 0.05 * W.walk, rz = -0.12 - 0.05 * W.walk; // arms a little away from the body while walking
     lx = lerp(lx, -1.15, W.carry); rx = lerp(rx, -1.15, W.carry); le = lerp(le, -0.6, W.carry); re = lerp(re, -0.6, W.carry);
     lz = lerp(lz, -0.08, W.carry); rz = lerp(rz, 0.08, W.carry);
     const tw = Math.sin(t * 14) * 0.13;

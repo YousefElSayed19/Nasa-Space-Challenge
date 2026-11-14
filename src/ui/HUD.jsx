@@ -21,9 +21,9 @@ function objectiveText(s) {
   if (isFree(s)) return 'Every station is open. Launch from the Go/No-Go console when you are ready.';
   return ({
     1: 'Walk to Mission Control and read the briefing.',
-    2: 'Pick instruments at the Payload Bay and install them. Confirm the payload when ready.',
-    3: 'Fit a solar array, antenna, battery and shielding from the Systems Rack.',
-    4: 'Choose a rocket at the Launch Vehicle Board.',
+    2: 'Pick instruments in the four labs and install them. Confirm the payload when ready.',
+    3: 'Fit a solar array and battery (Power Room), an antenna (Communications Room) and protection (Protection & Entry Room).',
+    4: 'Choose a rocket in the Launch Vehicle Hall.',
     5: 'Fill the tank at the Fueling Station. Aim for the target line.',
     6: 'Run the pre-launch checks at the cradle, then hold the Go/No-Go review at the console.',
   })[s.stage] || '';
@@ -71,16 +71,35 @@ export function Toasts({ s }) {
   );
 }
 
+/** One ⚙ Settings button; the options open in a small menu above it. Help stays one click away. */
 export function Settings({ s }) {
+  const [open, setOpen] = React.useState(false);
+  React.useEffect(() => {
+    if (!open) return;
+    const close = e => { if (e.type === 'keydown' && e.key !== 'Escape') return; if (e.target.closest && e.target.closest('.settings')) return; setOpen(false); };
+    window.addEventListener('pointerdown', close, true); window.addEventListener('keydown', close);
+    return () => { window.removeEventListener('pointerdown', close, true); window.removeEventListener('keydown', close); };
+  }, [open]);
+  const game = s.screen === 'game';
+  const Row = ({ icon, label, value, onClick, hint }) => (
+    <button className="set-row" onClick={onClick} title={hint}><span className="set-ic">{icon}</span><span className="set-l">{label}</span><span className="set-v">{value}</span></button>
+  );
   return (
     <div className="settings">
-      <button className="btn" aria-pressed={s.muted} onClick={() => { Sound.hum(false); A.setPrefs({ muted: !s.muted }); }}>{s.muted ? 'Sound off' : 'Sound on'}</button>
-      {s.screen === 'game' && <button className="btn" onClick={A.cycleView} title="V: third person, first person, hands view">👁 {{ third: '3rd person', first: '1st person', hands: 'Hands view' }[s.view || 'third']}</button>}
-      {s.screen === 'game' && <button key={s.camMode} className={'btn cam-btn flash ' + s.camMode} onClick={A.toggleCamera} title="C: switch between a camera that follows behind you and a free camera">🎥 {s.camMode === 'auto' ? 'Auto camera' : 'Free camera'}</button>}
-      <button className="btn" onClick={() => A.setPrefs({ graphics: s.graphics === 'low' ? 'high' : 'low' })}>{s.graphics === 'low' ? 'Low graphics' : 'High graphics'}</button>
-      <FullscreenBtn />
-      <button className="btn" onClick={A.toggleGlossary}>Help</button>
-      {s.screen === 'game' && <button className="btn" onClick={A.backToMenu}>Menu</button>}
+      {open && (
+        <div className="set-menu glass" role="menu" aria-label="Settings">
+          <div className="pop-t">Settings</div>
+          <Row icon="🔊" label="Sound" value={s.muted ? 'Off' : 'On'} onClick={() => { Sound.hum(false); A.setPrefs({ muted: !s.muted }); }} />
+          {game && <Row icon="👁" label="View (V)" value={{ third: '3rd person', first: '1st person', hands: 'Hands' }[s.view || 'third']} onClick={A.cycleView} />}
+          {game && <Row icon="🎥" label="Camera (C)" value={s.camMode === 'auto' ? 'Auto' : 'Free'} onClick={A.toggleCamera} />}
+          <Row icon="✨" label="Graphics" value={s.graphics === 'low' ? 'Low' : 'High'} onClick={() => A.setPrefs({ graphics: s.graphics === 'low' ? 'high' : 'low' })} />
+          <Row icon="★" label="Recommendations" value={s.showRecs ? 'On' : 'Off'} onClick={() => A.setPrefs({ showRecs: !s.showRecs })} />
+          {document.documentElement.requestFullscreen && <Row icon="⤢" label="Full screen" value={document.fullscreenElement ? 'On' : 'Off'} onClick={goFullscreen} />}
+          {game && <Row icon="⟵" label="Back to the main menu" value="" onClick={() => { setOpen(false); A.backToMenu(); }} />}
+        </div>
+      )}
+      <button className="btn" onClick={A.toggleGlossary}>❔ Help</button>
+      <button className={'btn' + (open ? ' on' : '')} aria-expanded={open} onClick={() => setOpen(o => !o)}>⚙ Settings</button>
     </div>
   );
 }

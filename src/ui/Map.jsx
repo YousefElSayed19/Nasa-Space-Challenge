@@ -66,18 +66,46 @@ export function MiniMap({ s }) {
   );
 }
 
-/** Full map: click a room to travel there through a portal. */
+/** Full map: a clean plan with wrapped room names, plus a room list. Click a room to travel there through a portal. */
 export function FullMap({ s }) {
   const h = useHud();
   const next = h.guideRoom ? roomById(h.guideRoom) : null;
+  const here = h.me ? h.me.room : null;
+  const go = id => (here === id ? A.toggleMap() : A.travel(id));
+  const P = (x, w) => ((x - VB.x) / VB.w) * 100, Q = (z, d) => ((z - VB.z) / VB.h) * 100;
   return (
     <div className="picker-ov" onClick={A.toggleMap}>
       <section className="fullmap glass" onClick={e => e.stopPropagation()} role="dialog" aria-label="Facility map">
         <div className="pk-head"><div className="pk-title"><div className="label">Facility map</div><b>Click a room to travel there</b></div>
           <button className="x" aria-label="Close" onClick={A.toggleMap}>✕</button></div>
-        <Plan me={h.me} guideRoom={h.guideRoom} big onRoom={id => (h.me && h.me.room === id ? A.toggleMap() : A.travel(id))} />
+        <div className="fm-body">
+          <div className="fm-plan" style={{ aspectRatio: `${VB.w} / ${VB.h}` }}>
+            {ROOMS.map(r => {
+              const isNext = next && r.id === next.id && here !== r.id, isHere = here === r.id;
+              return (
+                <button key={r.id} className={'fm-room' + (isNext ? ' next' : '') + (isHere ? ' here' : '') + (r.id === 'hall' ? ' hall' : '')}
+                  style={{ left: P(r.x0) + 0.4 + '%', top: Q(r.z0) + 0.5 + '%', width: (r.x1 - r.x0) / VB.w * 100 - 0.8 + '%', height: (r.z1 - r.z0) / VB.h * 100 - 1 + '%', '--c': r.color }}
+                  onClick={() => go(r.id)} title={isHere ? 'You are here' : 'Travel here'}>
+                  {isNext && <span className="fm-tag">NEXT</span>}
+                  {isHere && <span className="fm-tag here">YOU</span>}
+                  <span className="fm-ico">{r.icon}</span>
+                  <span className="fm-name">{r.label}</span>
+                </button>
+              );
+            })}
+            {FACILITY.rooms.map(r => <span key={'d' + r.id} className="fm-door" style={{ left: P(r.door[0]) + '%', top: Q(r.door[1]) + '%' }}></span>)}
+            {h.me && <span className="fm-me" style={{ left: P(h.me.x) + '%', top: Q(h.me.z) + '%', transform: `translate(-50%,-50%) rotate(${-h.me.f * 180 / Math.PI}deg)` }}><i></i></span>}
+          </div>
+          <ul className="fm-list">
+            {ROOMS.map(r => (
+              <li key={r.id}><button className={(next && r.id === next.id ? 'next ' : '') + (here === r.id ? 'here' : '')} onClick={() => go(r.id)} style={{ '--c': r.color }}>
+                <span>{r.icon}</span>{r.label}{here === r.id ? <em>you are here</em> : next && r.id === next.id ? <em className="n">next task</em> : null}
+              </button></li>
+            ))}
+          </ul>
+        </div>
         <div className="fm-foot">
-          {next && <button className="btn primary" onClick={() => A.travel(next.id)}>Travel to the next task: {next.icon} {next.label}</button>}
+          {next && here !== next.id && <button className="btn primary" onClick={() => A.travel(next.id)}>Travel to the next task: {next.icon} {next.label}</button>}
           <span className="tag">Or walk: follow the gold arrows from door to door.</span>
         </div>
       </section>

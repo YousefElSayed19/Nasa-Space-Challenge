@@ -116,6 +116,7 @@ export function initScene(container) {
     Object.assign(r, { tx: m.x, tz: m.z, ty: m.y || 0, tf: m.f, sp: m.sp || 0 });
   });
   bus.on('net-left', id => { for (const k in remotes) if (id === '*' || k === id) { scene.remove(remotes[k].hero.root); delete remotes[k]; } });
+  bus.on('teleport', (x, z, f) => { player.pos.set(x, 0, z); player.vel.set(0, 0, 0); if (f != null) { player.facing = player.heading = f; cam.yaw = f + Math.PI; } }); // used by automated tests
   bus.on('tourNext', () => { tourReleased += 1; tourView = null; });
   bus.on('tourView', i => { tourView = i; });
   bus.on('travel', roomId => {

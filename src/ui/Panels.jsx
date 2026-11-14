@@ -137,7 +137,7 @@ function Briefing({ s }) {
         <div className="kv">{ROLES.map((r, i) => <React.Fragment key={r}><span>{r}</span><span>{roleOwner(s, i)}</span></React.Fragment>)}</div>
       )}
       <div className="foot">
-        <span className="tag">{s.stage > 1 ? 'Briefing accepted' : 'Read, then accept to unlock the Payload Bay.'}</span>
+        <span className="tag">{s.stage > 1 ? 'Briefing accepted' : 'Read, then accept to unlock the instrument labs.'}</span>
         {s.stage === 1 && <button className="btn primary" onClick={A.acceptBriefing}>Accept mission</button>}
       </div>
     </PanelShell>
@@ -219,7 +219,7 @@ function Cradle({ s, T }) {
   return (
     <PanelShell title="Your spacecraft" sub={`Dry mass ${fmt(T.dry)} units, about ${fmt(T.dry * MISSION.u.mass)} kg`}>
       <GoBack s={s} />
-      {s.installed.length === 0 && <div className="lockmsg">Nothing installed yet. Bring parts from the Payload Bay and the Systems Rack.</div>}
+      {s.installed.length === 0 && <div className="lockmsg">Nothing installed yet. Bring parts from the labs and the systems rooms.</div>}
       <div className="cards">
         {s.installed.map(pid => {
           const p = partById(pid), fee = changeFee(s, p);

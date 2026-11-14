@@ -5,7 +5,7 @@ import { THUMBS } from '../state/thumbs.js';
 import SOURCES from '../data/sources.json';
 import { attachPreview, showInPreview, zoomBy, resetView } from '../scene/preview.js';
 import { HOWTO, WHAT, prosCons, statsOf, rocketProsCons } from './explain.js';
-import { MISSION, PARTS, PART_REAL, ROCKETS, MARGIN, partById, rocketById, stationById, totals, headroom, changeFee, isFree, missionSlots, pct, fmt, money } from '../engine/index.js';
+import { MISSION, PARTS, PART_REAL, ROCKETS, MARGIN, partById, rocketById, stationById, totals, resources, headroom, changeFee, isFree, missionSlots, pct, fmt, money } from '../engine/index.js';
 
 const SLOT_NAMES = () => ({ instrument: 'Instruments', array: 'Solar arrays', antenna: 'Antennas', battery: 'Battery', shield: MISSION.events.includes('radiation') ? 'Radiation vault' : 'Shielding', aeroshell: 'Heat shields', parachute: 'Parachutes', engine: 'Engines' });
 const STAT_KEY = { 'Mass': 'mass', 'Power use': 'power', 'Power made': 'supply', 'Data': 'data', 'Downlink': 'downlink', 'Cost': 'cost', 'Entry mass limit': 'maxEntry', 'Braking': 'dvSave', 'Efficiency (Isp)': 'isp' };
@@ -25,6 +25,51 @@ function Viewer({ spec, label }) {
         <button onClick={resetView} aria-label="Reset view">⟲</button>
       </div>
       <span className="pk-hint">Drag to turn · Right-drag or Shift-drag to move · Scroll or pinch to zoom · Double-click to reset</span>
+    </div>
+  );
+}
+
+const RES_NAMES = { mass: 'Mass', power: 'Power', data: 'Data', prop: 'Propellant', budget: 'Budget' };
+const ST_COL = { ok: 'var(--go)', warn: 'var(--amber)', crit: 'var(--red)' };
+const stOf = h => (h >= MARGIN ? 'ok' : h >= 0 ? 'warn' : 'crit');
+/** The live budget, before and after this choice: the most important thing to see before installing. */
+function Impact({ s, item, isRocket, focus }) {
+  let after;
+  if (isRocket) after = { ...s, rocket: item.id };
+  else {
+    const already = s.installed.includes(item.id);
+    const list = already ? s.installed : [...s.installed.filter(id => item.slot === 'instrument' || partById(id).slot !== item.slot), item.id];
+    after = { ...s, installed: list };
+  }
+  const TA = totals(after), before = resources(totals(s)), aft = resources(TA);
+  const noChute = MISSION.events.includes('entry') && !TA.has('parachute');
+  const keys = s.mode === 'sandbox' ? ['mass', 'power', 'data', 'prop'] : ['mass', 'power', 'data', 'prop', 'budget'];
+  const same = isRocket ? s.rocket === item.id : s.installed.includes(item.id);
+  return (
+    <div className={'pk-impact' + (focus ? ' focus' : '')} aria-label="Effect on your live budget">
+      <div className="pk-impact-h"><b>{same ? 'Your live budget (already installed)' : 'If you install this, your live budget becomes:'}</b><span>white line = now · 25% margin tick</span></div>
+      <div className="pk-impact-grid">
+        {keys.map(k => {
+          const b = before.find(r => r.key === k), a = aft.find(r => r.key === k);
+          const none = a.limit <= 0 || (k === 'prop' && noChute);
+          const ra = none ? 0 : Math.min(1.1, a.used / a.limit), rb = b.limit > 0 ? Math.min(1.1, b.used / b.limit) : 0;
+          const st = none ? 'warn' : stOf(a.h);
+          const dUsed = a.used - b.used, dLim = a.limit - b.limit;
+          const fmtv = v => (k === 'budget' ? money(v) : fmt(v));
+          const change = dLim && k !== 'budget' ? `${dLim > 0 ? '+' : ''}${fmt(dLim)} capacity` : dUsed ? `${dUsed > 0 ? '+' : '−'}${fmtv(Math.abs(dUsed))}` : 'no change';
+          return (
+            <div key={k} className={'pk-imp ' + st + (Math.abs(dUsed) + Math.abs(dLim) > 0.001 ? ' changed' : '')}>
+              <div className="pk-imp-top"><span>{RES_NAMES[k]}</span><b>{change}</b></div>
+              <div className="pk-imp-bar">
+                <i className="fill" style={{ width: (ra / 1.1) * 100 + '%', background: ST_COL[st] }}></i>
+                <i className="tick" style={{ left: 75 / 1.1 + '%' }}></i>
+                {b.limit > 0 && <i className="now" style={{ left: (rb / 1.1) * 100 + '%' }}></i>}
+              </div>
+              <div className="pk-imp-sub">{none ? (k === 'power' ? 'no solar array yet' : k === 'data' ? 'no antenna yet' : k === 'prop' ? 'needs a parachute first' : '—') : `${fmtv(a.used)} / ${fmtv(a.limit)} · ${a.h < 0 ? 'over the limit' : pct(a.h) + ' headroom'}`}</div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -97,6 +142,19 @@ export function Picker({ s, station }) {
   const [i, setI] = useState(0);
   const [dir, setDir] = useState('r');
   const [showReal, setShowReal] = useState(false);
+  const [hot, setHot] = useState(false);
+  // guided flow in rooms with several steps: once a step is filled, move to the next empty one
+  const filled = groups.map(x => x.key !== 'instrument' && x.key !== 'rocket' && totals(s).has(x.key));
+  const prevFilled = React.useRef(filled);
+  React.useEffect(() => {
+    const was = prevFilled.current; prevFilled.current = filled;
+    if (groups.length < 2 || !filled[g] || was[g]) return;
+    const nextK = groups.findIndex((x, k) => k > g && !filled[k]);
+    if (nextK < 0) { A.toast('All steps in this room are done ✓'); return; }
+    A.toast(`Step ${g + 1} done. Next: ${groups[nextK].label}`, 'good');
+    const t = setTimeout(() => { setDir('r'); setG(nextK); setI(0); }, 900);
+    return () => clearTimeout(t);
+  }, [s.installed]);
   const rec = s.showRecs ? recommend(groups[g].items, s, T, isRocket) : { order: groups[g].items, best: null, why: {} };
   const items = rec.order, idx = Math.min(i, items.length - 1), item = items[idx];
   const go = d => { setDir(d > 0 ? 'r' : 'l'); setI(x => (x + d + items.length) % items.length); };
@@ -139,7 +197,7 @@ export function Picker({ s, station }) {
       </>
     );
     actions = (s.stage === 4 || isFree(s) || (s.changeMode && s.changeMode.stage === 4))
-      ? <button className="btn primary big" onClick={() => A.chooseRocket(r.id)} disabled={sel}>{sel ? 'Selected ✓' : 'Select this rocket'}</button>
+      ? <button className="btn primary big" onMouseEnter={() => setHot(true)} onMouseLeave={() => setHot(false)} onClick={() => A.chooseRocket(r.id)} disabled={sel}>{sel ? 'Selected ✓' : 'Select this rocket'}</button>
       : s.stage < 4 ? <span className="tag">Rockets are chosen at stage 4.</span>
         : <button className="btn primary" onClick={() => A.askReopen(4)}>↩ Go back to Launch vehicle to change it ({money(A.reopenFee(4))})</button>;
   } else {
@@ -184,7 +242,7 @@ export function Picker({ s, station }) {
           : (
             <>
               <button className="btn" onClick={() => A.pickUp(p.id)} title="Carry it to the Assembly Cradle yourself">Carry it</button>
-              <button className="btn primary big" onClick={() => A.installDirect(p.id)}>{current ? 'Swap and install' : 'Install now'}{fee ? ` (+${money(fee)} change)` : ''}</button>
+              <button className="btn primary big" onMouseEnter={() => setHot(true)} onMouseLeave={() => setHot(false)} onFocus={() => setHot(true)} onBlur={() => setHot(false)} onClick={() => A.installDirect(p.id)}>{current ? 'Swap and install' : 'Install now'}{fee ? ` (+${money(fee)} change)` : ''}</button>
             </>
           );
   }
@@ -202,7 +260,7 @@ export function Picker({ s, station }) {
         <header className="pk-head">
           <div className="pk-title"><div className="label">{def.label}</div>
             <b>{groups[g].label}</b></div>
-          {groups.length > 1 && <nav className="pk-tabs">{groups.map((x, k) => <button key={x.key} className={k === g ? 'on' : ''} onClick={() => tab(k)}>{!isRocket && x.key !== 'instrument' && T.has(x.key) ? <span className="ok">✓</span> : null}{x.label}</button>)}</nav>}
+          {groups.length > 1 && <nav className="pk-tabs steps">{groups.map((x, k) => <React.Fragment key={x.key}>{k > 0 && <span className="step-arrow">→</span>}<button className={(k === g ? 'on' : '') + (filled[k] ? ' done' : '')} onClick={() => tab(k)}><span className="step-n">{filled[k] ? '✓' : k + 1}</span>{x.label}</button></React.Fragment>)}</nav>}
           <button className="x" aria-label="Close" onClick={() => A.close()}>✕</button>
         </header>
         <div className="pk-body">
@@ -213,6 +271,8 @@ export function Picker({ s, station }) {
           </div>
           <div className={'pk-info in-' + dir} key={item.id}>{info}</div>
         </div>
+        {def.lab && <p className="pk-why-many">ℹ You can fit <b>several instruments</b>, but each should answer a <b>different science question</b>. Real spacecraft do this: MRO carried three cameras, HiRISE for close-up detail, CTX for wide context maps and MARCI for daily weather. More instruments mean more science, but also more mass, power, data and cost.</p>}
+        <Impact s={s} item={item} isRocket={isRocket} focus={hot} />
         <div className="pk-strip" role="listbox" aria-label="All options">
           {items.map((x, k) => {
             const th = THUMBS[isRocket ? 'rocket-' + x.id : x.id];

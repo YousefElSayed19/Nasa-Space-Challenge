@@ -141,7 +141,7 @@ export const A = {
     const s = store.get(); if (s.stage !== 1) return;
     A.log({ kind: 'confirm', confirmed: 1, text: `Accepted the ${MISSION.name} briefing.` });
     store.set({ stage: 2, locked: { ...s.locked, 1: true }, panel: null });
-    Sound.chime(); A.toast('Stage 2: choose instruments at the Payload Bay.');
+    Sound.chime(); A.toast('Stage 2: choose instruments in the four labs around the hall.');
   },
   pickUp(id) {
     const s = store.get(); if (!isFree(s) && s.stage > 5 && !s.changeMode) return;
@@ -226,7 +226,7 @@ export const A = {
   },
   confirmStage(n) {
     const s = store.get(); if (s.stage !== n) return;
-    const next = { 2: 'Stage 3: fit power, antenna, battery and protection from the Systems Rack.', 3: 'Stage 4: choose a rocket at the Launch Vehicle Board.' };
+    const next = { 2: 'Stage 3: fit power, an antenna and protection in the Power, Communications and Protection rooms.', 3: 'Stage 4: choose a rocket in the Launch Vehicle Hall.' };
     A.log({ kind: 'confirm', confirmed: n, text: `Confirmed ${STAGE_NAMES[n - 1].toLowerCase()}. Decisions locked (baseline).` });
     store.set({ stage: n + 1, locked: { ...s.locked, [n]: true }, panel: null });
     Sound.chime(); A.toast(next[n]);
